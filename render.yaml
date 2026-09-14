@@ -1,0 +1,14 @@
+﻿services:
+  - type: static
+    name: camqrew-web
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_SUPABASE_URL
+        value: https://lwvmtjraqvniknstcvpk.supabase.co
+      - key: VITE_SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3dm10anJhcXZuaWtuc3RjdnBrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MTkxMjksImV4cCI6MjEwMjA5NTEyOX0.z0qaKfucC8CrFIy_XvXs4XYZi7h_WvMbSvGrtLiKGkY
