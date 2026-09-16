@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { INDIA_LOCATIONS } from '../constants/locations';
-import { X, ChevronDown } from 'lucide-react';
+import { X, MapPin } from 'lucide-react';
+import { CustomSelect } from './CustomSelect';
 
 interface LocationSelectorProps {
   selectedState?: string;
@@ -66,49 +67,38 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
         <div className="location-inline-grid">
           {/* State select */}
           <div className="select-box-wrapper">
-            <select
+            <CustomSelect
               value={state}
-              onChange={(e) => handleStateChange(e.target.value)}
-              className="custom-select-field"
-            >
-              <option value="">Select State (All India)</option>
-              {states.map((st) => (
-                <option key={st} value={st}>{st}</option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="select-chevron" />
+              onChange={handleStateChange}
+              options={states}
+              placeholder="Select State (All India)"
+              allOptionLabel="Select State (All India)"
+              icon={<MapPin size={13} />}
+            />
           </div>
 
           {/* District select */}
           <div className="select-box-wrapper">
-            <select
+            <CustomSelect
               value={district}
-              onChange={(e) => handleDistrictChange(e.target.value)}
+              onChange={handleDistrictChange}
+              options={districts}
+              placeholder={state ? 'Select District' : 'District'}
+              allOptionLabel={state ? 'All Districts' : undefined}
               disabled={!state}
-              className="custom-select-field"
-            >
-              <option value="">{state ? 'Select District' : 'District'}</option>
-              {districts.map((dst) => (
-                <option key={dst} value={dst}>{dst}</option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="select-chevron" />
+            />
           </div>
 
           {/* City select */}
           <div className="select-box-wrapper">
-            <select
+            <CustomSelect
               value={city}
-              onChange={(e) => handleCityChange(e.target.value)}
+              onChange={handleCityChange}
+              options={cities}
+              placeholder={district ? 'Select City / Locality' : 'City / Locality'}
+              allOptionLabel={district ? 'All Cities / Localities' : undefined}
               disabled={!district}
-              className="custom-select-field"
-            >
-              <option value="">{district ? 'Select City / Locality' : 'City / Locality'}</option>
-              {cities.map((ct) => (
-                <option key={ct} value={ct}>{ct}</option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="select-chevron" />
+            />
           </div>
 
           {/* Reset Action */}
@@ -134,48 +124,37 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
       <div className="location-stacked-grid">
         {/* Row 1: State (50%) & District (50%) */}
         <div className="select-box-wrapper">
-          <select
+          <CustomSelect
             value={state}
-            onChange={(e) => handleStateChange(e.target.value)}
-            className="custom-select-field"
-          >
-            <option value="">Select State</option>
-            {states.map((st) => (
-              <option key={st} value={st}>{st}</option>
-            ))}
-          </select>
-          <ChevronDown size={14} className="select-chevron" />
+            onChange={handleStateChange}
+            options={states}
+            placeholder="Select State"
+            allOptionLabel="Select State"
+            icon={<MapPin size={13} />}
+          />
         </div>
 
         <div className="select-box-wrapper">
-          <select
+          <CustomSelect
             value={district}
-            onChange={(e) => handleDistrictChange(e.target.value)}
+            onChange={handleDistrictChange}
+            options={districts}
+            placeholder={state ? 'Select District' : 'District'}
+            allOptionLabel={state ? 'All Districts' : undefined}
             disabled={!state}
-            className="custom-select-field"
-          >
-            <option value="">{state ? 'Select District' : 'District'}</option>
-            {districts.map((dst) => (
-              <option key={dst} value={dst}>{dst}</option>
-            ))}
-          </select>
-          <ChevronDown size={14} className="select-chevron" />
+          />
         </div>
 
         {/* Row 2: City / Locality (100% full span) */}
         <div className="select-box-wrapper full-span">
-          <select
+          <CustomSelect
             value={city}
-            onChange={(e) => handleCityChange(e.target.value)}
+            onChange={handleCityChange}
+            options={cities}
+            placeholder={district ? 'Select City / Locality' : 'City / Locality'}
+            allOptionLabel={district ? 'All Cities / Localities' : undefined}
             disabled={!district}
-            className="custom-select-field"
-          >
-            <option value="">{district ? 'Select City / Locality' : 'City / Locality'}</option>
-            {cities.map((ct) => (
-              <option key={ct} value={ct}>{ct}</option>
-            ))}
-          </select>
-          <ChevronDown size={14} className="select-chevron" />
+          />
         </div>
       </div>
 
