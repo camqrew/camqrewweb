@@ -1175,6 +1175,13 @@
   -webkit-appearance: none;
   outline: none;
   cursor: pointer;
+  color-scheme: dark;
+}
+
+.popover-select-input option {
+  background-color: #1c2025 !important;
+  color: #ffffff !important;
+  padding: 8px 12px;
 }
 
 .popover-select-input:disabled {
@@ -1184,6 +1191,12 @@
 
 [data-theme="light"] .popover-select-input {
   color: #0f172a;
+  color-scheme: light;
+}
+
+[data-theme="light"] .popover-select-input option {
+  background-color: #ffffff !important;
+  color: #111827 !important;
 }
 
 .popover-select-chevron {
@@ -1989,12 +2002,25 @@
   outline: none !important;
   cursor: pointer;
   transition: all 0.2s ease;
+  color-scheme: dark;
+}
+
+.custom-select-field option {
+  background-color: #1c2025 !important;
+  color: #ffffff !important;
+  padding: 10px 14px;
 }
 
 [data-theme="light"] .custom-select-field {
   background: #f3f4f6;
   border: none !important;
   color: #111827;
+  color-scheme: light;
+}
+
+[data-theme="light"] .custom-select-field option {
+  background-color: #ffffff !important;
+  color: #111827 !important;
 }
 
 .custom-select-field:focus {

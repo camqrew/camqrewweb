@@ -3,6 +3,7 @@
 
 :root {
   /* CAMCREW APP THEME (Dark) */
+  color-scheme: dark;
   --bg-main: #0B0F12;
   --bg-surface: #13171A;
   --bg-card: #1C2025;
@@ -32,6 +33,7 @@
 
 [data-theme="light"] {
   /* CAMCREW APP THEME (Light) */
+  color-scheme: light;
   --bg-main: #f9fafb;
   --bg-surface: #ffffff;
   --bg-card: #ffffff;
@@ -403,6 +405,38 @@ textarea::placeholder {
 [data-theme="light"] input::placeholder,
 [data-theme="light"] textarea::placeholder {
   color: #9ca3af;
+}
+
+/* Universal Form Elements & Select Dropdown Styling for Dark & Light Themes */
+select {
+  color-scheme: dark;
+}
+
+select option,
+select optgroup {
+  background-color: #1c2025;
+  color: #ffffff;
+  padding: 8px 12px;
+}
+
+[data-theme="light"] select {
+  color-scheme: light;
+}
+
+[data-theme="light"] select option,
+[data-theme="light"] select optgroup {
+  background-color: #ffffff;
+  color: #111827;
+}
+
+.input-field option {
+  background-color: #1c2025 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] .input-field option {
+  background-color: #ffffff !important;
+  color: #111827 !important;
 }
 
 /* --- LAYOUT --- */
