@@ -4,6 +4,7 @@ import { productApi } from '../api/productApi';
 import type { Product } from '../types/product';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
+import { CustomDatePicker } from '../components/CustomDatePicker';
 import { 
   ArrowLeft, 
   Star, 
@@ -402,23 +403,26 @@ export const ProductDetailPage: React.FC = () => {
                 <div className="rental-dates-picker-grid">
                   <div className="date-input-group">
                     <label className="auth-field-label">Shoot Start Date</label>
-                    <input 
-                      type="date"
+                    <CustomDatePicker
                       value={startDate}
                       min={todayStr}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="auth-input-box no-icon date-input"
+                      onChange={(val) => {
+                        setStartDate(val);
+                        if (endDate && val > endDate) {
+                          setEndDate(val);
+                        }
+                      }}
+                      placeholder="Shoot Start Date"
                     />
                   </div>
 
                   <div className="date-input-group">
                     <label className="auth-field-label">Shoot Wrap Date</label>
-                    <input 
-                      type="date"
+                    <CustomDatePicker
                       value={endDate}
                       min={startDate || todayStr}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="auth-input-box no-icon date-input"
+                      onChange={(val) => setEndDate(val)}
+                      placeholder="Shoot Wrap Date"
                     />
                   </div>
                 </div>

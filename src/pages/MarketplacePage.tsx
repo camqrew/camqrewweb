@@ -6,6 +6,7 @@ import type { Product, ProductType } from '../types/product';
 import { useCartStore, type CartTab } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { LocationSelector } from '../components/LocationSelector';
+import { CustomDatePicker } from '../components/CustomDatePicker';
 import { 
   ShoppingBag, 
   Search, 
@@ -985,16 +986,12 @@ export const MarketplacePage: React.FC = () => {
                       <label className="checkout-form-label">
                         <Calendar size={13} /> Shoot / Rental Start Date
                       </label>
-                      <div className="checkout-input-wrapper">
-                        <Calendar size={16} className="checkout-input-icon" />
-                        <input 
-                          type="date" 
-                          className="checkout-input" 
-                          value={rentalStartDate}
-                          onChange={(e) => setRentalStartDate(e.target.value)}
-                          min={new Date().toISOString().split('T')[0]}
-                        />
-                      </div>
+                      <CustomDatePicker
+                        value={rentalStartDate}
+                        onChange={(val) => setRentalStartDate(val)}
+                        min={new Date().toISOString().split('T')[0]}
+                        placeholder="Select shoot start date"
+                      />
                     </div>
 
                     <div className="checkout-review-card" style={{ marginTop: 16 }}>

@@ -5,6 +5,7 @@ import { bookingApi } from '../api/bookingApi';
 import { jobApi } from '../api/jobApi';
 import type { ProfessionalProfile } from '../types/professional';
 import { LocationSelector } from '../components/LocationSelector';
+import { CustomDatePicker } from '../components/CustomDatePicker';
 import { useAuthStore } from '../store/authStore';
 import { 
   ShieldCheck, 
@@ -214,23 +215,26 @@ export const BookingPage: React.FC = () => {
             <div className="form-row-2">
               <div className="form-group">
                 <label className="form-label">Start Date</label>
-                <input
-                  type="date"
-                  className="input-field"
+                <CustomDatePicker
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={(val) => {
+                    setStartDate(val);
+                    if (endDate && val > endDate) {
+                      setEndDate(val);
+                    }
+                  }}
                   min={new Date().toISOString().split('T')[0]}
+                  placeholder="Select Start Date"
                   required
                 />
               </div>
               <div className="form-group">
                 <label className="form-label">End Date</label>
-                <input
-                  type="date"
-                  className="input-field"
+                <CustomDatePicker
                   value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  min={startDate}
+                  onChange={(val) => setEndDate(val)}
+                  min={startDate || new Date().toISOString().split('T')[0]}
+                  placeholder="Select End Date"
                   required
                 />
               </div>
