@@ -71,6 +71,8 @@ function App() {
           <Route path="/cart" element={<Navigate to="/marketplace?tab=cart" replace />} />
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/pro/dashboard" element={<Navigate to="/dashboard?tab=overview" replace />} />
+          <Route path="/pro-dashboard" element={<Navigate to="/dashboard?tab=overview" replace />} />
           <Route path="/login" element={<AuthPage />} />
           <Route path="/register" element={<AuthPage />} />
         </Route>

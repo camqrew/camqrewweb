@@ -15,7 +15,10 @@ import {
   Briefcase, 
   Menu, 
   X,
-  ChevronDown
+  ChevronDown,
+  LayoutDashboard,
+  Radio,
+  Eye
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -25,6 +28,7 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
   const { user, isAuthenticated, logout, activeRole } = useAuthStore();
+  const isPro = isAuthenticated && (user?.role === 'professional' || activeRole === 'professional');
   const cartCount = useCartStore((s) => s.getTotalCount());
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileDropdown, setProfileDropdown] = useState(false);
@@ -76,6 +80,14 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
           <NavLink to="/jobs/create" className="nav-item broadcast-highlight">
             <PlusCircle size={16} /> Post a Job
           </NavLink>
+          {isPro && (
+            <NavLink 
+              to="/dashboard?tab=overview" 
+              className={({ isActive }) => isActive ? "nav-item active pro-nav-link" : "nav-item pro-nav-link"}
+            >
+              <LayoutDashboard size={15} /> Pro Studio
+            </NavLink>
+          )}
         </nav>
 
         <div className="navbar-actions">
@@ -116,22 +128,58 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
 
                   <hr className="pm-divider" />
 
-                  <Link 
-                    to="/dashboard?tab=bookings" 
-                    className="pm-link"
-                    onClick={() => setProfileDropdown(false)}
-                  >
-                    <User size={16} /> My Bookings & Jobs
-                  </Link>
+                  {isPro ? (
+                    <>
+                      <Link 
+                        to="/dashboard?tab=overview" 
+                        className="pm-link pro-highlight-link"
+                        onClick={() => setProfileDropdown(false)}
+                      >
+                        <LayoutDashboard size={16} /> Pro Studio Dashboard
+                      </Link>
 
-                  {(user.role === 'professional' || activeRole === 'professional') && (
-                    <Link 
-                      to="/dashboard?tab=jobboard" 
-                      className="pm-link"
-                      onClick={() => setProfileDropdown(false)}
-                    >
-                      <Briefcase size={16} /> Creator Job Board
-                    </Link>
+                      <Link 
+                        to="/dashboard?tab=jobboard" 
+                        className="pm-link"
+                        onClick={() => setProfileDropdown(false)}
+                      >
+                        <Radio size={16} /> Broadcast Job Board
+                      </Link>
+
+                      <Link 
+                        to={`/creators/${user.id}`} 
+                        className="pm-link"
+                        onClick={() => setProfileDropdown(false)}
+                      >
+                        <Eye size={16} /> View Public Profile
+                      </Link>
+
+                      <Link 
+                        to="/dashboard?tab=client" 
+                        className="pm-link"
+                        onClick={() => setProfileDropdown(false)}
+                      >
+                        <User size={16} /> My Client Bookings
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <Link 
+                        to="/dashboard?tab=bookings" 
+                        className="pm-link"
+                        onClick={() => setProfileDropdown(false)}
+                      >
+                        <User size={16} /> My Bookings & Jobs
+                      </Link>
+                      <Link 
+                        to="/register?role=professional" 
+                        className="pm-link"
+                        onClick={() => setProfileDropdown(false)}
+                        style={{ color: 'var(--accent)' }}
+                      >
+                        <Briefcase size={16} /> Join as Verified Pro
+                      </Link>
+                    </>
                   )}
 
                   {user.role === 'admin' && (
@@ -178,9 +226,26 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
           </Link>
           {isAuthenticated ? (
             <>
-              <Link to="/dashboard" className="mobile-nav-link" onClick={() => setMenuOpen(false)}>
-                My Dashboard
-              </Link>
+              {isPro ? (
+                <>
+                  <Link to="/dashboard?tab=overview" className="mobile-nav-link" onClick={() => setMenuOpen(false)}>
+                    Pro Studio Dashboard
+                  </Link>
+                  <Link to="/dashboard?tab=jobboard" className="mobile-nav-link" onClick={() => setMenuOpen(false)}>
+                    Broadcast Job Board
+                  </Link>
+                  <Link to={`/creators/${user?.id || ''}`} className="mobile-nav-link" onClick={() => setMenuOpen(false)}>
+                    View Public Profile
+                  </Link>
+                  <Link to="/dashboard?tab=client" className="mobile-nav-link" onClick={() => setMenuOpen(false)}>
+                    Client Bookings & Orders
+                  </Link>
+                </>
+              ) : (
+                <Link to="/dashboard" className="mobile-nav-link" onClick={() => setMenuOpen(false)}>
+                  My Dashboard
+                </Link>
+              )}
               <Link to="/chat" className="mobile-nav-link" onClick={() => setMenuOpen(false)}>
                 Messages
               </Link>
