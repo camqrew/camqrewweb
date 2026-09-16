@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { professionalApi } from '../api/professionalApi';
 import type { ProfessionalProfile } from '../types/professional';
 import { ProCard } from '../components/ProCard';
+import { CustomSelect } from '../components/CustomSelect';
 import { INDIA_LOCATIONS } from '../constants/locations';
 import { 
   Search, 
@@ -282,57 +283,39 @@ export const HomePage: React.FC = () => {
                       {/* State Select */}
                       <div className="popover-select-group">
                         <label className="select-micro-label">State</label>
-                        <div className="popover-select-box">
-                          <select
-                            value={selectedLocation.state}
-                            onChange={(e) => handleStateChange(e.target.value)}
-                            className="popover-select-input"
-                          >
-                            <option value="">All States (India)</option>
-                            {availableStates.map((st) => (
-                              <option key={st} value={st}>{st}</option>
-                            ))}
-                          </select>
-                          <ChevronDown size={14} className="popover-select-chevron" />
-                        </div>
+                        <CustomSelect
+                          value={selectedLocation.state}
+                          onChange={(val) => handleStateChange(val)}
+                          options={availableStates}
+                          placeholder="All States (India)"
+                          allOptionLabel="All States (India)"
+                        />
                       </div>
 
                       {/* District Select */}
                       <div className="popover-select-group">
                         <label className="select-micro-label">District</label>
-                        <div className="popover-select-box">
-                          <select
-                            value={selectedLocation.district}
-                            onChange={(e) => handleDistrictChange(e.target.value)}
-                            disabled={!selectedLocation.state}
-                            className="popover-select-input"
-                          >
-                            <option value="">{selectedLocation.state ? 'All Districts' : 'Select State'}</option>
-                            {availableDistricts.map((dst) => (
-                              <option key={dst} value={dst}>{dst}</option>
-                            ))}
-                          </select>
-                          <ChevronDown size={14} className="popover-select-chevron" />
-                        </div>
+                        <CustomSelect
+                          value={selectedLocation.district}
+                          onChange={(val) => handleDistrictChange(val)}
+                          options={availableDistricts}
+                          placeholder={selectedLocation.state ? 'All Districts' : 'Select State'}
+                          allOptionLabel={selectedLocation.state ? 'All Districts' : undefined}
+                          disabled={!selectedLocation.state}
+                        />
                       </div>
 
                       {/* City Select */}
                       <div className="popover-select-group full-width">
                         <label className="select-micro-label">City / Locality</label>
-                        <div className="popover-select-box">
-                          <select
-                            value={selectedLocation.city}
-                            onChange={(e) => handleCityChange(e.target.value)}
-                            disabled={!selectedLocation.district}
-                            className="popover-select-input"
-                          >
-                            <option value="">{selectedLocation.district ? 'All Cities / Localities' : 'Select District'}</option>
-                            {availableCities.map((ct) => (
-                              <option key={ct} value={ct}>{ct}</option>
-                            ))}
-                          </select>
-                          <ChevronDown size={14} className="popover-select-chevron" />
-                        </div>
+                        <CustomSelect
+                          value={selectedLocation.city}
+                          onChange={(val) => handleCityChange(val)}
+                          options={availableCities}
+                          placeholder={selectedLocation.district ? 'All Cities / Localities' : 'Select District'}
+                          allOptionLabel={selectedLocation.district ? 'All Cities / Localities' : undefined}
+                          disabled={!selectedLocation.district}
+                        />
                       </div>
                     </div>
                   </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jobApi } from '../api/jobApi';
 import { LocationSelector } from '../components/LocationSelector';
+import { CustomSelect } from '../components/CustomSelect';
 import { useAuthStore } from '../store/authStore';
 import { 
   Radio, 
@@ -12,7 +13,6 @@ import {
   MapPin,
   ShieldCheck,
   CheckCircle,
-  ChevronDown,
   Send,
   Zap
 } from 'lucide-react';
@@ -184,18 +184,12 @@ export const CreateJobPage: React.FC = () => {
               <div className="broadcast-form-row-2">
                 <div className="form-field-group">
                   <label className="broadcast-field-label">Creative Category *</label>
-                  <div className="select-box-wrapper">
-                    <select
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      className="custom-select-field"
-                    >
-                      {categories.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                    <ChevronDown size={14} className="select-chevron" />
-                  </div>
+                  <CustomSelect
+                    value={category}
+                    onChange={setCategory}
+                    options={categories}
+                    placeholder="Select Creative Category"
+                  />
                 </div>
 
                 <div className="form-field-group">

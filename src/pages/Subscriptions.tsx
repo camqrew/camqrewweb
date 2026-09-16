@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Ban } from 'lucide-react';
+import { CustomSelect } from '../components/CustomSelect';
 import { supabase } from '../api/supabaseClient';
 
 export default function Subscriptions() {
@@ -92,17 +93,20 @@ export default function Subscriptions() {
                     </div>
                   </td>
                   <td>
-                    <select 
-                      className="input-field" 
-                      style={{ padding: '6px 12px', width: 'auto' }}
-                      value={user.role || 'customer'}
-                      onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                    >
-                      <option value="admin">Admin</option>
-                      <option value="studio">Studio</option>
-                      <option value="professional">Professional</option>
-                      <option value="customer">Customer</option>
-                    </select>
+                    <div style={{ width: 140 }}>
+                      <CustomSelect 
+                        size="sm"
+                        value={user.role || 'customer'}
+                        onChange={(val) => handleRoleChange(user.id, val)}
+                        options={[
+                          { value: 'admin', label: 'Admin' },
+                          { value: 'studio', label: 'Studio' },
+                          { value: 'professional', label: 'Professional' },
+                          { value: 'customer', label: 'Customer' },
+                        ]}
+                        searchable={false}
+                      />
+                    </div>
                   </td>
                   <td>{formatDate(user.created_at)}</td>
                   <td><span className="badge badge-success">Active</span></td>

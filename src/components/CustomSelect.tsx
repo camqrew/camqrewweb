@@ -16,6 +16,9 @@ export interface CustomSelectProps {
   className?: string;
   icon?: React.ReactNode;
   allOptionLabel?: string;
+  size?: 'md' | 'sm';
+  align?: 'left' | 'right';
+  style?: React.CSSProperties;
 }
 
 export const CustomSelect: React.FC<CustomSelectProps> = ({
@@ -24,10 +27,13 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   options,
   placeholder = 'Select option',
   disabled = false,
-  searchable = true,
+  searchable,
   className = '',
   icon,
   allOptionLabel,
+  size = 'md',
+  align = 'left',
+  style,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,6 +49,9 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
       return opt;
     });
   }, [options]);
+
+  // If searchable is undefined, auto-enable if > 5 options
+  const isSearchable = searchable !== undefined ? searchable : normalizedOptions.length > 5;
 
   // Find label for current value
   const selectedOption = normalizedOptions.find((opt) => opt.value === value);
@@ -75,7 +84,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
 
   // Focus search input on open
   useEffect(() => {
-    if (isOpen && searchable && searchInputRef.current) {
+    if (isOpen && isSearchable && searchInputRef.current) {
       setTimeout(() => {
         searchInputRef.current?.focus();
       }, 50);
@@ -83,7 +92,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     if (!isOpen) {
       setSearchQuery('');
     }
-  }, [isOpen, searchable]);
+  }, [isOpen, isSearchable]);
 
   // Filter options based on query
   const filteredOptions = useMemo(() => {
@@ -102,12 +111,13 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   return (
     <div
       ref={containerRef}
+      style={style}
       className={`custom-select-root ${isOpen ? 'is-open' : ''} ${disabled ? 'is-disabled' : ''} ${className}`}
     >
       {/* Trigger Button */}
       <button
         type="button"
-        className={`custom-select-trigger ${value ? 'has-value' : ''}`}
+        className={`custom-select-trigger ${size === 'sm' ? 'size-sm' : ''} ${value ? 'has-value' : ''}`}
         onClick={() => !disabled && setIsOpen((prev) => !prev)}
         disabled={disabled}
         aria-haspopup="listbox"
@@ -120,16 +130,16 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
           </span>
         </div>
         <ChevronDown
-          size={14}
+          size={size === 'sm' ? 12 : 14}
           className={`custom-select-chevron ${isOpen ? 'rotated' : ''}`}
         />
       </button>
 
       {/* Floating Popover Menu */}
       {isOpen && !disabled && (
-        <div className="custom-select-popover" role="listbox">
-          {/* Search Box if list has more than 5 options */}
-          {searchable && normalizedOptions.length > 5 && (
+        <div className={`custom-select-popover ${align === 'right' ? 'align-right' : ''}`} role="listbox">
+          {/* Search Box */}
+          {isSearchable && (
             <div className="custom-select-search-wrap">
               <Search size={13} className="custom-select-search-icon" />
               <input

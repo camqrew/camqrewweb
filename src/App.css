@@ -462,21 +462,23 @@
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  width: 220px;
-  background: var(--bg-card);
-  border: none !important;
+  width: 230px;
+  background: #14181d;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 14px;
   padding: 8px;
-  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.45);
-  z-index: 100;
+  box-shadow: 0 20px 45px -8px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 1000;
   transform-origin: top right;
-  animation: smoothDropdownMenuEntrance 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: customSelectSlideIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-theme="light"] .profile-menu {
   background: #ffffff;
-  border: none !important;
-  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
 }
 
 @keyframes smoothDropdownMenuEntrance {
@@ -2196,6 +2198,18 @@
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
 }
 
+.custom-select-trigger.size-sm {
+  min-height: 32px;
+  height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
+.custom-select-trigger.size-sm .custom-select-label-text {
+  font-size: 12px;
+}
+
 .custom-select-chevron.rotated {
   transform: rotate(180deg);
   color: var(--accent, #3fb668);
@@ -2219,6 +2233,11 @@
   padding: 6px;
   animation: customSelectSlideIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
+}
+
+.custom-select-popover.align-right {
+  left: auto;
+  right: 0;
 }
 
 @keyframes customSelectSlideIn {

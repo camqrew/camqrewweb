@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Package, XCircle, Edit, Plus, X, UploadCloud } from 'lucide-react';
+import { CustomSelect } from '../components/CustomSelect';
 import { supabase } from '../api/supabaseClient';
 
 export default function Inventory() {
@@ -303,18 +304,12 @@ export default function Inventory() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Category</label>
-                  <select 
-                    className="input-field"
+                  <CustomSelect 
                     value={formData.category}
-                    onChange={e => setFormData({...formData, category: e.target.value})}
-                  >
-                    <option value="Cameras">Cameras</option>
-                    <option value="Lenses">Lenses</option>
-                    <option value="Lighting">Lighting</option>
-                    <option value="Audio">Audio</option>
-                    <option value="Accessories">Accessories</option>
-                    <option value="Drones">Drones</option>
-                  </select>
+                    onChange={val => setFormData({...formData, category: val})}
+                    options={['Cameras', 'Lenses', 'Lighting', 'Audio', 'Accessories', 'Drones']}
+                    placeholder="Select Category"
+                  />
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 16 }}>
