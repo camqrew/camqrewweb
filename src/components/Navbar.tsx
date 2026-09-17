@@ -14,12 +14,15 @@ import {
   ShieldCheck, 
   Briefcase, 
   Menu, 
-  X,
-  ChevronDown,
-  LayoutDashboard,
-  Radio,
-  Eye
+  X, 
+  ChevronDown, 
+  LayoutDashboard, 
+  Radio, 
+  Eye,
+  Bell,
+  CheckCheck
 } from 'lucide-react';
+import { useNotificationStore } from '../store/notificationStore';
 
 interface NavbarProps {
   theme: 'light' | 'dark';
@@ -28,11 +31,14 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
   const { user, isAuthenticated, logout, activeRole } = useAuthStore();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationStore();
   const isPro = isAuthenticated && (user?.role === 'professional' || activeRole === 'professional');
   const cartCount = useCartStore((s) => s.getTotalCount());
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileDropdown, setProfileDropdown] = useState(false);
+  const [notifDropdown, setNotifDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,14 +46,18 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setProfileDropdown(false);
       }
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setNotifDropdown(false);
+      }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setProfileDropdown(false);
+        setNotifDropdown(false);
         setMenuOpen(false);
       }
     };
-    if (profileDropdown || menuOpen) {
+    if (profileDropdown || notifDropdown || menuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleKeyDown);
     }
@@ -55,12 +65,29 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [profileDropdown, menuOpen]);
+  }, [profileDropdown, notifDropdown, menuOpen]);
 
   const handleLogout = async () => {
     await logout();
     setProfileDropdown(false);
     navigate('/');
+  };
+
+  const handleNotificationClick = (n: any) => {
+    markAsRead(n.id);
+    setNotifDropdown(false);
+    if (!n.target_url) return;
+    let url = n.target_url;
+    if (url.startsWith('camcrew://chat/')) {
+      url = `/chat?userId=${url.replace('camcrew://chat/', '')}`;
+    } else if (url.startsWith('camcrew://booking/')) {
+      url = '/dashboard?tab=bookings';
+    } else if (url.startsWith('camcrew://job_board') || url.includes('jobboard')) {
+      url = '/dashboard?tab=jobboard';
+    } else if (url.startsWith('camcrew://')) {
+      url = '/dashboard';
+    }
+    navigate(url);
   };
 
   return (
@@ -104,6 +131,65 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
             <Link to="/chat" className="icon-btn" title="Messages">
               <MessageSquare size={18} />
             </Link>
+          )}
+
+          {isAuthenticated && (
+            <div className="notif-dropdown-wrapper" ref={notifRef}>
+              <button 
+                className="icon-btn notif-btn" 
+                onClick={() => setNotifDropdown(!notifDropdown)} 
+                title="Notifications"
+                aria-expanded={notifDropdown}
+              >
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <span className="notif-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                )}
+              </button>
+
+              {notifDropdown && (
+                <div className="notif-menu">
+                  <div className="notif-menu-header">
+                    <span className="notif-menu-title">Notifications</span>
+                    {unreadCount > 0 && user?.id && (
+                      <button 
+                        className="notif-mark-all-btn"
+                        onClick={() => markAllAsRead(user.id)}
+                        title="Mark all as read"
+                      >
+                        <CheckCheck size={14} /> Mark read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="notif-menu-list">
+                    {notifications.length === 0 ? (
+                      <div className="notif-empty-state">
+                        <Bell size={24} className="notif-empty-icon" />
+                        <p>No notifications yet</p>
+                      </div>
+                    ) : (
+                      notifications.slice(0, 8).map((n) => (
+                        <div 
+                          key={n.id} 
+                          className={`notif-item ${!n.is_read ? 'unread' : ''}`}
+                          onClick={() => handleNotificationClick(n)}
+                        >
+                          <div className="notif-item-dot" />
+                          <div className="notif-item-body">
+                            <p className="notif-item-title">{n.title}</p>
+                            <p className="notif-item-desc">{n.body}</p>
+                            <span className="notif-item-time">
+                              {new Date(n.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
           {isAuthenticated && user ? (

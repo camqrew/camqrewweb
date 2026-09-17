@@ -196,6 +196,19 @@ export const bookingApi = {
       .single();
 
     if (error) throw new Error(error.message);
+
+    try {
+      if (data?.customer_id) {
+        notificationApi.sendPushNotification(data.customer_id, {
+          title: '🎉 Booking Accepted!',
+          body: 'Your booking request was accepted! Pay the advance escrow to confirm your dates.',
+          targetUrl: '/dashboard?tab=bookings',
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn('Booking accept notification failed:', e);
+    }
+
     return mapBooking(data);
   },
 
@@ -208,6 +221,19 @@ export const bookingApi = {
       .single();
 
     if (error) throw new Error(error.message);
+
+    try {
+      if (data?.customer_id) {
+        notificationApi.sendPushNotification(data.customer_id, {
+          title: 'Booking Declined',
+          body: 'The professional is unavailable for this booking. Explore other top creators on Camcrew.',
+          targetUrl: '/dashboard?tab=bookings',
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn('Booking decline notification failed:', e);
+    }
+
     return mapBooking(data);
   },
 
@@ -238,6 +264,20 @@ export const bookingApi = {
       .single();
 
     if (error) throw new Error(error.message);
+
+    try {
+      const recipientId = data?.professional_id || data?.studio_id;
+      if (recipientId) {
+        notificationApi.sendPushNotification(recipientId, {
+          title: '✅ Advance Escrow Paid & Booking Confirmed!',
+          body: `Advance escrow of ₹${advance.toLocaleString('en-IN')} has been funded. Dates are locked!`,
+          targetUrl: '/dashboard?tab=bookings',
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn('Payment notification failed:', e);
+    }
+
     return mapBooking(data);
   },
 

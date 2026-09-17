@@ -6,6 +6,7 @@ export interface DBNotification {
   title: string;
   body: string;
   target_url?: string;
+  type?: string;
   is_read: boolean;
   created_at: string;
 }

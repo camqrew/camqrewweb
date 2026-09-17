@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { CursorBackgroundFollower } from './CursorBackgroundFollower';
+import { GlobalRealtimeAlerts } from './GlobalRealtimeAlerts';
 
 interface MainLayoutProps {
   theme: 'light' | 'dark';
@@ -13,6 +14,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ theme, toggleTheme }) =>
   return (
     <div className="main-site-wrapper">
       <CursorBackgroundFollower />
+      <GlobalRealtimeAlerts />
       <Navbar theme={theme} toggleTheme={toggleTheme} />
       <main className="main-site-content">
         <Outlet />
