@@ -16,6 +16,7 @@ import ChatPage from './pages/ChatPage';
 import DashboardPage from './pages/DashboardPage';
 import AuthPage from './pages/AuthPage';
 import LegalPage from './pages/LegalPage';
+import ReelsFeedPage from './pages/ReelsFeedPage';
 
 // Admin Portal Pages
 import Dashboard from './pages/Dashboard';
@@ -62,6 +63,8 @@ function App() {
         <Route element={<MainLayout theme={theme} toggleTheme={toggleTheme} />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/reels" element={<ReelsFeedPage />} />
+          <Route path="/showcase" element={<Navigate to="/reels" replace />} />
           <Route path="/creators/:id" element={<CreatorProfilePage />} />
           <Route path="/book/:id" element={<BookingPage />} />
           <Route path="/jobs/create" element={<CreateJobPage />} />

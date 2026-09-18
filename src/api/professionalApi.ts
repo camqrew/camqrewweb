@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import type { ProfessionalProfile, ReviewItem } from '../types/professional';
+import type { ProfessionalProfile, ReviewItem, FeedReelItem } from '../types/professional';
 
 export interface GetProfessionalsFilter {
   category?: string;
@@ -322,4 +322,162 @@ export const professionalApi = {
 
     return mapPro(updated);
   },
+
+  getAllReels: async (): Promise<FeedReelItem[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('professional_profiles')
+        .select(`
+          id,
+          title,
+          city,
+          rate_per_day,
+          rating,
+          categories,
+          video_reels,
+          verified,
+          users (
+            id,
+            name,
+            avatar
+          )
+        `)
+        .not('video_reels', 'is', null);
+
+      const dbReels: FeedReelItem[] = [];
+      if (!error && Array.isArray(data)) {
+        data.forEach((pro: any) => {
+          if (Array.isArray(pro.video_reels)) {
+            pro.video_reels.forEach((reel: any, idx: number) => {
+              if (reel && (reel.url || reel.embedUrl)) {
+                dbReels.push({
+                  ...reel,
+                  id: reel.id || `pro_reel_${pro.id}_${idx}`,
+                  creatorId: pro.id,
+                  creatorName: pro.users?.name || 'Verified Creator',
+                  creatorAvatar: pro.users?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400',
+                  creatorTitle: pro.title || 'Professional Cinematographer',
+                  creatorCity: pro.city || 'Mumbai',
+                  creatorRatePerDay: pro.rate_per_day || 18000,
+                  creatorRating: pro.rating || 4.9,
+                  creatorVerified: pro.verified ?? true,
+                  likesCount: 240 + (idx * 65),
+                });
+              }
+            });
+          }
+        });
+      }
+
+      const combined = [...dbReels, ...CURATED_FALLBACK_REELS];
+      const seen = new Set<string>();
+      return combined.filter(r => {
+        const key = r.embedUrl || r.url || r.id;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    } catch (err) {
+      console.warn('Failed to fetch reels from Supabase, using spotlight fallback:', err);
+      return CURATED_FALLBACK_REELS;
+    }
+  },
 };
+
+export const CURATED_FALLBACK_REELS: FeedReelItem[] = [
+  {
+    id: 'curated_1',
+    title: 'Porsche 911 GT3 RS Night Cinema Run',
+    category: 'Commercial',
+    isShort: true,
+    type: 'youtube',
+    url: 'https://www.youtube.com/shorts/3i_JmO7b2-g',
+    embedUrl: 'https://www.youtube.com/embed/3i_JmO7b2-g',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800',
+    creatorId: 'c1_arjun',
+    creatorName: 'Arjun Sharma',
+    creatorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400',
+    creatorTitle: 'Sony FX3 Commercial Cinematographer',
+    creatorCity: 'Mumbai',
+    creatorRatePerDay: 18000,
+    creatorRating: 4.95,
+    creatorVerified: true,
+    likesCount: 1840,
+  },
+  {
+    id: 'curated_2',
+    title: 'Royal Udaipur Heritage Palace Wedding Teaser',
+    category: 'Wedding Film',
+    isShort: true,
+    type: 'youtube',
+    url: 'https://www.youtube.com/shorts/5XmQvY7aY_w',
+    embedUrl: 'https://www.youtube.com/embed/5XmQvY7aY_w',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800',
+    creatorId: 'c2_rahul',
+    creatorName: 'Rahul & Meera Cinema',
+    creatorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400',
+    creatorTitle: 'Luxury Wedding Cinematographer',
+    creatorCity: 'Jaipur',
+    creatorRatePerDay: 25000,
+    creatorRating: 5.0,
+    creatorVerified: true,
+    likesCount: 3200,
+  },
+  {
+    id: 'curated_3',
+    title: 'Himalayan FPV High-Speed Mountain Ridge Chase',
+    category: 'Drone & Aerial',
+    isShort: true,
+    type: 'youtube',
+    url: 'https://www.youtube.com/shorts/8_4W7hJ6-vQ',
+    embedUrl: 'https://www.youtube.com/embed/8_4W7hJ6-vQ',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=800',
+    creatorId: 'c3_kabir',
+    creatorName: 'Kabir Sen',
+    creatorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400',
+    creatorTitle: 'DGCA Certified FPV Drone Pilot',
+    creatorCity: 'Manali',
+    creatorRatePerDay: 22000,
+    creatorRating: 4.92,
+    creatorVerified: true,
+    likesCount: 2750,
+  },
+  {
+    id: 'curated_4',
+    title: 'Vogue India Fashion Week Lookbook BTS',
+    category: 'Fashion Reel',
+    isShort: true,
+    type: 'youtube',
+    url: 'https://www.youtube.com/shorts/kP7_Wq8y-z8',
+    embedUrl: 'https://www.youtube.com/embed/kP7_Wq8y-z8',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=800',
+    creatorId: 'c4_tanya',
+    creatorName: 'Tanya Kapoor',
+    creatorAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400',
+    creatorTitle: 'Editorial Fashion Director',
+    creatorCity: 'New Delhi',
+    creatorRatePerDay: 20000,
+    creatorRating: 4.88,
+    creatorVerified: true,
+    likesCount: 2190,
+  },
+  {
+    id: 'curated_5',
+    title: 'Artisan Coffee Roastery Commercial Macro Cinema',
+    category: 'Commercial',
+    isShort: true,
+    type: 'youtube',
+    url: 'https://www.youtube.com/shorts/9YvX6e_L1m0',
+    embedUrl: 'https://www.youtube.com/embed/9YvX6e_L1m0',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=800',
+    creatorId: 'c5_vikram',
+    creatorName: 'Vikram Rao',
+    creatorAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400',
+    creatorTitle: 'High-Speed Macro DP',
+    creatorCity: 'Bangalore',
+    creatorRatePerDay: 16000,
+    creatorRating: 4.9,
+    creatorVerified: true,
+    likesCount: 1680,
+  },
+];

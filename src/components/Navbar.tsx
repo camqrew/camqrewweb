@@ -20,7 +20,8 @@ import {
   Radio, 
   Eye,
   Bell,
-  CheckCheck
+  CheckCheck,
+  Film
 } from 'lucide-react';
 import { useNotificationStore } from '../store/notificationStore';
 
@@ -100,6 +101,9 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
         <nav className="desktop-nav">
           <NavLink to="/explore" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
             Explore Creators
+          </NavLink>
+          <NavLink to="/reels" className={({ isActive }) => isActive ? "nav-item active reels-nav-highlight" : "nav-item reels-nav-highlight"}>
+            <Film size={14} style={{ marginRight: 4 }} /> Reels Feed
           </NavLink>
           <NavLink to="/marketplace" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
             Marketplace
@@ -303,6 +307,9 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
         <div className="mobile-drawer">
           <Link to="/explore" className="mobile-nav-link" onClick={() => setMenuOpen(false)}>
             Explore Creators
+          </Link>
+          <Link to="/reels" className="mobile-nav-link" onClick={() => setMenuOpen(false)} style={{ color: 'var(--accent, #3fb668)', fontWeight: 700 }}>
+            ⚡ Reels Feed
           </Link>
           <Link to="/marketplace" className="mobile-nav-link" onClick={() => setMenuOpen(false)}>
             Marketplace

@@ -29,6 +29,18 @@ export interface VideoReelItem {
   isShort?: boolean;
 }
 
+export interface FeedReelItem extends VideoReelItem {
+  creatorId: string;
+  creatorName: string;
+  creatorAvatar?: string;
+  creatorTitle?: string;
+  creatorCity?: string;
+  creatorRatePerDay?: number;
+  creatorRating?: number;
+  creatorVerified?: boolean;
+  likesCount?: number;
+}
+
 export interface ProfessionalProfile {
   id: string;
   userId: string;
