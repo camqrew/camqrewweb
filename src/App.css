@@ -8060,6 +8060,172 @@
 }
 
 /* ==========================================================================
+   CREATOR DASHBOARD & PROFILE: PORTFOLIO PHOTOS & GALLERY
+   ========================================================================== */
+.pro-portfolio-manager-card {
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.pro-portfolio-manager-card.dragging-over {
+  border-color: var(--accent, #3fb668) !important;
+  background: rgba(63, 182, 104, 0.05);
+}
+
+.pro-dashboard-portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 16px;
+}
+
+.pro-portfolio-item-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pro-portfolio-item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  border-color: rgba(63, 182, 104, 0.3);
+}
+
+.pro-portfolio-img-container {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  background: #000;
+  cursor: pointer;
+}
+
+.pro-portfolio-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.pro-portfolio-img-container:hover .pro-portfolio-thumb-img {
+  transform: scale(1.08);
+}
+
+.pro-portfolio-overlay-hover {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.pro-portfolio-img-container:hover .pro-portfolio-overlay-hover {
+  opacity: 1;
+}
+
+.pro-portfolio-zoom-btn {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.9);
+  transition: transform 0.2s ease;
+}
+
+.pro-portfolio-img-container:hover .pro-portfolio-zoom-btn {
+  transform: scale(1);
+}
+
+.pro-portfolio-item-footer {
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pro-portfolio-idx-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.pro-portfolio-action-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.pro-portfolio-action-btn.view {
+  color: var(--text-secondary);
+}
+
+.pro-portfolio-action-btn.view:hover {
+  color: var(--accent, #3fb668);
+  background: rgba(63, 182, 104, 0.12);
+}
+
+.pro-portfolio-action-btn.delete {
+  color: #ef4444;
+}
+
+.pro-portfolio-action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* Public Profile Clickable Portfolio Images */
+.clickable-portfolio-img {
+  position: relative;
+  cursor: pointer;
+}
+
+.portfolio-hover-zoom-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border-radius: 10px;
+}
+
+.clickable-portfolio-img:hover .portfolio-hover-zoom-overlay {
+  opacity: 1;
+}
+
+/* Light Mode Overrides for Portfolio */
+[data-theme="light"] .pro-portfolio-item-card {
+  background: #ffffff;
+  border-color: #e5e7eb;
+}
+
+[data-theme="light"] .pro-portfolio-item-footer {
+  border-top-color: #f3f4f6;
+}
+
+[data-theme="light"] .empty-portfolio-box {
+  border-color: #e5e7eb !important;
+}
+
+/* ==========================================================================
    LEGAL & COMPLIANCE PORTAL
    ========================================================================== */
 .legal-page-container {

@@ -39,12 +39,18 @@ import {
   Tv,
   Scale,
   FileText,
-  AlertTriangle
+  AlertTriangle,
+  Image as ImageIcon,
+  UploadCloud,
+  ZoomIn,
+  Link as LinkIcon
 } from 'lucide-react';
 import type { VideoReelItem } from '../types/professional';
 import { parseVideoUrl } from '../api/professionalApi';
 import { authApi } from '../api/authApi';
 import { ShootContractModal } from '../components/ShootContractModal';
+import { cloudStorageApi } from '../api/cloudStorageApi';
+import { ImageLightboxModal } from '../components/ImageLightboxModal';
 
 type ProTab = 'overview' | 'bookings' | 'sales_rentals' | 'listings' | 'jobboard' | 'availability' | 'earnings' | 'client';
 
@@ -91,6 +97,17 @@ export const DashboardPage: React.FC = () => {
   const [newReelCategory, setNewReelCategory] = useState('Cinematography');
   const [newReelIsShort, setNewReelIsShort] = useState(false);
   const [savingReel, setSavingReel] = useState(false);
+
+  // Portfolio Photos Modal & Upload state
+  const [uploadingPortfolio, setUploadingPortfolio] = useState(false);
+  const [portfolioUploadProgress, setPortfolioUploadProgress] = useState<string | null>(null);
+  const [showAddPhotoUrlModal, setShowAddPhotoUrlModal] = useState(false);
+  const [newPhotoUrl, setNewPhotoUrl] = useState('');
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+
+  // Lightbox state for previewing full images
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   // New product form
   const [newGearTitle, setNewGearTitle] = useState('');
@@ -335,6 +352,74 @@ export const DashboardPage: React.FC = () => {
       showToast('Video reel removed from profile.');
     } catch (err: any) {
       alert(err.message || 'Failed to remove reel');
+    }
+  };
+
+  // Portfolio Photos handlers
+  const handleUploadPortfolioFiles = async (files: FileList | File[]) => {
+    const fileArray = Array.from(files).filter(f => f.type.startsWith('image/'));
+    if (fileArray.length === 0) {
+      alert('Please select valid image files (JPG, PNG, WEBP, etc.).');
+      return;
+    }
+
+    setUploadingPortfolio(true);
+    setPortfolioUploadProgress(`Uploading 1 of ${fileArray.length}...`);
+    try {
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < fileArray.length; i++) {
+        setPortfolioUploadProgress(`Uploading ${i + 1} of ${fileArray.length}...`);
+        const res = await cloudStorageApi.uploadImage(fileArray[i], 'portfolio');
+        uploadedUrls.push(res.url);
+      }
+
+      const existingPortfolio = proProfile?.portfolio || [];
+      const updatedPortfolio = [...uploadedUrls, ...existingPortfolio];
+
+      await professionalApi.updateProfile({ portfolio: updatedPortfolio });
+      setProProfile(prev => prev ? { ...prev, portfolio: updatedPortfolio } : null);
+      showToast(`🎉 Successfully added ${fileArray.length} photo${fileArray.length > 1 ? 's' : ''} to your portfolio!`);
+    } catch (err: any) {
+      console.error('Failed to upload portfolio images:', err);
+      alert(err.message || 'Failed to upload portfolio images. Please try again.');
+    } finally {
+      setUploadingPortfolio(false);
+      setPortfolioUploadProgress(null);
+    }
+  };
+
+  const handleAddPhotoByUrl = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPhotoUrl.trim()) return;
+
+    setActionLoading('add-photo-url');
+    try {
+      const existingPortfolio = proProfile?.portfolio || [];
+      const updatedPortfolio = [newPhotoUrl.trim(), ...existingPortfolio];
+
+      await professionalApi.updateProfile({ portfolio: updatedPortfolio });
+      setProProfile(prev => prev ? { ...prev, portfolio: updatedPortfolio } : null);
+      showToast('🎉 Image successfully added to your portfolio!');
+      setShowAddPhotoUrlModal(false);
+      setNewPhotoUrl('');
+    } catch (err: any) {
+      alert(err.message || 'Failed to save portfolio photo');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDeletePortfolioPhoto = async (photoUrl: string) => {
+    if (!confirm('Are you sure you want to remove this photo from your portfolio?')) return;
+    try {
+      const existingPortfolio = proProfile?.portfolio || [];
+      const updatedPortfolio = existingPortfolio.filter(p => p !== photoUrl);
+
+      await professionalApi.updateProfile({ portfolio: updatedPortfolio });
+      setProProfile(prev => prev ? { ...prev, portfolio: updatedPortfolio } : null);
+      showToast('Portfolio photo removed.');
+    } catch (err: any) {
+      alert(err.message || 'Failed to remove photo');
     }
   };
 
@@ -768,6 +853,170 @@ export const DashboardPage: React.FC = () => {
                   <p>Withdraw cleared escrow balances directly to your bank account</p>
                   <span className="action-arrow">Request Payout →</span>
                 </div>
+              </div>
+
+              {/* ── PORTFOLIO PHOTOS & GALLERY MANAGER ── */}
+              <div 
+                className={`card pro-portfolio-manager-card ${isDraggingOver ? 'dragging-over' : ''}`} 
+                style={{ marginTop: 28 }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDraggingOver(true);
+                }}
+                onDragLeave={() => setIsDraggingOver(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDraggingOver(false);
+                  if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    handleUploadPortfolioFiles(e.dataTransfer.files);
+                  }
+                }}
+              >
+                <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+                  <div>
+                    <h3 className="section-heading" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <ImageIcon size={20} color="var(--accent, #3fb668)" />
+                      My Portfolio Photos & Gallery
+                      <span className="badge-sub" style={{ fontSize: 12, padding: '2px 8px' }}>
+                        {proProfile?.portfolio?.length || 0} photos
+                      </span>
+                    </h3>
+                    <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
+                      Upload high-resolution photography, stills, and creative lookbooks to showcase on your public booking profile.
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <input
+                      type="file"
+                      id="portfolio-file-upload-input"
+                      accept="image/*"
+                      multiple
+                      style={{ display: 'none' }}
+                      disabled={uploadingPortfolio}
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          handleUploadPortfolioFiles(e.target.files);
+                          e.target.value = '';
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor="portfolio-file-upload-input"
+                      className={`btn btn-primary btn-sm ${uploadingPortfolio ? 'disabled' : ''}`}
+                      style={{ cursor: uploadingPortfolio ? 'not-allowed' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, margin: 0 }}
+                    >
+                      {uploadingPortfolio ? (
+                        <>
+                          <Loader2 size={14} className="animate-spin" />
+                          <span>{portfolioUploadProgress || 'Uploading...'}</span>
+                        </>
+                      ) : (
+                        <>
+                          <UploadCloud size={14} />
+                          <span>+ Upload Photos</span>
+                        </>
+                      )}
+                    </label>
+
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      onClick={() => setShowAddPhotoUrlModal(true)}
+                      disabled={uploadingPortfolio}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <LinkIcon size={14} />
+                      <span>+ Add by URL</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Uploading progress notification banner */}
+                {uploadingPortfolio && (
+                  <div className="portfolio-upload-progress-banner" style={{ background: 'rgba(63, 182, 104, 0.12)', border: '1px solid rgba(63, 182, 104, 0.3)', padding: '10px 16px', borderRadius: 8, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Loader2 size={16} className="animate-spin" color="var(--accent, #3fb668)" />
+                    <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>
+                      {portfolioUploadProgress || 'Uploading photos to Supabase Storage...'}
+                    </span>
+                  </div>
+                )}
+
+                {/* Drag and drop overlay hint */}
+                {isDraggingOver && (
+                  <div className="portfolio-drag-overlay" style={{ border: '2px dashed var(--accent, #3fb668)', borderRadius: 12, padding: 24, textAlign: 'center', background: 'rgba(63, 182, 104, 0.08)', marginBottom: 16 }}>
+                    <UploadCloud size={32} color="var(--accent, #3fb668)" style={{ margin: '0 auto 8px' }} />
+                    <p style={{ margin: 0, fontWeight: 700, color: 'var(--accent, #3fb668)' }}>Drop photos here to upload directly</p>
+                  </div>
+                )}
+
+                {(!proProfile?.portfolio || proProfile.portfolio.length === 0) ? (
+                  <div className="empty-portfolio-box" style={{ textAlign: 'center', padding: '40px 20px', border: '1.5px dashed rgba(255,255,255,0.12)', borderRadius: 12 }}>
+                    <ImageIcon size={38} className="empty-portfolio-icon" style={{ color: 'var(--text-muted)', margin: '0 auto 12px' }} />
+                    <h4 style={{ margin: '0 0 6px', fontSize: 16, color: 'var(--text-primary)' }}>No portfolio photos uploaded yet</h4>
+                    <p style={{ margin: '0 auto 16px', maxWidth: 460, fontSize: 13, color: 'var(--text-secondary)' }}>
+                      Drag and drop images here, or upload your favorite client shoots, editorial photos, and commercial stills.
+                    </p>
+                    <label
+                      htmlFor="portfolio-file-upload-input"
+                      className="btn btn-primary btn-sm"
+                      style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <UploadCloud size={14} /> Upload First Photo
+                    </label>
+                  </div>
+                ) : (
+                  <div className="pro-dashboard-portfolio-grid">
+                    {proProfile.portfolio.map((photoUrl, idx) => (
+                      <div key={idx} className="pro-portfolio-item-card">
+                        <div 
+                          className="pro-portfolio-img-container"
+                          onClick={() => {
+                            setLightboxIndex(idx);
+                            setLightboxOpen(true);
+                          }}
+                        >
+                          <img 
+                            src={photoUrl} 
+                            alt={`Portfolio ${idx + 1}`} 
+                            className="pro-portfolio-thumb-img" 
+                            loading="lazy" 
+                          />
+                          <div className="pro-portfolio-overlay-hover">
+                            <span className="pro-portfolio-zoom-btn" title="View Fullscreen">
+                              <ZoomIn size={18} />
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="pro-portfolio-item-footer">
+                          <span className="pro-portfolio-idx-badge">Photo {idx + 1}</span>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button
+                              type="button"
+                              className="pro-portfolio-action-btn view"
+                              onClick={() => {
+                                setLightboxIndex(idx);
+                                setLightboxOpen(true);
+                              }}
+                              title="Preview high-res image"
+                            >
+                              <Eye size={13} />
+                            </button>
+                            <button
+                              type="button"
+                              className="pro-portfolio-action-btn delete"
+                              onClick={() => handleDeletePortfolioPhoto(photoUrl)}
+                              title="Delete photo from portfolio"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* ── SHOWREELS & VIDEO REELS MANAGER ── */}
@@ -1780,6 +2029,86 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* ── ADD PORTFOLIO PHOTO VIA URL MODAL ── */}
+      {showAddPhotoUrlModal && (
+        <div className="modal-backdrop" onClick={() => !actionLoading && setShowAddPhotoUrlModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500 }}>
+            <div className="modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ background: 'rgba(63, 182, 104, 0.15)', padding: 8, borderRadius: 10, color: 'var(--accent, #3fb668)' }}>
+                  <ImageIcon size={20} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Add Portfolio Image via URL</h3>
+                  <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>Direct image link (JPG, PNG, WebP)</p>
+                </div>
+              </div>
+              <button className="btn-close" onClick={() => setShowAddPhotoUrlModal(false)} disabled={!!actionLoading}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddPhotoByUrl} className="modal-form">
+              <div className="form-group">
+                <label className="form-label">Image Web URL</label>
+                <input 
+                  type="url" 
+                  className="input-field" 
+                  placeholder="https://images.unsplash.com/... or hosted image URL" 
+                  value={newPhotoUrl}
+                  onChange={(e) => setNewPhotoUrl(e.target.value)}
+                  required 
+                />
+                <span style={{ fontSize: 11.5, color: 'var(--text-faint)', marginTop: 4, display: 'block' }}>
+                  Paste a direct link to any photography work hosted on Unsplash, Imgur, Cloudinary, AWS S3, etc.
+                </span>
+              </div>
+
+              {/* Instant Image Preview */}
+              {newPhotoUrl.trim() && (
+                <div style={{ marginBottom: 16, textAlign: 'center', background: 'rgba(0,0,0,0.2)', padding: 10, borderRadius: 8 }}>
+                  <img 
+                    src={newPhotoUrl} 
+                    alt="Preview" 
+                    style={{ maxHeight: 180, maxWidth: '100%', objectFit: 'contain', borderRadius: 8 }}
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+
+              <div className="modal-actions">
+                <button 
+                  type="button" 
+                  className="btn btn-outline"
+                  onClick={() => setShowAddPhotoUrlModal(false)}
+                  disabled={!!actionLoading}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn btn-primary"
+                  disabled={!newPhotoUrl.trim() || actionLoading === 'add-photo-url'}
+                >
+                  {actionLoading === 'add-photo-url' ? <Loader2 size={16} className="animate-spin" /> : 'Add to Portfolio'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── FULLSCREEN PORTFOLIO LIGHTBOX MODAL ── */}
+      <ImageLightboxModal
+        isOpen={lightboxOpen}
+        images={proProfile?.portfolio || []}
+        initialIndex={lightboxIndex}
+        onClose={() => setLightboxOpen(false)}
+        title={`${proProfile?.name || 'Creator'} Portfolio`}
+      />
 
       {/* ── SHOOT PRODUCTION CONTRACT MODAL ── */}
       {showContractModal && selectedContractBooking && (

@@ -21,11 +21,14 @@ import {
   LogIn,
   Share2,
   Film,
-  Plus
+  Plus,
+  ZoomIn,
+  Image as ImageIcon
 } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
 import { SocialShareModal } from '../components/SocialShareModal';
 import { VideoReelsGallery } from '../components/VideoReelsGallery';
+import { ImageLightboxModal } from '../components/ImageLightboxModal';
 
 export const CreatorProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -46,6 +49,8 @@ export const CreatorProfilePage: React.FC = () => {
   const [reviewToast, setReviewToast] = useState<string | null>(null);
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -278,21 +283,65 @@ export const CreatorProfilePage: React.FC = () => {
 
             {/* Portfolio Card */}
             <div className="card profile-section-card">
-              <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <h3 className="section-heading" style={{ margin: 0 }}>Portfolio Highlights</h3>
-                <span className="badge-sub">{pro.portfolio?.length || 0} items</span>
+              <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+                <div>
+                  <h3 className="section-heading" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <ImageIcon size={18} color="var(--accent, #3fb668)" />
+                    Portfolio Highlights
+                  </h3>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span className="badge-sub">{pro.portfolio?.length || 0} items</span>
+                  {(user?.id === pro.id || user?.id === pro.userId) && (
+                    <Link to="/dashboard?tab=overview" className="btn btn-sm btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', fontSize: 12 }}>
+                      <Plus size={13} /> Manage Photos
+                    </Link>
+                  )}
+                </div>
               </div>
 
               {pro.portfolio && pro.portfolio.length > 0 ? (
                 <div className="portfolio-gallery-grid">
                   {pro.portfolio.map((imgUrl, i) => (
-                    <div key={i} className="portfolio-img-box">
+                    <div 
+                      key={i} 
+                      className="portfolio-img-box clickable-portfolio-img"
+                      onClick={() => {
+                        setLightboxIndex(i);
+                        setLightboxOpen(true);
+                      }}
+                      title="Click to view fullscreen"
+                    >
                       <img src={imgUrl} alt={`Portfolio work ${i + 1}`} loading="lazy" />
+                      <div className="portfolio-hover-zoom-overlay">
+                        <ZoomIn size={22} color="#fff" />
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-muted">No portfolio items uploaded yet.</p>
+                (user?.id === pro.id || user?.id === pro.userId) ? (
+                  <div className="reel-creator-prompt-card" style={{ padding: 16, marginTop: 4 }}>
+                    <div className="reel-prompt-inner">
+                      <div className="reel-prompt-icon-box">
+                        <Camera size={22} color="var(--accent, #3fb668)" />
+                      </div>
+                      <div className="reel-prompt-text-col">
+                        <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+                          Add Your Photography & Stills
+                        </h4>
+                        <p style={{ margin: '3px 0 0', fontSize: 12.5, color: 'var(--text-secondary)' }}>
+                          Showcase client shoots, lookbooks, and behind-the-scenes to attract direct booking leads.
+                        </p>
+                      </div>
+                      <Link to="/dashboard?tab=overview" className="btn btn-sm btn-primary" style={{ whiteSpace: 'nowrap' }}>
+                        <Plus size={13} /> Upload Photos
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-muted">No portfolio items uploaded yet.</p>
+                )
               )}
             </div>
 
@@ -578,6 +627,17 @@ export const CreatorProfilePage: React.FC = () => {
           isOpen={shareModalOpen}
           onClose={() => setShareModalOpen(false)}
           pro={pro}
+        />
+      )}
+
+      {/* Fullscreen Portfolio Lightbox */}
+      {pro && (
+        <ImageLightboxModal
+          isOpen={lightboxOpen}
+          images={pro.portfolio || []}
+          initialIndex={lightboxIndex}
+          onClose={() => setLightboxOpen(false)}
+          title={`${pro.name} Portfolio`}
         />
       )}
     </div>

@@ -298,14 +298,27 @@ export const professionalApi = {
     if (proFields.services) updatePayload.services = proFields.services;
     if (proFields.videoReels !== undefined) updatePayload.video_reels = proFields.videoReels;
 
-    const { data: updated, error } = await supabase
-      .from('professional_profiles')
-      .update(updatePayload)
-      .eq('id', ownerId)
-      .select(`*, users (name, avatar), portfolio_items (media_url)`)
-      .single();
-      
-    if (error) throw new Error(error.message);
+    let updated: any;
+    if (Object.keys(updatePayload).length > 0) {
+      const { data: updatedData, error } = await supabase
+        .from('professional_profiles')
+        .update(updatePayload)
+        .eq('id', ownerId)
+        .select(`*, users (name, avatar), portfolio_items (media_url)`)
+        .single();
+        
+      if (error) throw new Error(error.message);
+      updated = updatedData;
+    } else {
+      const { data: currentData, error } = await supabase
+        .from('professional_profiles')
+        .select(`*, users (name, avatar), portfolio_items (media_url)`)
+        .eq('id', ownerId)
+        .single();
+
+      if (error) throw new Error(error.message);
+      updated = currentData;
+    }
 
     return mapPro(updated);
   },
