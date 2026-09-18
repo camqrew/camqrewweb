@@ -18,6 +18,17 @@ export interface ReviewItem {
   comment: string;
 }
 
+export interface VideoReelItem {
+  id: string;
+  title: string;
+  url: string;
+  type: 'youtube' | 'vimeo' | 'direct';
+  embedUrl: string;
+  thumbnailUrl?: string;
+  category?: string;
+  isShort?: boolean;
+}
+
 export interface ProfessionalProfile {
   id: string;
   userId: string;
@@ -54,6 +65,7 @@ export interface ProfessionalProfile {
     youtube?: string;
     facebook?: string;
   };
+  videoReels?: VideoReelItem[];
   views?: number;
   totalEarnings?: number;
 }

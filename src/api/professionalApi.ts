@@ -13,6 +13,61 @@ export interface GetProfessionalsFilter {
   searchQuery?: string;
 }
 
+export interface ParsedVideo {
+  type: 'youtube' | 'vimeo' | 'direct';
+  embedUrl: string;
+  thumbnailUrl?: string;
+  isShort?: boolean;
+}
+
+export function parseVideoUrl(url: string): ParsedVideo {
+  const cleanUrl = (url || '').trim();
+
+  // 1. YouTube Shorts: https://www.youtube.com/shorts/VIDEO_ID or https://youtube.com/shorts/VIDEO_ID
+  const shortsMatch = cleanUrl.match(/(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/i);
+  if (shortsMatch && shortsMatch[1]) {
+    const videoId = shortsMatch[1];
+    return {
+      type: 'youtube',
+      embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0`,
+      thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+      isShort: true,
+    };
+  }
+
+  // 2. YouTube Standard: https://www.youtube.com/watch?v=VIDEO_ID or https://youtu.be/VIDEO_ID
+  const ytMatch = cleanUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([a-zA-Z0-9_-]{11})/i);
+  if (ytMatch && ytMatch[1]) {
+    const videoId = ytMatch[1];
+    return {
+      type: 'youtube',
+      embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0`,
+      thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+      isShort: false,
+    };
+  }
+
+  // 3. Vimeo: https://vimeo.com/VIDEO_ID or https://player.vimeo.com/video/VIDEO_ID
+  const vimeoMatch = cleanUrl.match(/(?:vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/[^\/]*\/videos\/|album\/(?:\d+\/)?video\/|video\/|))(\d+)/i);
+  if (vimeoMatch && vimeoMatch[1]) {
+    const videoId = vimeoMatch[1];
+    return {
+      type: 'vimeo',
+      embedUrl: `https://player.vimeo.com/video/${videoId}?autoplay=1&color=3fb668&title=0&byline=0&portrait=0`,
+      thumbnailUrl: `https://vumbnail.com/${videoId}.jpg`,
+      isShort: false,
+    };
+  }
+
+  // 4. Direct video URL (MP4 / WebM)
+  return {
+    type: 'direct',
+    embedUrl: cleanUrl,
+    thumbnailUrl: undefined,
+    isShort: cleanUrl.includes('portrait') || cleanUrl.includes('short') || cleanUrl.includes('reel'),
+  };
+}
+
 const mapPro = (row: any): ProfessionalProfile => {
   const user = row.users || {};
   const name = user.name || 'Creative Studio';
@@ -41,6 +96,7 @@ const mapPro = (row: any): ProfessionalProfile => {
     certifications: Array.isArray(row.certifications) ? row.certifications : ['Camcrew Verified Creator'],
     portfolio: Array.isArray(row.portfolio_items) ? row.portfolio_items.map((i: any) => i.media_url) : [],
     services: Array.isArray(row.services) ? row.services : [], 
+    videoReels: Array.isArray(row.video_reels) ? row.video_reels : [],
     reviews: [],
     weeklyAvailability: { mon: true, tue: true, wed: true, thu: true, fri: true, sat: true, sun: false },
     blockedDates: [],
@@ -240,6 +296,7 @@ export const professionalApi = {
     if (proFields.categories) updatePayload.categories = proFields.categories;
     if (proFields.certifications) updatePayload.skills = proFields.certifications;
     if (proFields.services) updatePayload.services = proFields.services;
+    if (proFields.videoReels !== undefined) updatePayload.video_reels = proFields.videoReels;
 
     const { data: updated, error } = await supabase
       .from('professional_profiles')

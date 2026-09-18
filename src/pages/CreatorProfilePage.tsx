@@ -18,8 +18,14 @@ import {
   CheckCircle,
   MessageCircle,
   X,
-  LogIn
+  LogIn,
+  Share2,
+  Film,
+  Plus
 } from 'lucide-react';
+import { SEOHead } from '../components/SEOHead';
+import { SocialShareModal } from '../components/SocialShareModal';
+import { VideoReelsGallery } from '../components/VideoReelsGallery';
 
 export const CreatorProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -39,6 +45,7 @@ export const CreatorProfilePage: React.FC = () => {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewToast, setReviewToast] = useState<string | null>(null);
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -136,6 +143,13 @@ export const CreatorProfilePage: React.FC = () => {
 
   return (
     <div className="creator-profile-page">
+      {/* Dynamic Open Graph / Twitter Meta Tags for WhatsApp & Social Sharing */}
+      <SEOHead 
+        title={`${pro.name} - ${pro.title}`}
+        description={`Book verified creator ${pro.name} (${pro.title}) in ${pro.city || pro.district}, ${pro.state}. Starting at ₹${pro.ratePerDay?.toLocaleString('en-IN')}/day with milestone escrow protection.`}
+        image={pro.bannerImage || pro.avatar}
+      />
+
       {/* Toast Notification */}
       {reviewToast && (
         <div className="global-floating-toast">
@@ -150,9 +164,18 @@ export const CreatorProfilePage: React.FC = () => {
       {/* Hero Banner */}
       <div className="profile-hero-banner" style={{ backgroundImage: `url(${pro.bannerImage})` }}>
         <div className="banner-overlay">
-          <div className="container">
+          <div className="container banner-nav-container">
             <button onClick={() => navigate(-1)} className="btn btn-sm btn-ghost back-link">
               <ArrowLeft size={16} /> Back
+            </button>
+
+            <button 
+              type="button" 
+              onClick={() => setShareModalOpen(true)}
+              className="btn btn-sm btn-glass hero-share-btn"
+              title="Share profile card on WhatsApp & Instagram"
+            >
+              <Share2 size={15} /> Share Profile
             </button>
           </div>
         </div>
@@ -220,6 +243,37 @@ export const CreatorProfilePage: React.FC = () => {
                   ))}
                 </div>
               </div>
+            )}
+
+            {/* Showreels & Video Reels Section */}
+            {pro.videoReels && pro.videoReels.length > 0 ? (
+              <VideoReelsGallery 
+                reels={pro.videoReels}
+                proName={pro.name}
+                proAvatar={pro.avatar}
+                onBookClick={() => navigate(`/book/${pro.id}`)}
+              />
+            ) : (
+              (user?.id === pro.id || user?.id === pro.userId) && (
+                <div className="card profile-section-card reel-creator-prompt-card">
+                  <div className="reel-prompt-inner">
+                    <div className="reel-prompt-icon-box">
+                      <Film size={22} color="var(--accent, #3fb668)" />
+                    </div>
+                    <div className="reel-prompt-text-col">
+                      <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
+                        Showcase Your Video Reels & 9:16 Shorts
+                      </h4>
+                      <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
+                        Add YouTube videos, vertical Shorts, and Vimeo showreels to boost client booking conversions.
+                      </p>
+                    </div>
+                    <Link to="/dashboard?tab=overview" className="btn btn-sm btn-primary" style={{ whiteSpace: 'nowrap' }}>
+                      <Plus size={14} /> Add Reels
+                    </Link>
+                  </div>
+                </div>
+              )
             )}
 
             {/* Portfolio Card */}
@@ -453,6 +507,14 @@ export const CreatorProfilePage: React.FC = () => {
                 <Link to={`/chat?userId=${pro.id}`} className="btn btn-outline full-width">
                   <MessageSquare size={16} /> Direct Message
                 </Link>
+
+                <button 
+                  type="button" 
+                  onClick={() => setShareModalOpen(true)}
+                  className="btn btn-ghost full-width share-sidebar-trigger-btn"
+                >
+                  <Share2 size={16} /> Share Preview Card
+                </button>
               </div>
 
               <div className="guarantee-points">
@@ -508,6 +570,15 @@ export const CreatorProfilePage: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Social Share Preview Modal */}
+      {pro && (
+        <SocialShareModal 
+          isOpen={shareModalOpen}
+          onClose={() => setShareModalOpen(false)}
+          pro={pro}
+        />
       )}
     </div>
   );
