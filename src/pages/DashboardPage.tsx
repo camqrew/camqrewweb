@@ -190,7 +190,7 @@ export const DashboardPage: React.FC = () => {
             locations: ['Mumbai', 'Thane', 'Navi Mumbai'],
             categories: ['Cinematographers', 'Photographers'],
             equipment: ['Sony FX3 Cinema Line', 'Sony GM 24-70mm f/2.8', 'DJI Ronin RS3 Pro', 'Aputure 300d II Light'],
-            certifications: ['Camcrew Verified Creator'],
+            certifications: ['Camqrew Verified Creator'],
             portfolio: [
               'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800',
               'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800',
@@ -371,7 +371,7 @@ export const DashboardPage: React.FC = () => {
       setShowListGearModal(false);
       setNewGearTitle('');
       setNewGearDesc('');
-      showToast('Gear successfully listed to Camcrew Store!');
+      showToast('Gear successfully listed to Camqrew Store!');
     } catch (err: any) {
       alert(err.message || 'Failed to list equipment');
     } finally {
@@ -745,7 +745,7 @@ export const DashboardPage: React.FC = () => {
                 >
                   <div className="action-icon blue"><Package size={20} /></div>
                   <h4>Sell or Rent Your Gear</h4>
-                  <p>List idle cameras and lenses on Camcrew Store for passive income</p>
+                  <p>List idle cameras and lenses on Camqrew Store for passive income</p>
                   <span className="action-arrow">List New Equipment →</span>
                 </div>
 
@@ -1061,7 +1061,7 @@ export const DashboardPage: React.FC = () => {
                   <div>
                     <h3 className="banner-title">Sell or Rent Your Camera Gear</h3>
                     <p className="banner-subtitle">
-                      Publish cameras, cinema lenses, or drones to the Camcrew Store with insured shipping.
+                      Publish cameras, cinema lenses, or drones to the Camqrew Store with insured shipping.
                     </p>
                   </div>
                 </div>
@@ -1804,7 +1804,7 @@ export const DashboardPage: React.FC = () => {
                   <AlertTriangle size={22} />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, color: 'var(--danger)' }}>Delete Camcrew Account?</h3>
+                  <h3 style={{ margin: 0, color: 'var(--danger)' }}>Delete Camqrew Account?</h3>
                   <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)' }}>Irreversible Data Erasure</p>
                 </div>
               </div>

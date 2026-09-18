@@ -271,7 +271,7 @@ export const ProductDetailPage: React.FC = () => {
             <div className="specs-table-grid">
               <div className="spec-item-row">
                 <span className="spec-label">Brand / Manufacturer</span>
-                <span className="spec-value">{product.brand || 'Official Camcrew Partner'}</span>
+                <span className="spec-value">{product.brand || 'Official Camqrew Partner'}</span>
               </div>
               <div className="spec-item-row">
                 <span className="spec-label">Category</span>
@@ -383,11 +383,11 @@ export const ProductDetailPage: React.FC = () => {
 
               {isRental ? (
                 <p className="price-helper-sub">
-                  Plus 100% refundable security deposit held safely in Camcrew Escrow until equipment return.
+                  Plus 100% refundable security deposit held safely in Camqrew Escrow until equipment return.
                 </p>
               ) : (
                 <p className="price-helper-sub">
-                  Inclusive of all taxes. Free Camcrew hub pickup or insured express courier.
+                  Inclusive of all taxes. Free Camqrew hub pickup or insured express courier.
                 </p>
               )}
             </div>
@@ -495,7 +495,7 @@ export const ProductDetailPage: React.FC = () => {
               <div className="trust-tile">
                 <ShieldCheck size={20} color="var(--accent)" />
                 <div className="trust-tile-text">
-                  <strong>Camcrew Escrow Protection</strong>
+                  <strong>Camqrew Escrow Protection</strong>
                   <span>Funds released only after you test & inspect equipment.</span>
                 </div>
               </div>
@@ -533,7 +533,7 @@ export const ProductDetailPage: React.FC = () => {
             <div className="product-description-box">
               <h4 className="description-title">Equipment Overview</h4>
               <p className="description-text">
-                {product.description || 'Professional cinema & creative equipment verified by Camcrew. All parts, sensors, and mounts are maintained in optimal operational condition.'}
+                {product.description || 'Professional cinema & creative equipment verified by Camqrew. All parts, sensors, and mounts are maintained in optimal operational condition.'}
               </p>
             </div>
           </div>

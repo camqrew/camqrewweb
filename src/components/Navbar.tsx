@@ -78,13 +78,13 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
     setNotifDropdown(false);
     if (!n.target_url) return;
     let url = n.target_url;
-    if (url.startsWith('camcrew://chat/')) {
-      url = `/chat?userId=${url.replace('camcrew://chat/', '')}`;
-    } else if (url.startsWith('camcrew://booking/')) {
+    if (url.startsWith('camqrew://chat/') || url.startsWith('camcrew://chat/')) {
+      url = `/chat?userId=${url.replace('camqrew://chat/', '').replace('camcrew://chat/', '')}`;
+    } else if (url.startsWith('camqrew://booking/') || url.startsWith('camcrew://booking/')) {
       url = '/dashboard?tab=bookings';
-    } else if (url.startsWith('camcrew://job_board') || url.includes('jobboard')) {
+    } else if (url.startsWith('camqrew://job_board') || url.startsWith('camcrew://job_board') || url.includes('jobboard')) {
       url = '/dashboard?tab=jobboard';
-    } else if (url.startsWith('camcrew://')) {
+    } else if (url.startsWith('camqrew://') || url.startsWith('camcrew://')) {
       url = '/dashboard';
     }
     navigate(url);
@@ -93,7 +93,7 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
   return (
     <header className={`camcrew-navbar ${menuOpen ? 'menu-open' : ''}`}>
       <div className="navbar-container">
-        <Link to="/" className="navbar-brand" title="Camcrew Home">
+        <Link to="/" className="navbar-brand" title="Camqrew Home">
           <Logo height={32} />
         </Link>
 

@@ -30,13 +30,13 @@ export const SocialShareModal: React.FC<SocialShareModalProps> = ({
 
   const profileUrl = typeof window !== 'undefined' 
     ? `${window.location.origin}/creators/${pro.id}`
-    : `https://camcrew.in/creators/${pro.id}`;
+    : `https://camqrew.in/creators/${pro.id}`;
 
   const ratingStr = pro.rating ? pro.rating.toFixed(1) : '5.0';
   const locationStr = `${pro.city || pro.district || 'India'}, ${pro.state || ''}`.replace(/,\s*$/, '');
   const rateStr = `₹${pro.ratePerDay?.toLocaleString('en-IN') || '15,000'}/day`;
 
-  const shareText = `Check out ${pro.name} (${pro.title}) on Camcrew! 📸 Rated ${ratingStr}★ in ${locationStr}. Starting at ${rateStr} with escrow protection.\n${profileUrl}`;
+  const shareText = `Check out ${pro.name} (${pro.title}) on Camqrew! 📸 Rated ${ratingStr}★ in ${locationStr}. Starting at ${rateStr} with escrow protection.\n${profileUrl}`;
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -72,8 +72,8 @@ export const SocialShareModal: React.FC<SocialShareModalProps> = ({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${pro.name} - ${pro.title} | Camcrew`,
-          text: `Book verified creator ${pro.name} on Camcrew (${rateStr})`,
+          title: `${pro.name} - ${pro.title} | Camqrew`,
+          text: `Book verified creator ${pro.name} on Camqrew (${rateStr})`,
           url: profileUrl,
         });
       } catch (err: any) {
@@ -148,7 +148,7 @@ export const SocialShareModal: React.FC<SocialShareModalProps> = ({
                   </div>
                   <div className="wa-preview-info">
                     <div className="wa-domain-row">
-                      <span className="wa-domain-text">CAMCREW.IN</span>
+                      <span className="wa-domain-text">CAMQREW.IN</span>
                       <span className="wa-escrow-tag">
                         <ShieldCheck size={11} /> Escrow Verified
                       </span>
@@ -196,7 +196,7 @@ export const SocialShareModal: React.FC<SocialShareModalProps> = ({
                 </div>
 
                 <div className="ig-card-footer-cta">
-                  <span className="ig-card-link-text">camcrew.in/creators/{pro.id}</span>
+                  <span className="ig-card-link-text">camqrew.in/creators/{pro.id}</span>
                   <span className="ig-sticker-button">View Profile ↗</span>
                 </div>
               </div>

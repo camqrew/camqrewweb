@@ -178,7 +178,7 @@ export const MarketplacePage: React.FC = () => {
       setToastMessage(`Promo code "${promoInput.toUpperCase()}" applied!`);
       setPromoInput('');
     } else {
-      setPromoError('Invalid promo code. Use CAMCREW10 (10% off) or PROPROMO20 (20% off).');
+      setPromoError('Invalid promo code. Use CAMQREW10 (10% off) or PROPROMO20 (20% off).');
     }
   };
 
@@ -508,7 +508,7 @@ export const MarketplacePage: React.FC = () => {
                         <form onSubmit={handleApplyPromo} className="promo-input-row">
                           <input 
                             type="text" 
-                            placeholder="Try CAMCREW10 or PROPROMO20"
+                            placeholder="Try CAMQREW10 or PROPROMO20"
                             value={promoInput}
                             onChange={(e) => setPromoInput(e.target.value)}
                             className="promo-input-field"
@@ -1002,7 +1002,7 @@ export const MarketplacePage: React.FC = () => {
                       </div>
                       <ul style={{ fontSize: 13, color: 'var(--text-secondary)', paddingLeft: 18, lineHeight: 1.6, margin: '8px 0 14px' }}>
                         <li>The renter agrees to use the gear professionally and avoid water or high-impact hazards.</li>
-                        <li>Equipment is insured under Camcrew Transit Insurance throughout shipment and return.</li>
+                        <li>Equipment is insured under Camqrew Transit Insurance throughout shipment and return.</li>
                         <li>Refundable security deposit is released back within 24 hours of gear return inspection.</li>
                       </ul>
 
@@ -1013,7 +1013,7 @@ export const MarketplacePage: React.FC = () => {
                           onChange={(e) => setTermsAgreed(e.target.checked)} 
                           style={{ width: 16, height: 16, accentColor: 'var(--accent)' }}
                         />
-                        <span>I accept the Camcrew Equipment Rental Custody Terms</span>
+                        <span>I accept the Camqrew Equipment Rental Custody Terms</span>
                       </label>
                     </div>
                   </>
@@ -1056,7 +1056,7 @@ export const MarketplacePage: React.FC = () => {
                         </div>
                         <div className="option-content">
                           <div className="option-title-row">
-                            <span className="option-title">Local Camcrew Hub Pickup</span>
+                            <span className="option-title">Local Camqrew Hub Pickup</span>
                             <span className="option-price-pill free">FREE</span>
                           </div>
                           <p className="option-desc">
@@ -1316,7 +1316,7 @@ export const MarketplacePage: React.FC = () => {
                 <div className="checkout-escrow-banner">
                   <ShieldCheck size={20} color="var(--accent)" style={{ flexShrink: 0 }} />
                   <div>
-                    <strong>100% Escrow Protection:</strong> Funds remain securely held in Camcrew Escrow until you receive and verify the gear.
+                    <strong>100% Escrow Protection:</strong> Funds remain securely held in Camqrew Escrow until you receive and verify the gear.
                   </div>
                 </div>
 

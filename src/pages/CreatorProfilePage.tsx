@@ -494,7 +494,7 @@ export const CreatorProfilePage: React.FC = () => {
               <div className="escrow-highlight-box">
                 <ShieldCheck size={20} color="var(--accent)" />
                 <div>
-                  <strong>Camcrew Escrow Protected</strong>
+                  <strong>Camqrew Escrow Protected</strong>
                   <p>30% Advance • 40% Wrap • 30% Delivery</p>
                 </div>
               </div>

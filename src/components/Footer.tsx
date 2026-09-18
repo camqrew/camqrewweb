@@ -66,7 +66,7 @@ export const Footer: React.FC = () => {
             <span style={{ color: 'var(--border-color)' }}>•</span>
             <Link to="/legal?section=deletion" style={{ color: 'var(--text-muted)' }}>Data Erasure</Link>
           </div>
-          <p>© {new Date().getFullYear()} Camcrew India Technologies Pvt Ltd. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Camqrew India Technologies Pvt Ltd. All rights reserved.</p>
           <p className="footer-credit">Built with <Heart size={14} fill="var(--danger)" color="var(--danger)" /> for Indian Creators</p>
         </div>
       </div>

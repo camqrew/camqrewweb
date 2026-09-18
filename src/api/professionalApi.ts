@@ -93,7 +93,7 @@ const mapPro = (row: any): ProfessionalProfile => {
     categories: Array.isArray(row.categories) && row.categories.length > 0 ? row.categories : ['Photographers'],
     ratePerDay: Number(row.rate_per_day || 15000),
     equipment: Array.isArray(row.equipment) ? row.equipment : ['Cinema Camera', 'Prime Lenses', 'Lighting Rig'],
-    certifications: Array.isArray(row.certifications) ? row.certifications : ['Camcrew Verified Creator'],
+    certifications: Array.isArray(row.certifications) ? row.certifications : ['Camqrew Verified Creator'],
     portfolio: Array.isArray(row.portfolio_items) ? row.portfolio_items.map((i: any) => i.media_url) : [],
     services: Array.isArray(row.services) ? row.services : [], 
     videoReels: Array.isArray(row.video_reels) ? row.video_reels : [],

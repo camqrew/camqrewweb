@@ -24,12 +24,14 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
 
   login: async (user: User, token: string) => {
     set({ user, token, isAuthenticated: true, activeRole: user.role, isLoading: false });
-    localStorage.setItem('@camcrew_token', token);
-    localStorage.setItem('@camcrew_user', JSON.stringify(user));
+    localStorage.setItem('@camqrew_token', token);
+    localStorage.setItem('@camqrew_user', JSON.stringify(user));
   },
 
   logout: async () => {
     set({ user: null, token: null, isAuthenticated: false, activeRole: 'customer', isLoading: false });
+    localStorage.removeItem('@camqrew_token');
+    localStorage.removeItem('@camqrew_user');
     localStorage.removeItem('@camcrew_token');
     localStorage.removeItem('@camcrew_user');
     await supabase.auth.signOut();
@@ -41,7 +43,7 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
     if (current) {
       const updated = { ...current, role };
       set({ user: updated });
-      localStorage.setItem('@camcrew_user', JSON.stringify(updated));
+      localStorage.setItem('@camqrew_user', JSON.stringify(updated));
     }
   },
 
@@ -50,15 +52,15 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
     if (current) {
       const updated = { ...current, ...partial };
       set({ user: updated });
-      localStorage.setItem('@camcrew_user', JSON.stringify(updated));
+      localStorage.setItem('@camqrew_user', JSON.stringify(updated));
     }
   },
 
   loadAuth: async () => {
     try {
-      const token = localStorage.getItem('@camcrew_token');
-      const userStr = localStorage.getItem('@camcrew_user');
-      const intendedRole = (localStorage.getItem('@camcrew_intended_role') as UserRole) || 'customer';
+      const token = localStorage.getItem('@camqrew_token') || localStorage.getItem('@camcrew_token');
+      const userStr = localStorage.getItem('@camqrew_user') || localStorage.getItem('@camcrew_user');
+      const intendedRole = ((localStorage.getItem('@camqrew_intended_role') || localStorage.getItem('@camcrew_intended_role')) as UserRole) || 'customer';
       
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -113,8 +115,9 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
           activeRole: userRole,
           isLoading: false
         });
-        localStorage.setItem('@camcrew_token', session.access_token);
-        localStorage.setItem('@camcrew_user', JSON.stringify(resolvedUser));
+        localStorage.setItem('@camqrew_token', session.access_token);
+        localStorage.setItem('@camqrew_user', JSON.stringify(resolvedUser));
+        localStorage.removeItem('@camqrew_intended_role');
         localStorage.removeItem('@camcrew_intended_role');
       } else if (token && userStr) {
         const parsed = JSON.parse(userStr);

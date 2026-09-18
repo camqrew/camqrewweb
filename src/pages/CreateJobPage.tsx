@@ -273,7 +273,7 @@ export const CreateJobPage: React.FC = () => {
                 <Bell size={18} color="var(--accent)" />
               </div>
               <p className="tip-text">
-                <strong>How It Works:</strong> Once a creator accepts your lead, you can review their portfolio, rating, and gear. Then click <strong>Accept & Book</strong> to lock this exact budget under Camcrew 30/40/30 milestone escrow protection.
+                <strong>How It Works:</strong> Once a creator accepts your lead, you can review their portfolio, rating, and gear. Then click <strong>Accept & Book</strong> to lock this exact budget under Camqrew 30/40/30 milestone escrow protection.
               </p>
             </div>
 
@@ -332,7 +332,7 @@ export const CreateJobPage: React.FC = () => {
               <ShieldCheck size={22} color="var(--accent)" />
               <div>
                 <h4 className="assurance-title">100% Escrow Protection</h4>
-                <p className="assurance-subtitle">Camcrew Milestone Assurance</p>
+                <p className="assurance-subtitle">Camqrew Milestone Assurance</p>
               </div>
             </div>
 

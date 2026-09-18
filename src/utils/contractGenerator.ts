@@ -84,12 +84,12 @@ export function generateProductionContract(booking: Booking): ProductionContract
     {
       id: 'clause-2',
       title: '2. 3-Stage Milestone Escrow Protection',
-      content: `In accordance with the Camcrew Escrow Framework: (a) Advance Escrow (30%) is held upon booking to guarantee calendar dates; (b) Shoot Wrap Escrow (40%) is deposited before or upon completion of principal photography; (c) Final Delivery Escrow (30%) is released upon delivery of agreed high-resolution master deliverables. Under no circumstances will funds be released without verified milestones.`
+      content: `In accordance with the Camqrew Escrow Framework: (a) Advance Escrow (30%) is held upon booking to guarantee calendar dates; (b) Shoot Wrap Escrow (40%) is deposited before or upon completion of principal photography; (c) Final Delivery Escrow (30%) is released upon delivery of agreed high-resolution master deliverables. Under no circumstances will funds be released without verified milestones.`
     },
     {
       id: 'clause-3',
       title: '3. Deliverables & Revision Rounds',
-      content: `Master footage and edits will be delivered within 7-14 business days following shoot wrap via Camcrew Cloud Drive or high-speed transfer link. The Client is entitled to two (2) complimentary rounds of minor post-production revisions. Additional revisions or creative re-edits outside initial specifications shall be billed at the Creator's standard hourly rate.`
+      content: `Master footage and edits will be delivered within 7-14 business days following shoot wrap via Camqrew Cloud Drive or high-speed transfer link. The Client is entitled to two (2) complimentary rounds of minor post-production revisions. Additional revisions or creative re-edits outside initial specifications shall be billed at the Creator's standard hourly rate.`
     },
     {
       id: 'clause-4',
@@ -104,7 +104,7 @@ export function generateProductionContract(booking: Booking): ProductionContract
     {
       id: 'clause-6',
       title: '6. Governing Law & Dispute Arbitration',
-      content: `This Agreement is governed by the laws of India (Indian Contract Act, 1872 & Information Technology Act, 2000). Any irreconcilable dispute arising hereunder shall be submitted to binding online arbitration through the Camcrew Dispute Resolution Board.`
+      content: `This Agreement is governed by the laws of India (Indian Contract Act, 1872 & Information Technology Act, 2000). Any irreconcilable dispute arising hereunder shall be submitted to binding online arbitration through the Camqrew Dispute Resolution Board.`
     }
   ];
 
@@ -140,7 +140,7 @@ export function generateProductionContract(booking: Booking): ProductionContract
       summary: booking.notes || 'Full high-definition master edits, color-graded footage, and primary deliverables as specified.',
       turnaroundDays: 10,
       revisionsIncluded: 2,
-      deliveryMethod: 'Camcrew Cloud / High-Resolution Master Link',
+      deliveryMethod: 'Camqrew Cloud / High-Resolution Master Link',
     },
     termsAndClauses: clauses,
     signatures: {
@@ -157,7 +157,7 @@ export function generateProductionContract(booking: Booking): ProductionContract
 
 export function formatContractAsPlainText(contract: ProductionContract): string {
   return `=================================================================
-CAMCREW PRODUCTION SERVICE AGREEMENT
+CAMQREW PRODUCTION SERVICE AGREEMENT
 Contract Ref: ${contract.contractId}
 Date: ${contract.effectiveDate}
 =================================================================

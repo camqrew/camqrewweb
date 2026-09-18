@@ -16,12 +16,12 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
   type = 'profile',
 }) => {
   useEffect(() => {
-    const defaultTitle = 'Camcrew - Creative Marketplace & Production Crews';
+    const defaultTitle = 'Camqrew - Creative Marketplace & Production Crews';
     const defaultDesc = 'Hire verified photographers, cinematographers, drone pilots, and rent cinema gear anywhere in India with milestone escrow protection.';
     const defaultImage = 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200';
-    const currentUrl = url || (typeof window !== 'undefined' ? window.location.href : 'https://camcrew.in');
+    const currentUrl = url || (typeof window !== 'undefined' ? window.location.href : 'https://camqrew.in');
 
-    const effectiveTitle = title ? `${title} | Camcrew` : defaultTitle;
+    const effectiveTitle = title ? `${title} | Camqrew` : defaultTitle;
     const effectiveDesc = description || defaultDesc;
     const effectiveImage = image || defaultImage;
 

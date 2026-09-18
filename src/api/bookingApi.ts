@@ -226,7 +226,7 @@ export const bookingApi = {
       if (data?.customer_id) {
         notificationApi.sendPushNotification(data.customer_id, {
           title: 'Booking Declined',
-          body: 'The professional is unavailable for this booking. Explore other top creators on Camcrew.',
+          body: 'The professional is unavailable for this booking. Explore other top creators on Camqrew.',
           targetUrl: '/dashboard?tab=bookings',
         }).catch(() => {});
       }

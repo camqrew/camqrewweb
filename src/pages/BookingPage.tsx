@@ -153,7 +153,7 @@ export const BookingPage: React.FC = () => {
           </div>
           <h2>Booking Confirmed & Escrow Initialized!</h2>
           <p className="success-sub" style={{ color: 'var(--text-secondary)', marginTop: 8 }}>
-            Your booking with <strong>{pro?.name}</strong> has been secured with Camcrew Milestone Escrow.
+            Your booking with <strong>{pro?.name}</strong> has been secured with Camqrew Milestone Escrow.
           </p>
 
           <div className="booking-summary-box card" style={{ background: 'var(--bg-surface)', padding: 16, margin: '20px 0', textAlign: 'left' }}>

@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
  * CursorBackgroundFollower
  * 
  * Provides an ultra-subtle, architectural gradient white grid design that
- * smoothly illuminates around the user's cursor across the Camcrew web application.
+ * smoothly illuminates around the user's cursor across the Camqrew web application.
  * 
  * Features:
  * - Gradient white grid illuminated by dynamic radial cursor spotlight

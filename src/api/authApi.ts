@@ -191,6 +191,7 @@ export const authApi = {
   },
 
   signInWithOAuth: async (provider: 'google' | 'apple', role: 'customer' | 'professional' = 'customer'): Promise<void> => {
+    localStorage.setItem('@camqrew_intended_role', role);
     localStorage.setItem('@camcrew_intended_role', role);
     const redirectTo = `${window.location.origin}/dashboard`;
     const { data, error } = await supabase.auth.signInWithOAuth({

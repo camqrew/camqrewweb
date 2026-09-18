@@ -187,7 +187,7 @@ export default function Inventory() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Inventory Management</h1>
-          <p className="page-subtitle">Manage official Camcrew Gear Store catalogue</p>
+          <p className="page-subtitle">Manage official Camqrew Gear Store catalogue</p>
         </div>
         <button className="btn btn-primary" onClick={openAddModal}>
           <Plus size={18} /> Add New Product
@@ -231,7 +231,7 @@ export default function Inventory() {
                     <div style={{ fontWeight: 500 }}>{item.category}</div>
                   </td>
                   <td>
-                    <span className="badge badge-accent">{item.brand || 'Camcrew'}</span>
+                    <span className="badge badge-accent">{item.brand || 'Camqrew'}</span>
                   </td>
                   <td>
                     <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--accent)' }}>

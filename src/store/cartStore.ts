@@ -57,11 +57,12 @@ interface CartStoreState {
   getTotalCount: () => number;
 }
 
-const STORAGE_KEY = '@camcrew_cart';
+const STORAGE_KEY = '@camqrew_cart';
+const LEGACY_STORAGE_KEY = '@camcrew_cart';
 
 const loadSavedCart = (): CartItem[] => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
     if (!raw) return [];
     return JSON.parse(raw);
   } catch (err) {
@@ -145,8 +146,8 @@ export const useCartStore = create<CartStoreState>((set, get) => ({
 
   applyPromoCode: (code) => {
     const cleanCode = code.trim().toUpperCase();
-    if (cleanCode === 'CAMCREW10') {
-      set({ promoCode: cleanCode, discountPercentage: 10 });
+    if (cleanCode === 'CAMQREW10' || cleanCode === 'CAMCREW10') {
+      set({ promoCode: 'CAMQREW10', discountPercentage: 10 });
       return true;
     } else if (cleanCode === 'PROPROMO20') {
       set({ promoCode: cleanCode, discountPercentage: 20 });

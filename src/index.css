@@ -146,9 +146,11 @@ body {
   object-fit: contain;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08));
 }
+.camqrew-brand-logo,
 .camcrew-brand-logo {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
+.camqrew-brand-logo:hover,
 .camcrew-brand-logo:hover {
   opacity: 0.9;
 }

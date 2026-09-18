@@ -19,7 +19,7 @@ export const Logo: React.FC<LogoProps> = ({
       {/* Light-theme logo (dark graphics for light backgrounds) */}
       <img
         src="/camcrew-logo-dark.png"
-        alt="Camcrew"
+        alt="Camqrew"
         className="logo-img logo-for-light"
         style={{
           height,
@@ -32,7 +32,7 @@ export const Logo: React.FC<LogoProps> = ({
       {/* Dark-theme logo (white graphics for dark backgrounds) */}
       <img
         src="/camcrew-logo-white.png"
-        alt="Camcrew"
+        alt="Camqrew"
         className="logo-img logo-for-dark"
         style={{
           height,

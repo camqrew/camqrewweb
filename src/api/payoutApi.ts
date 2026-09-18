@@ -1,4 +1,4 @@
-﻿import { supabase } from './supabaseClient';
+import { supabase } from './supabaseClient';
 
 export interface PayoutRecord {
   id: string;
@@ -17,13 +17,15 @@ export interface CreatorPayoutDetails {
   accountHolderName: string;
 }
 
-const ACCOUNT_STORE_KEY = '@camcrew_payout_account';
-const PAYOUT_HISTORY_KEY = '@camcrew_payout_history';
+const ACCOUNT_STORE_KEY = '@camqrew_payout_account';
+const LEGACY_ACCOUNT_STORE_KEY = '@camcrew_payout_account';
+const PAYOUT_HISTORY_KEY = '@camqrew_payout_history';
+const LEGACY_PAYOUT_HISTORY_KEY = '@camcrew_payout_history';
 
 export const payoutApi = {
   getCreatorAccount: async (): Promise<CreatorPayoutDetails> => {
     try {
-      const stored = localStorage.getItem(ACCOUNT_STORE_KEY);
+      const stored = localStorage.getItem(ACCOUNT_STORE_KEY) || localStorage.getItem(LEGACY_ACCOUNT_STORE_KEY);
       return stored
         ? JSON.parse(stored)
         : {
@@ -78,7 +80,7 @@ export const payoutApi = {
         }
       }
 
-      const localHistory = localStorage.getItem(PAYOUT_HISTORY_KEY);
+      const localHistory = localStorage.getItem(PAYOUT_HISTORY_KEY) || localStorage.getItem(LEGACY_PAYOUT_HISTORY_KEY);
       if (localHistory) {
         return JSON.parse(localHistory);
       }

@@ -1,5 +1,5 @@
 // -------------------------------------------------------------
-// CAMCREW STUDIO: Phase 1 Database Overhaul Types (31 Tables)
+// CAMQREW STUDIO: Phase 1 Database Overhaul Types (31 Tables)
 // -------------------------------------------------------------
 
 // 1. Authentication & User Management

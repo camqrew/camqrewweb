@@ -109,7 +109,7 @@ export const ShootContractModal: React.FC<ShootContractModalProps> = ({
             <div className="contract-seal-row">
               <div className="contract-gov-badge">
                 <ShieldCheck size={20} color="var(--accent)" />
-                <span>CAMCREW ESCROW PRODUCTION SERVICE AGREEMENT</span>
+                <span>CAMQREW ESCROW PRODUCTION SERVICE AGREEMENT</span>
               </div>
               <span className="contract-ref-badge">{contract.contractId}</span>
             </div>
@@ -138,7 +138,7 @@ export const ShootContractModal: React.FC<ShootContractModalProps> = ({
               <span className="party-role-tag">CREATIVE SPECIALIST / PRODUCTION HOUSE</span>
               <h3 className="party-name">{contract.creator.name}</h3>
               <p className="party-meta">{contract.creator.title || 'Verified Visual Creator'}</p>
-              <p className="party-meta">Camcrew Verified Creator ID: <code>{contract.creator.id}</code></p>
+              <p className="party-meta">Camqrew Verified Creator ID: <code>{contract.creator.id}</code></p>
             </div>
           </div>
 
@@ -175,7 +175,7 @@ export const ShootContractModal: React.FC<ShootContractModalProps> = ({
           <div className="contract-section-box">
             <h4 className="contract-section-title">2. Financial Consideration & Milestone Escrow Schedule</h4>
             <p className="contract-terms-p">
-              The total contract fee of <strong>₹{contract.financialTerms.totalFee.toLocaleString('en-IN')}</strong> is secured via the Camcrew Automated Escrow Architecture, disburseable strictly upon milestone completion:
+              The total contract fee of <strong>₹{contract.financialTerms.totalFee.toLocaleString('en-IN')}</strong> is secured via the Camqrew Automated Escrow Architecture, disburseable strictly upon milestone completion:
             </p>
 
             <div className="contract-milestone-tiers">
@@ -267,7 +267,7 @@ export const ShootContractModal: React.FC<ShootContractModalProps> = ({
 
           {/* Watermark Footer */}
           <div className="contract-doc-footer">
-            <p>Verified by Camcrew Escrow Infrastructure • Document Hash: <code>{contract.contractId}-SEC-SHA256</code></p>
+            <p>Verified by Camqrew Escrow Infrastructure • Document Hash: <code>{contract.contractId}-SEC-SHA256</code></p>
           </div>
         </div>
 

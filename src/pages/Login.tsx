@@ -43,7 +43,7 @@ export const Login = () => {
           <Logo height={40} showAdminBadge />
         </div>
         <h1 className="login-title">Admin Portal</h1>
-        <p className="login-subtitle">Sign in to manage Camcrew</p>
+        <p className="login-subtitle">Sign in to manage Camqrew</p>
 
         {error ? <div className="login-error">{error}</div> : null}
 
@@ -64,7 +64,7 @@ export const Login = () => {
               id="email"
               type="email"
               className="input-field"
-              placeholder="admin@camcrew.in"
+              placeholder="admin@camqrew.in"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}

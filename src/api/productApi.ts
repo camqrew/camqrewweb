@@ -4,7 +4,7 @@ import type { Product, ProductType } from '../types/product';
 const mapOfficialProduct = (p: any): Product => ({
   id: String(p.id),
   name: p.name || 'Equipment item',
-  brand: p.brand || 'Camcrew',
+  brand: p.brand || 'Camqrew',
   category: p.category || 'Cameras',
   type: 'sale',
   price: Number(p.price || 0),

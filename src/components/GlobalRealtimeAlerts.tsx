@@ -129,13 +129,13 @@ export const GlobalRealtimeAlerts: React.FC = () => {
 
     // Normalize URL
     let url = toast.targetUrl;
-    if (url.startsWith('camcrew://chat/')) {
-      url = `/chat?userId=${url.replace('camcrew://chat/', '')}`;
-    } else if (url.startsWith('camcrew://booking/')) {
+    if (url.startsWith('camqrew://chat/') || url.startsWith('camcrew://chat/')) {
+      url = `/chat?userId=${url.replace('camqrew://chat/', '').replace('camcrew://chat/', '')}`;
+    } else if (url.startsWith('camqrew://booking/') || url.startsWith('camcrew://booking/')) {
       url = '/dashboard?tab=bookings';
-    } else if (url.startsWith('camcrew://job_board') || url.includes('jobboard')) {
+    } else if (url.startsWith('camqrew://job_board') || url.startsWith('camcrew://job_board') || url.includes('jobboard')) {
       url = '/dashboard?tab=jobboard';
-    } else if (url.startsWith('camcrew://')) {
+    } else if (url.startsWith('camqrew://') || url.startsWith('camcrew://')) {
       url = '/dashboard';
     }
 
