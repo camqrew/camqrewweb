@@ -34,6 +34,19 @@ export const ReelsFeedPage: React.FC = () => {
   const [likedReels, setLikedReels] = useState<{ [id: string]: boolean }>({});
   const [likeCounts, setLikeCounts] = useState<{ [id: string]: number }>({});
   const [copiedToast, setCopiedToast] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+      videoRef.current.play().catch(() => {
+        if (videoRef.current && !isMuted) {
+          videoRef.current.muted = true;
+          videoRef.current.play().catch(() => {});
+        }
+      });
+    }
+  }, [currentIndex, isMuted]);
 
   // Load reels
   const loadReels = useCallback(async () => {
@@ -126,10 +139,20 @@ export const ReelsFeedPage: React.FC = () => {
 
   // Embed URL construction
   const getEmbedUrl = (reel: FeedReelItem) => {
-    let src = reel.embedUrl || reel.url;
+    let src = reel.embedUrl || reel.url || '';
     if (src.includes('youtube.com/shorts/')) {
       const id = src.split('/shorts/')[1]?.split('?')[0];
       src = `https://www.youtube-nocookie.com/embed/${id}`;
+    } else if (src.includes('youtube.com/watch')) {
+      const match = src.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+      if (match && match[1]) {
+        src = `https://www.youtube-nocookie.com/embed/${match[1]}`;
+      }
+    } else if (src.includes('youtu.be/')) {
+      const id = src.split('youtu.be/')[1]?.split('?')[0];
+      if (id) {
+        src = `https://www.youtube-nocookie.com/embed/${id}`;
+      }
     }
     const paramChar = src.includes('?') ? '&' : '?';
     return `${src}${paramChar}autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playsinline=1&controls=0&modestbranding=1&rel=0`;
@@ -209,14 +232,29 @@ export const ReelsFeedPage: React.FC = () => {
             {/* Vertical Video Card */}
             <div className="reel-video-card">
               {currentReel && (
-                <iframe
-                  key={`${currentReel.id}_${isMuted}`}
-                  src={getEmbedUrl(currentReel)}
-                  title={currentReel.title}
-                  className="reel-iframe-video"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
+                (currentReel.type === 'direct' || currentReel.url?.includes('.mp4') || currentReel.embedUrl?.includes('.mp4')) ? (
+                  <video
+                    ref={videoRef}
+                    key={currentReel.id}
+                    src={currentReel.url || currentReel.embedUrl}
+                    autoPlay
+                    loop
+                    muted={isMuted}
+                    playsInline
+                    className="reel-iframe-video"
+                    style={{ objectFit: 'cover', cursor: 'pointer' }}
+                    onClick={() => setIsMuted(m => !m)}
+                  />
+                ) : (
+                  <iframe
+                    key={`${currentReel.id}_${isMuted}`}
+                    src={getEmbedUrl(currentReel)}
+                    title={currentReel.title}
+                    className="reel-iframe-video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                )
               )}
 
               {/* Bottom Information Overlay */}
