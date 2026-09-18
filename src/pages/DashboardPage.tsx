@@ -1031,18 +1031,28 @@ export const DashboardPage: React.FC = () => {
                       Embed YouTube, 9:16 Shorts, and Vimeo videos to showcase your work directly on your public profile.
                     </p>
                   </div>
-                  <button 
-                    type="button" 
-                    className="btn btn-primary btn-sm"
-                    onClick={() => {
-                      setNewReelUrl('');
-                      setNewReelTitle('');
-                      setNewReelIsShort(false);
-                      setShowReelModal(true);
-                    }}
-                  >
-                    <Plus size={14} /> + Add Video Reel
-                  </button>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <Link
+                      to="/reels"
+                      className="btn btn-outline btn-sm"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                      title="View how your reels appear in the full-screen discovery feed"
+                    >
+                      <Film size={14} /> Open Reels Feed ↗
+                    </Link>
+                    <button 
+                      type="button" 
+                      className="btn btn-primary btn-sm"
+                      onClick={() => {
+                        setNewReelUrl('');
+                        setNewReelTitle('');
+                        setNewReelIsShort(false);
+                        setShowReelModal(true);
+                      }}
+                    >
+                      <Plus size={14} /> + Add Video Reel
+                    </button>
+                  </div>
                 </div>
 
                 {(!proProfile?.videoReels || proProfile.videoReels.length === 0) ? (

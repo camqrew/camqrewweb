@@ -355,6 +355,29 @@ export const HomePage: React.FC = () => {
               );
             })}
           </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 22 }}>
+            <Link 
+              to="/reels" 
+              className="btn btn-outline"
+              style={{ 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: 9, 
+                padding: '10px 22px', 
+                borderRadius: 24, 
+                borderColor: 'rgba(63, 182, 104, 0.45)', 
+                background: 'rgba(63, 182, 104, 0.1)',
+                textDecoration: 'none'
+              }}
+            >
+              <Film size={17} color="var(--accent, #3fb668)" />
+              <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 13.5 }}>
+                ⚡ Watch Creator Showreels & 9:16 Shorts Feed
+              </span>
+              <ArrowRight size={15} color="var(--accent, #3fb668)" />
+            </Link>
+          </div>
         </div>
       </section>
 
