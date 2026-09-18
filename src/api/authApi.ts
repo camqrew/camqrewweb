@@ -215,5 +215,13 @@ export const authApi = {
 
   logout: async (): Promise<void> => {
     await supabase.auth.signOut();
+  },
+
+  deleteAccount: async (): Promise<void> => {
+    const { error } = await supabase.rpc('delete_user_account');
+    if (error) {
+      throw new Error(error.message);
+    }
+    await supabase.auth.signOut();
   }
 };

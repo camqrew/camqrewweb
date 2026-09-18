@@ -36,10 +36,15 @@ import {
   Trash2,
   Smartphone,
   Plus,
-  Tv
+  Tv,
+  Scale,
+  FileText,
+  AlertTriangle
 } from 'lucide-react';
 import type { VideoReelItem } from '../types/professional';
 import { parseVideoUrl } from '../api/professionalApi';
+import { authApi } from '../api/authApi';
+import { ShootContractModal } from '../components/ShootContractModal';
 
 type ProTab = 'overview' | 'bookings' | 'sales_rentals' | 'listings' | 'jobboard' | 'availability' | 'earnings' | 'client';
 
@@ -101,6 +106,29 @@ export const DashboardPage: React.FC = () => {
   const [payoutAccNum, setPayoutAccNum] = useState('');
   const [payoutIfsc, setPayoutIfsc] = useState('');
   const [payoutHolder, setPayoutHolder] = useState('');
+
+  // Shoot Contract Modal State
+  const [selectedContractBooking, setSelectedContractBooking] = useState<Booking | null>(null);
+  const [showContractModal, setShowContractModal] = useState(false);
+
+  // Account Deletion State
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteAccountError, setDeleteAccountError] = useState('');
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') return;
+    setDeletingAccount(true);
+    setDeleteAccountError('');
+    try {
+      await authApi.deleteAccount();
+      navigate('/');
+    } catch (err: any) {
+      setDeleteAccountError(err.message || 'Failed to delete account.');
+      setDeletingAccount(false);
+    }
+  };
 
   useEffect(() => {
     if (!isAuthenticated && !user) {
@@ -823,6 +851,35 @@ export const DashboardPage: React.FC = () => {
                   </div>
                 )}
               </div>
+
+              {/* ── LEGAL, PRIVACY & DANGER ZONE ── */}
+              <div className="card legal-danger-zone-card" style={{ marginTop: 28, borderColor: 'rgba(239,68,68,0.2)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)' }}>
+                      <Scale size={18} color="var(--accent)" />
+                      Legal, Compliance & Account Security
+                    </h3>
+                    <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
+                      Review our DPDP Act 2023 Privacy Policy, Milestone Escrow Rules, or manage your account data rights.
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    <Link to="/terms" className="btn btn-outline btn-sm">
+                      <FileText size={14} /> Legal Center
+                    </Link>
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm delete-account-trigger-btn"
+                      style={{ color: 'var(--danger)', borderColor: 'rgba(239,68,68,0.3)' }}
+                      onClick={() => setShowDeleteAccountModal(true)}
+                    >
+                      <Trash2 size={14} /> Delete Account
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -927,6 +984,18 @@ export const DashboardPage: React.FC = () => {
                               </button>
                             </>
                           )}
+
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-sm contract-action-btn"
+                            onClick={() => {
+                              setSelectedContractBooking(b);
+                              setShowContractModal(true);
+                            }}
+                            title="View and sign legal shoot contract"
+                          >
+                            <FileText size={14} /> Contract
+                          </button>
 
                           <Link 
                             to={`/chat?userId=${b.customerId}`} 
@@ -1313,9 +1382,22 @@ export const DashboardPage: React.FC = () => {
                       <div className="booking-card-side">
                         <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Escrow Total</span>
                         <strong className="payout-val">₹{b.totalAmount.toLocaleString('en-IN')}</strong>
-                        <Link to={`/chat?userId=${b.professionalId}`} className="btn btn-outline btn-sm" style={{ marginTop: 8 }}>
-                          <MessageSquare size={14} /> Message Pro
-                        </Link>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-sm contract-action-btn"
+                            onClick={() => {
+                              setSelectedContractBooking(b);
+                              setShowContractModal(true);
+                            }}
+                            title="View and sign legal shoot contract"
+                          >
+                            <FileText size={14} /> Shoot Contract
+                          </button>
+                          <Link to={`/chat?userId=${b.professionalId}`} className="btn btn-outline btn-sm">
+                            <MessageSquare size={14} /> Message Pro
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -1695,6 +1777,104 @@ export const DashboardPage: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── SHOOT PRODUCTION CONTRACT MODAL ── */}
+      {showContractModal && selectedContractBooking && (
+        <ShootContractModal
+          isOpen={showContractModal}
+          booking={selectedContractBooking}
+          currentUserId={user?.id}
+          onClose={() => setShowContractModal(false)}
+          onContractSigned={() => {
+            loadDashboardData();
+          }}
+        />
+      )}
+
+      {/* ── ACCOUNT DELETION CONFIRMATION MODAL ── */}
+      {showDeleteAccountModal && (
+        <div className="modal-backdrop" onClick={() => !deletingAccount && setShowDeleteAccountModal(false)}>
+          <div className="modal-card delete-account-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
+            <div className="modal-header" style={{ borderBottom: '1px solid rgba(239,68,68,0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ background: 'rgba(239,68,68,0.15)', padding: 8, borderRadius: 10, color: 'var(--danger)' }}>
+                  <AlertTriangle size={22} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, color: 'var(--danger)' }}>Delete Camcrew Account?</h3>
+                  <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)' }}>Irreversible Data Erasure</p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                className="modal-close-btn"
+                disabled={deletingAccount}
+                onClick={() => setShowDeleteAccountModal(false)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="modal-body" style={{ padding: '20px 24px' }}>
+              <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                This action is permanent under the Indian DPDP Act 2023. Deleting your account will immediately and irrevocably delete:
+              </p>
+
+              <ul style={{ margin: '12px 0 16px', paddingLeft: 20, fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                <li>Your verified creator profile, bio, equipment roster, and reviews</li>
+                <li>All portfolio media, showreels, and store listings</li>
+                <li>Your active broadcast pitches and messaging history</li>
+              </ul>
+
+              <div className="escrow-guard-note" style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', padding: 12, borderRadius: 8, marginBottom: 16, fontSize: 12, color: 'var(--text-secondary)' }}>
+                <strong>⚠️ Active Escrow Protection:</strong>
+                <p style={{ margin: '4px 0 0' }}>
+                  If you have active confirmed shoots or pending escrow balances, deletion will be blocked until all bookings are wrapped or cancelled.
+                </p>
+              </div>
+
+              {deleteAccountError && (
+                <div className="alert-box error" style={{ marginBottom: 14, fontSize: 13, color: 'var(--danger)', background: 'rgba(239,68,68,0.1)', padding: 10, borderRadius: 8 }}>
+                  <AlertTriangle size={15} style={{ marginRight: 6, display: 'inline' }} /> {deleteAccountError}
+                </div>
+              )}
+
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 700, marginBottom: 6, color: 'var(--text-primary)' }}>
+                Type <strong style={{ color: 'var(--danger)' }}>DELETE</strong> to confirm:
+              </label>
+              <input
+                type="text"
+                className="input-field"
+                placeholder="Type DELETE"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                disabled={deletingAccount}
+                style={{ width: '100%', borderColor: deleteConfirmText === 'DELETE' ? 'var(--danger)' : undefined }}
+              />
+            </div>
+
+            <div className="modal-footer" style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', padding: '16px 24px', borderTop: '1px solid var(--border-color)' }}>
+              <button
+                type="button"
+                className="btn btn-outline"
+                disabled={deletingAccount}
+                onClick={() => setShowDeleteAccountModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                disabled={deleteConfirmText !== 'DELETE' || deletingAccount}
+                onClick={handleDeleteAccount}
+                style={{ backgroundColor: 'var(--danger)', color: '#fff' }}
+              >
+                {deletingAccount ? <Loader2 size={16} className="animate-spin" /> : 'Permanently Delete My Account'}
+              </button>
+            </div>
           </div>
         </div>
       )}

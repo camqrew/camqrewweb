@@ -15,6 +15,7 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import ChatPage from './pages/ChatPage';
 import DashboardPage from './pages/DashboardPage';
 import AuthPage from './pages/AuthPage';
+import LegalPage from './pages/LegalPage';
 
 // Admin Portal Pages
 import Dashboard from './pages/Dashboard';
@@ -75,6 +76,9 @@ function App() {
           <Route path="/pro-dashboard" element={<Navigate to="/dashboard?tab=overview" replace />} />
           <Route path="/login" element={<AuthPage />} />
           <Route path="/register" element={<AuthPage />} />
+          <Route path="/legal" element={<LegalPage />} />
+          <Route path="/terms" element={<LegalPage />} />
+          <Route path="/privacy" element={<LegalPage />} />
         </Route>
 
         {/* Admin Backoffice Portal Routes */}

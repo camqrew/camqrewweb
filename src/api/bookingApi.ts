@@ -301,4 +301,32 @@ export const bookingApi = {
         .eq('id', bookingId);
     }
   },
+
+  signContract: async (bookingId: string, signatoryName: string, role: 'customer' | 'professional' = 'customer'): Promise<void> => {
+    const { data: booking, error: fetchErr } = await supabase
+      .from('bookings')
+      .select('items')
+      .eq('id', bookingId)
+      .single();
+
+    if (fetchErr) throw new Error(fetchErr.message);
+
+    const items = booking?.items || {};
+    const nowIso = new Date().toISOString();
+
+    if (role === 'professional') {
+      items.proSignature = signatoryName;
+      items.proSignedAt = nowIso;
+    } else {
+      items.contractSignature = signatoryName;
+      items.contractSignedAt = nowIso;
+    }
+
+    const { error: updateErr } = await supabase
+      .from('bookings')
+      .update({ items })
+      .eq('id', bookingId);
+
+    if (updateErr) throw new Error(updateErr.message);
+  },
 };
