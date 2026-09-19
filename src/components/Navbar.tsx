@@ -98,47 +98,50 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
           <Logo height={32} />
         </Link>
 
+        {/* Core Discovery Navigation */}
         <nav className="desktop-nav">
           <NavLink to="/explore" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
             Explore Creators
           </NavLink>
-          <NavLink to="/reels" className={({ isActive }) => isActive ? "nav-item active reels-nav-highlight" : "nav-item reels-nav-highlight"}>
-            <Film size={14} style={{ marginRight: 4 }} /> Reels Feed
+          <NavLink to="/reels" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+            <Film size={14} />
+            <span>Reels Feed</span>
           </NavLink>
           <NavLink to="/marketplace" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
             Marketplace
           </NavLink>
-          <NavLink to="/jobs/create" className="nav-item broadcast-highlight">
-            <PlusCircle size={16} /> Post a Job
-          </NavLink>
-          {isPro && (
-            <NavLink 
-              to="/dashboard?tab=overview" 
-              className={({ isActive }) => isActive ? "nav-item active pro-nav-link" : "nav-item pro-nav-link"}
-            >
-              <LayoutDashboard size={15} /> Pro Studio
-            </NavLink>
-          )}
         </nav>
 
         <div className="navbar-actions">
-          <button onClick={toggleTheme} className="icon-btn" title="Toggle theme">
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
+          {/* Action CTAs */}
+          <NavLink to="/jobs/create" className="nav-cta-post-job" title="Post a shoot or broadcast job">
+            <PlusCircle size={15} />
+            <span>Post a Job</span>
+          </NavLink>
 
-          <Link to="/marketplace?tab=cart" className="icon-btn cart-btn" title="Gear Cart">
-            <ShoppingBag size={18} />
-            {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
-          </Link>
-
-          {isAuthenticated && (
-            <Link to="/chat" className="icon-btn" title="Messages">
-              <MessageSquare size={18} />
-            </Link>
+          {isPro && (
+            <NavLink 
+              to="/dashboard?tab=overview" 
+              className={({ isActive }) => isActive ? "nav-cta-pro-studio active" : "nav-cta-pro-studio"}
+              title="Open Pro Studio Creator Dashboard"
+            >
+              <LayoutDashboard size={15} />
+              <span>Pro Studio</span>
+            </NavLink>
           )}
 
-          {isAuthenticated && (
-            <div className="notif-dropdown-wrapper" ref={notifRef}>
+          <div className="navbar-divider" />
+
+          {/* Communication & Commerce Utilities */}
+          <div className="nav-utilities-cluster">
+            {isAuthenticated && (
+              <Link to="/chat" className="icon-btn" title="Messages">
+                <MessageSquare size={17} />
+              </Link>
+            )}
+
+            {isAuthenticated && (
+              <div className="notif-dropdown-wrapper" ref={notifRef}>
               <button 
                 className="icon-btn notif-btn" 
                 onClick={() => setNotifDropdown(!notifDropdown)} 
@@ -196,8 +199,18 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
             </div>
           )}
 
-          {isAuthenticated && user ? (
-            <div className="profile-dropdown-wrapper" ref={dropdownRef}>
+          <Link to="/marketplace?tab=cart" className="icon-btn cart-btn" title="Gear Cart">
+            <ShoppingBag size={17} />
+            {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+          </Link>
+
+          <button onClick={toggleTheme} className="icon-btn" title="Toggle theme">
+            {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+          </button>
+        </div>
+
+        {isAuthenticated && user ? (
+          <div className="profile-dropdown-wrapper" ref={dropdownRef}>
               <button 
                 className="user-pill-btn" 
                 onClick={() => setProfileDropdown(!profileDropdown)}
