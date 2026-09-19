@@ -12,8 +12,7 @@ import {
   MapPin,
   ShieldCheck,
   CheckCircle,
-  Send,
-  Zap
+  Send
 } from 'lucide-react';
 
 export const CreateJobPage: React.FC = () => {
@@ -145,7 +144,6 @@ export const CreateJobPage: React.FC = () => {
             <span>100% Escrow Protection</span>
           </div>
           <div className="header-stat-pill">
-            <Zap size={16} color="#f59e0b" />
             <span>Instant Dispatch</span>
           </div>
         </div>

@@ -19,7 +19,6 @@ import {
   Clock, 
   ChevronRight,
   Layers,
-  Zap,
   Plus,
   Minus
 } from 'lucide-react';
@@ -472,7 +471,6 @@ export const ProductDetailPage: React.FC = () => {
                 onClick={handleInstantCheckout}
                 disabled={!product.inStock}
               >
-                <Zap size={18} />
                 <span>{isRental ? 'Book & Rent Now' : 'Buy Now with Escrow'}</span>
               </button>
 

@@ -31,7 +31,6 @@ import {
   X,
   Camera,
   ShieldCheck,
-  Zap,
   Film,
   Trash2,
   Smartphone,
@@ -1566,9 +1565,7 @@ export const DashboardPage: React.FC = () => {
                       {payoutInProgress ? (
                         <Loader2 size={16} className="animate-spin" />
                       ) : (
-                        <>
-                          <Zap size={16} /> Instant Payout via UPI →
-                        </>
+                        <>Instant Payout via UPI →</>
                       )}
                     </button>
 
