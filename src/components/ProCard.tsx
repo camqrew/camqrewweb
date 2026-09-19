@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import type { ProfessionalProfile } from '../types/professional';
-import { Star, MapPin, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Star, MapPin, CheckCircle2, ArrowRight, User } from 'lucide-react';
+import { isCustomAvatar } from '../utils/avatarUtils';
 
 interface ProCardProps {
   pro: ProfessionalProfile;
@@ -12,7 +13,13 @@ export const ProCard: React.FC<ProCardProps> = ({ pro }) => {
     <div className="pro-card">
       <div className="pro-card-header">
         <div className="pro-avatar-wrapper">
-          <img src={pro.avatar} alt={pro.name} className="pro-avatar" />
+          {isCustomAvatar(pro.avatar) ? (
+            <img src={pro.avatar} alt={pro.name} className="pro-avatar" />
+          ) : (
+            <div className="pro-avatar pro-avatar-placeholder">
+              <User size={24} />
+            </div>
+          )}
           {pro.verified && (
             <span className="pro-verified-badge" title="Verified Creator">
               <CheckCircle2 size={16} fill="var(--accent)" color="#fff" />

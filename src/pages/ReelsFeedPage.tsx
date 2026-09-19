@@ -18,9 +18,11 @@ import {
   ArrowRight,
   ExternalLink,
   Loader2,
-  Check
+  Check,
+  User
 } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
+import { isCustomAvatar } from '../utils/avatarUtils';
 
 const CATEGORIES = ['All', 'Commercial', 'Wedding Film', 'Drone & Aerial', 'Fashion Reel', 'Cinematography'];
 
@@ -315,11 +317,17 @@ export const ReelsFeedPage: React.FC = () => {
                 className="reel-action-avatar-btn"
                 title={`View ${currentReel?.creatorName}'s public profile`}
               >
-                <img 
-                  src={currentReel?.creatorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400'} 
-                  alt={currentReel?.creatorName} 
-                  className="reel-avatar-img"
-                />
+                {isCustomAvatar(currentReel?.creatorAvatar) ? (
+                  <img 
+                    src={currentReel?.creatorAvatar} 
+                    alt={currentReel?.creatorName} 
+                    className="reel-avatar-img"
+                  />
+                ) : (
+                  <div className="reel-avatar-img reel-avatar-placeholder">
+                    <User size={18} />
+                  </div>
+                )}
                 <div className="reel-avatar-check">
                   <Check size={10} color="#fff" />
                 </div>

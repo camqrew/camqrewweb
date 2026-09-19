@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, Eye } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, User } from 'lucide-react';
 import { supabase } from '../api/supabaseClient';
+import { isCustomAvatar } from '../utils/avatarUtils';
 
 export default function Verifications() {
   const [profiles, setProfiles] = useState<any[]>([]);
@@ -94,9 +95,11 @@ export default function Verifications() {
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                       <div style={{ backgroundColor: "var(--bg-surface)", width: 48, height: 48, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                        {profile.users?.avatar ? (
+                        {isCustomAvatar(profile.users?.avatar) ? (
                           <img src={profile.users.avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        ) : null}
+                        ) : (
+                          <User size={22} color="var(--text-muted)" />
+                        )}
                       </div>
                       <div>
                         <div style={{ fontWeight: 700 }}>{profile.users?.name || 'Unknown'}</div>

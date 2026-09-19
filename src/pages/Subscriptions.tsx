@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Ban } from 'lucide-react';
+import { Ban, User } from 'lucide-react';
 import { CustomSelect } from '../components/CustomSelect';
 import { supabase } from '../api/supabaseClient';
+import { isCustomAvatar } from '../utils/avatarUtils';
 
 export default function Subscriptions() {
   const [users, setUsers] = useState<any[]>([]);
@@ -82,9 +83,11 @@ export default function Subscriptions() {
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                       <div style={{ backgroundColor: "var(--bg-surface)", width: 48, height: 48, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                        {user.avatar ? (
+                        {isCustomAvatar(user.avatar) ? (
                           <img src={user.avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        ) : null}
+                        ) : (
+                          <User size={22} color="var(--text-muted)" />
+                        )}
                       </div>
                       <div>
                         <div style={{ fontWeight: 700 }}>{user.name}</div>

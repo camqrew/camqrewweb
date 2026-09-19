@@ -115,7 +115,7 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
           email: session.user.email || parsedUser?.email || '',
           phone: dbProfile?.phone || session.user.phone || meta.phone || parsedUser?.phone || '',
           role: userRole,
-          avatar: dbProfile?.avatar || meta.avatar_url || meta.picture || parsedUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400',
+          avatar: dbProfile?.avatar || meta.avatar_url || meta.picture || parsedUser?.avatar || '',
           subscription_tier: dbProfile?.subscription_tier || 'free',
           subscription_status: dbProfile?.subscription_status || 'inactive',
           subscription_end_date: dbProfile?.subscription_end_date,
@@ -131,7 +131,7 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
               email: resolvedUser.email,
               phone: resolvedUser.phone,
               role: userRole,
-              avatar: resolvedUser.avatar,
+              avatar: resolvedUser.avatar || null,
             }]);
           } catch (insertErr) {
             console.warn('Profile auto-create notice:', insertErr);

@@ -43,7 +43,8 @@ import {
   Image as ImageIcon,
   UploadCloud,
   ZoomIn,
-  Link as LinkIcon
+  Link as LinkIcon,
+  User
 } from 'lucide-react';
 import type { VideoReelItem } from '../types/professional';
 import { parseVideoUrl } from '../api/professionalApi';
@@ -51,6 +52,7 @@ import { authApi } from '../api/authApi';
 import { ShootContractModal } from '../components/ShootContractModal';
 import { cloudStorageApi } from '../api/cloudStorageApi';
 import { ImageLightboxModal } from '../components/ImageLightboxModal';
+import { isCustomAvatar } from '../utils/avatarUtils';
 
 type ProTab = 'overview' | 'bookings' | 'sales_rentals' | 'listings' | 'jobboard' | 'availability' | 'earnings' | 'client';
 
@@ -193,7 +195,7 @@ export const DashboardPage: React.FC = () => {
             userId: user.id,
             name: user.name || 'Creator Studio',
             title: 'Verified Professional Cinematographer & Photographer',
-            avatar: user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400',
+            avatar: user.avatar || '',
             bannerImage: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200',
             verified: true,
             rating: 4.9,
@@ -543,11 +545,17 @@ export const DashboardPage: React.FC = () => {
       <div className="pro-dashboard-header-card card">
         <div className="pro-header-profile-col">
           <div className="pro-avatar-wrapper">
-            <img 
-              src={user?.avatar || proProfile?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400'} 
-              alt={user?.name} 
-              className="pro-header-avatar"
-            />
+            {isCustomAvatar(user?.avatar || proProfile?.avatar) ? (
+              <img 
+                src={user?.avatar || proProfile?.avatar} 
+                alt={user?.name} 
+                className="pro-header-avatar"
+              />
+            ) : (
+              <div className="pro-header-avatar pro-header-avatar-placeholder">
+                <User size={36} />
+              </div>
+            )}
             {proProfile?.verified && (
               <span className="pro-verified-badge" title="Verified Creator">
                 <ShieldCheck size={14} color="#ffffff" />

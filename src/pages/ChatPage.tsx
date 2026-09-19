@@ -7,8 +7,10 @@ import {
   Send, 
   MessageSquare, 
   Loader2, 
-  CheckCheck
+  CheckCheck,
+  User
 } from 'lucide-react';
+import { isCustomAvatar } from '../utils/avatarUtils';
 
 export const ChatPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -59,7 +61,7 @@ export const ChatPage: React.FC = () => {
       setActiveOtherUserId(targetUserId);
       professionalApi.getProfileById(targetUserId)
         .then((p) => setActiveOtherUser({ name: p.name, avatar: p.avatar }))
-        .catch(() => setActiveOtherUser({ name: 'Creative Pro', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400' }));
+        .catch(() => setActiveOtherUser({ name: 'Creative Pro', avatar: '' }));
     }
   }, [targetUserId]);
 
@@ -159,11 +161,19 @@ export const ChatPage: React.FC = () => {
                     background: activeOtherUserId === t.otherUserId ? 'var(--bg-elevated)' : 'transparent',
                   }}
                 >
-                  <img
-                    src={t.otherUserAvatar}
-                    alt={t.otherUserName}
-                    style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover' }}
-                  />
+                  {isCustomAvatar(t.otherUserAvatar) ? (
+                    <img
+                      src={t.otherUserAvatar}
+                      alt={t.otherUserName}
+                      style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <div
+                      style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--bg-surface)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}
+                    >
+                      <User size={20} />
+                    </div>
+                  )}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <strong style={{ fontSize: 14 }} className="truncate">{t.otherUserName}</strong>
@@ -186,11 +196,19 @@ export const ChatPage: React.FC = () => {
           {activeOtherUserId ? (
             <>
               <div className="chat-room-header" style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
-                <img
-                  src={activeOtherUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400'}
-                  alt={activeOtherUser?.name}
-                  style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }}
-                />
+                {isCustomAvatar(activeOtherUser?.avatar) ? (
+                  <img
+                    src={activeOtherUser?.avatar}
+                    alt={activeOtherUser?.name}
+                    style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div
+                    style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--bg-surface)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}
+                  >
+                    <User size={18} />
+                  </div>
+                )}
                 <div>
                   <h3 style={{ fontSize: 15, fontWeight: 700 }}>{activeOtherUser?.name || 'User'}</h3>
                   <span style={{ fontSize: 11, color: 'var(--accent)' }}>● Direct Secure Messenger</span>

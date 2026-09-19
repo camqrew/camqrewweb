@@ -12,8 +12,10 @@ import {
   CheckCircle, 
   ArrowLeft, 
   Loader2, 
-  Lock
+  Lock,
+  User
 } from 'lucide-react';
+import { isCustomAvatar } from '../utils/avatarUtils';
 
 export const BookingPage: React.FC = () => {
   const { id: proId } = useParams<{ id: string }>();
@@ -286,7 +288,13 @@ export const BookingPage: React.FC = () => {
             <h3 className="summary-title" style={{ fontSize: 18, fontWeight: 700 }}>Booking Summary</h3>
 
             <div className="pro-summary-mini">
-              <img src={pro?.avatar} alt={pro?.name} className="mini-avatar" />
+              {isCustomAvatar(pro?.avatar) ? (
+                <img src={pro?.avatar} alt={pro?.name} className="mini-avatar" />
+              ) : (
+                <div className="mini-avatar mini-avatar-placeholder">
+                  <User size={20} />
+                </div>
+              )}
               <div>
                 <h4 className="mini-name">{pro?.name}</h4>
                 <p className="mini-title">{pro?.title}</p>

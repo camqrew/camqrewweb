@@ -32,7 +32,7 @@ const mapBooking = (b: any): Booking => {
       status: (m.status === 'paid' || m.status === 'released') ? 'released' : 'held',
     })) : [];
 
-  const proAvatar = b.professional_profiles?.users?.avatar || b.studio_bays?.users?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400';
+  const proAvatar = b.professional_profiles?.users?.avatar || b.studio_bays?.users?.avatar || '';
 
   return {
     id: String(b.id),

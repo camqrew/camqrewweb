@@ -24,6 +24,7 @@ import {
   Film
 } from 'lucide-react';
 import { useNotificationStore } from '../store/notificationStore';
+import { isCustomAvatar } from '../utils/avatarUtils';
 
 interface NavbarProps {
   theme: 'light' | 'dark';
@@ -217,7 +218,13 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
                 aria-expanded={profileDropdown}
                 aria-haspopup="true"
               >
-                <img src={user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400'} alt={user.name} className="nav-avatar" />
+                {isCustomAvatar(user.avatar) ? (
+                  <img src={user.avatar} alt={user.name} className="nav-avatar" />
+                ) : (
+                  <div className="nav-avatar nav-avatar-placeholder">
+                    <User size={15} />
+                  </div>
+                )}
                 <span className="nav-user-name">{user.name.split(' ')[0]}</span>
                 <ChevronDown size={14} className={`dropdown-chevron ${profileDropdown ? 'open' : ''}`} />
               </button>

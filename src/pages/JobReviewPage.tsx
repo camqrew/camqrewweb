@@ -11,10 +11,10 @@ import {
   ArrowLeft, 
   CheckCircle, 
   XCircle, 
-  Loader2, 
-  
-  
+  Loader2,
+  User
 } from 'lucide-react';
+import { isCustomAvatar } from '../utils/avatarUtils';
 
 export const JobReviewPage: React.FC = () => {
   const { id: jobId } = useParams<{ id: string }>();
@@ -146,11 +146,19 @@ export const JobReviewPage: React.FC = () => {
           </h3>
 
           <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap', marginBottom: 24 }}>
-            <img 
-              src={pro.avatar} 
-              alt={pro.name} 
-              style={{ width: 88, height: 88, borderRadius: '50%', objectFit: 'cover', border: 'none' }} 
-            />
+            {isCustomAvatar(pro.avatar) ? (
+              <img 
+                src={pro.avatar} 
+                alt={pro.name} 
+                style={{ width: 88, height: 88, borderRadius: '50%', objectFit: 'cover', border: 'none' }} 
+              />
+            ) : (
+              <div 
+                style={{ width: 88, height: 88, borderRadius: '50%', background: 'var(--bg-surface)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}
+              >
+                <User size={38} />
+              </div>
+            )}
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <h2 style={{ fontSize: 22, fontWeight: 800 }}>{pro.name}</h2>

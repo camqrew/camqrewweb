@@ -23,11 +23,13 @@ import {
   Film,
   Plus,
   ZoomIn,
-  Image as ImageIcon
+  Image as ImageIcon,
+  User
 } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
 import { SocialShareModal } from '../components/SocialShareModal';
 import { VideoReelsGallery } from '../components/VideoReelsGallery';
+import { isCustomAvatar } from '../utils/avatarUtils';
 import { ImageLightboxModal } from '../components/ImageLightboxModal';
 
 export const CreatorProfilePage: React.FC = () => {
@@ -193,7 +195,13 @@ export const CreatorProfilePage: React.FC = () => {
             <div className="card profile-header-card">
               <div className="avatar-header-row">
                 <div className="avatar-wrapper-lg">
-                  <img src={pro.avatar} alt={pro.name} className="profile-avatar-lg" />
+                  {isCustomAvatar(pro.avatar) ? (
+                    <img src={pro.avatar} alt={pro.name} className="profile-avatar-lg" />
+                  ) : (
+                    <div className="profile-avatar-lg avatar-placeholder-lg">
+                      <User size={48} />
+                    </div>
+                  )}
                   {pro.verified && (
                     <span className="badge-verified-lg" title="Verified Creator">
                       <CheckCircle2 size={22} fill="var(--accent)" color="#fff" />
@@ -490,7 +498,7 @@ export const CreatorProfilePage: React.FC = () => {
                     <div key={rev.id || i} className="review-feed-item">
                       <div className="review-author-meta-row">
                         <div className="reviewer-info-group">
-                          {rev.clientAvatar ? (
+                          {isCustomAvatar(rev.clientAvatar) ? (
                             <img src={rev.clientAvatar} alt={rev.clientName} className="reviewer-avatar-img" />
                           ) : (
                             <div className="reviewer-initials-badge">

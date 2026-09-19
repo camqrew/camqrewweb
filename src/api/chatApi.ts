@@ -57,7 +57,7 @@ export const chatApi = {
           id: otherUserId,
           otherUserId: otherUserId,
           otherUserName: otherUser.name || 'User',
-          otherUserAvatar: otherUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400',
+          otherUserAvatar: otherUser.avatar || '',
           lastMessage: m.text,
           lastMessageTime: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           unreadCount: (!isSender && !m.is_read) ? 1 : 0,
