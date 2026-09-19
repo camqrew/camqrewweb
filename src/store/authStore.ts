@@ -15,12 +15,42 @@ interface AuthStoreState {
   loadAuth: () => Promise<void>;
 }
 
+const getInitialAuthState = () => {
+  try {
+    const token = localStorage.getItem('@camqrew_token') || localStorage.getItem('@camcrew_token');
+    const userStr = localStorage.getItem('@camqrew_user') || localStorage.getItem('@camcrew_user');
+    if (token && userStr) {
+      const user = JSON.parse(userStr);
+      if (user && user.id) {
+        return {
+          user,
+          token,
+          isAuthenticated: true,
+          isLoading: false,
+          activeRole: (user.role as UserRole) || 'customer',
+        };
+      }
+    }
+  } catch (e) {
+    console.warn('Error reading initial auth from localStorage:', e);
+  }
+  return {
+    user: null,
+    token: null,
+    isAuthenticated: false,
+    isLoading: true,
+    activeRole: 'customer' as UserRole,
+  };
+};
+
+const initialAuth = getInitialAuthState();
+
 export const useAuthStore = create<AuthStoreState>((set, get) => ({
-  user: null,
-  token: null,
-  isAuthenticated: false,
-  isLoading: true,
-  activeRole: 'customer',
+  user: initialAuth.user,
+  token: initialAuth.token,
+  isAuthenticated: initialAuth.isAuthenticated,
+  isLoading: initialAuth.isLoading,
+  activeRole: initialAuth.activeRole,
 
   login: async (user: User, token: string) => {
     set({ user, token, isAuthenticated: true, activeRole: user.role, isLoading: false });

@@ -13,7 +13,7 @@ import {
 export const ChatPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, isLoading } = useAuthStore();
 
   const targetUserId = searchParams.get('userId');
 
@@ -29,10 +29,10 @@ export const ChatPage: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!isAuthenticated && !user) {
-      navigate('/login?redirect=/chat');
+    if (!isLoading && !isAuthenticated && !user) {
+      navigate('/login?redirect=/chat', { replace: true });
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isLoading, isAuthenticated, user, navigate]);
 
   const loadThreads = async () => {
     try {
@@ -115,6 +115,15 @@ export const ChatPage: React.FC = () => {
       setSending(false);
     }
   };
+
+  if (isLoading || (!isAuthenticated && !user)) {
+    return (
+      <div className="container" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+        <Loader2 size={36} className="animate-spin" color="var(--accent, #3fb668)" />
+        <p style={{ color: 'var(--text-muted, #888)', fontSize: '14px' }}>Loading messages...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="chat-page-container container" style={{ height: 'calc(100vh - 140px)' }}>

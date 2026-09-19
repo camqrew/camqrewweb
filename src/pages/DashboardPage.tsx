@@ -56,7 +56,7 @@ type ProTab = 'overview' | 'bookings' | 'sales_rentals' | 'listings' | 'jobboard
 
 export const DashboardPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, isAuthenticated, activeRole, setActiveRole } = useAuthStore();
+  const { user, isAuthenticated, isLoading, activeRole, setActiveRole } = useAuthStore();
   const navigate = useNavigate();
 
   const isProRole = user?.role === 'professional' || activeRole === 'professional';
@@ -148,10 +148,10 @@ export const DashboardPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!isAuthenticated && !user) {
-      navigate('/login?redirect=/dashboard');
+    if (!isLoading && !isAuthenticated && !user) {
+      navigate('/login?redirect=/dashboard', { replace: true });
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isLoading, isAuthenticated, user, navigate]);
 
   useEffect(() => {
     if (paramTab) {
@@ -519,6 +519,15 @@ export const DashboardPage: React.FC = () => {
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
+
+  if (isLoading || (!isAuthenticated && !user)) {
+    return (
+      <div className="container" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+        <Loader2 size={36} className="animate-spin" color="var(--accent, #3fb668)" />
+        <p style={{ color: 'var(--text-muted, #888)', fontSize: '14px' }}>Loading your dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-page container" style={{ paddingBottom: 60, minHeight: '80vh' }}>

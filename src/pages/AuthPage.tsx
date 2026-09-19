@@ -1,5 +1,5 @@
 import { Logo } from '../components/Logo';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { authApi } from '../api/authApi';
 import { useAuthStore } from '../store/authStore';
@@ -19,11 +19,19 @@ import {
 export const AuthPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { login } = useAuthStore();
+  const { user, isAuthenticated, isLoading, activeRole, login } = useAuthStore();
 
   const isRegisterParam = searchParams.get('mode') === 'register' || window.location.pathname.includes('register');
   const roleParam = searchParams.get('role') === 'professional' ? 'professional' : 'customer';
-  const redirectUrl = searchParams.get('redirect') || '/dashboard';
+  const redirectUrl = searchParams.get('redirect') || ((user?.role === 'professional' || activeRole === 'professional') ? '/dashboard?tab=overview' : '/dashboard');
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user) {
+      const explicitRedirect = searchParams.get('redirect');
+      const target = explicitRedirect || ((user.role === 'professional' || activeRole === 'professional') ? '/dashboard?tab=overview' : '/dashboard');
+      navigate(target, { replace: true });
+    }
+  }, [isLoading, isAuthenticated, user, activeRole, searchParams, navigate]);
 
   const [isSignUp, setIsSignUp] = useState(isRegisterParam);
   const [role, setRole] = useState<'customer' | 'professional'>(roleParam);
@@ -117,6 +125,17 @@ export const AuthPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  if (isLoading || (isAuthenticated && user)) {
+    return (
+      <div className="auth-page-container container" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+        <Loader2 size={36} className="animate-spin" color="var(--accent, #3fb668)" />
+        <p style={{ color: 'var(--text-muted, #888)', fontSize: '14px' }}>
+          {isAuthenticated ? 'Already signed in. Redirecting to your dashboard...' : 'Loading account...'}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-page-container container" style={{ maxWidth: isSignUp && role === 'professional' ? 520 : 480 }}>
