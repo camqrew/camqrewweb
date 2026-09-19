@@ -29,17 +29,17 @@ export const payoutApi = {
       return stored
         ? JSON.parse(stored)
         : {
-            upiId: 'thaha@okaxis',
-            accountNumber: '987654321098',
-            ifscCode: 'HDFC0001234',
-            accountHolderName: 'Mohammad Thaha Hussain',
+            upiId: '',
+            accountNumber: '',
+            ifscCode: '',
+            accountHolderName: '',
           };
     } catch (e) {
       return {
-        upiId: 'thaha@okaxis',
-        accountNumber: '987654321098',
-        ifscCode: 'HDFC0001234',
-        accountHolderName: 'Mohammad Thaha Hussain',
+        upiId: '',
+        accountNumber: '',
+        ifscCode: '',
+        accountHolderName: '',
       };
     }
   },
@@ -85,28 +85,7 @@ export const payoutApi = {
         return JSON.parse(localHistory);
       }
 
-      const defaultHistory: PayoutRecord[] = [
-        {
-          id: 'po-1',
-          amount: 25000,
-          method: 'upi',
-          destination: account.upiId,
-          status: 'completed',
-          createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-          transactionRef: 'pout_rzp_98421049',
-        },
-        {
-          id: 'po-2',
-          amount: 42000,
-          method: 'bank_account',
-          destination: "HDFC Bank (.." + account.accountNumber.slice(-4) + ")",
-          status: 'completed',
-          createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
-          transactionRef: 'pout_rzp_77312984',
-        },
-      ];
-      localStorage.setItem(PAYOUT_HISTORY_KEY, JSON.stringify(defaultHistory));
-      return defaultHistory;
+      return [];
     } catch (e) {
       console.warn('getPayoutHistory error:', e);
       return [];

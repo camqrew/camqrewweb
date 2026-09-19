@@ -71,29 +71,29 @@ export function parseVideoUrl(url: string): ParsedVideo {
 const mapPro = (row: any): ProfessionalProfile => {
   const user = row.users || {};
   const name = user.name || 'Creative Studio';
-  const avatar = user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400';
-  const banner = 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200';
+  const avatar = user.avatar || '';
+  const banner = row.banner_image || '';
 
   return {
     id: String(row.id),
     userId: String(row.id),
     name,
-    title: row.title || 'Creative Creator',
-    bio: row.bio || `${name} is a verified professional.`,
-    experienceYears: Number(row.experience_years || 5),
+    title: row.title || 'Creative Professional',
+    bio: row.bio || '',
+    experienceYears: Number(row.experience_years || 0),
     avatar,
     bannerImage: banner,
-    verified: row.verified !== undefined ? Boolean(row.verified) : true,
-    rating: Number(row.rating || 5.0),
+    verified: Boolean(row.verified),
+    rating: Number(row.rating || 0),
     reviewCount: Number(row.review_count || 0),
-    city: row.city || 'Mumbai',
-    state: row.state || 'Maharashtra',
-    district: row.district || row.city || 'Mumbai',
-    locations: Array.isArray(row.locations) ? row.locations : [row.city || 'Mumbai'],
-    categories: Array.isArray(row.categories) && row.categories.length > 0 ? row.categories : ['Photographers'],
-    ratePerDay: Number(row.rate_per_day || 15000),
-    equipment: Array.isArray(row.equipment) ? row.equipment : ['Cinema Camera', 'Prime Lenses', 'Lighting Rig'],
-    certifications: Array.isArray(row.certifications) ? row.certifications : ['Camqrew Verified Creator'],
+    city: row.city || '',
+    state: row.state || '',
+    district: row.district || row.city || '',
+    locations: Array.isArray(row.locations) ? row.locations : (row.city ? [row.city] : []),
+    categories: Array.isArray(row.categories) ? row.categories : [],
+    ratePerDay: Number(row.rate_per_day || 0),
+    equipment: Array.isArray(row.equipment) ? row.equipment : [],
+    certifications: Array.isArray(row.certifications) ? row.certifications : [],
     portfolio: Array.isArray(row.portfolio_items) ? row.portfolio_items.map((i: any) => i.media_url) : [],
     services: Array.isArray(row.services) ? row.services : [], 
     videoReels: Array.isArray(row.video_reels) ? row.video_reels : [],
@@ -355,13 +355,13 @@ export const professionalApi = {
                   id: reel.id || `pro_reel_${pro.id}_${idx}`,
                   creatorId: pro.id,
                   creatorName: pro.users?.name || 'Verified Creator',
-                  creatorAvatar: pro.users?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400',
-                  creatorTitle: pro.title || 'Professional Cinematographer',
-                  creatorCity: pro.city || 'Mumbai',
-                  creatorRatePerDay: pro.rate_per_day || 18000,
-                  creatorRating: pro.rating || 4.9,
-                  creatorVerified: pro.verified ?? true,
-                  likesCount: 240 + (idx * 65),
+                  creatorAvatar: pro.users?.avatar || '',
+                  creatorTitle: pro.title || 'Professional Creator',
+                  creatorCity: pro.city || '',
+                  creatorRatePerDay: pro.rate_per_day || 0,
+                  creatorRating: pro.rating || 0,
+                  creatorVerified: pro.verified ?? false,
+                  likesCount: (idx * 15),
                 });
               }
             });

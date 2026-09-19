@@ -48,13 +48,13 @@ export const AuthPage: React.FC = () => {
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
   
-  const [proTitle, setProTitle] = useState('Cinematographer & Drone Pilot');
-  const [ratePerDay, setRatePerDay] = useState('15000');
-  const [bio] = useState('Experienced creative professional available for shoots across India.');
+  const [proTitle, setProTitle] = useState('');
+  const [ratePerDay, setRatePerDay] = useState('');
+  const [bio] = useState('');
   const [location, setLocation] = useState({
-    state: 'Maharashtra',
-    district: 'Mumbai',
-    city: 'Mumbai',
+    state: '',
+    district: '',
+    city: '',
   });
 
   const [loading, setLoading] = useState(false);

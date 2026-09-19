@@ -86,7 +86,7 @@ export const DashboardPage: React.FC = () => {
   // Availability calendar state
   const [calendarMonth, setCalendarMonth] = useState<number>(new Date().getMonth());
   const [calendarYear, setCalendarYear] = useState<number>(new Date().getFullYear());
-  const [blockedDates, setBlockedDates] = useState<string[]>(['2026-09-24', '2026-09-25']);
+  const [blockedDates, setBlockedDates] = useState<string[]>([]);
 
   // Modals state
   const [showListGearModal, setShowListGearModal] = useState(false);
@@ -116,9 +116,9 @@ export const DashboardPage: React.FC = () => {
   const [newGearTitle, setNewGearTitle] = useState('');
   const [newGearCategory, setNewGearCategory] = useState('Cameras');
   const [newGearType, setNewGearType] = useState<'rental' | 'sale'>('rental');
-  const [newGearPrice, setNewGearPrice] = useState<number>(3500);
-  const [newGearCondition, setNewGearCondition] = useState('Like New');
-  const [newGearImage, setNewGearImage] = useState('https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800');
+  const [newGearPrice, setNewGearPrice] = useState<number>(0);
+  const [newGearCondition, setNewGearCondition] = useState('Brand New');
+  const [newGearImage, setNewGearImage] = useState('');
   const [newGearDesc, setNewGearDesc] = useState('');
 
   // Payout account form
@@ -190,41 +190,34 @@ export const DashboardPage: React.FC = () => {
             setBlockedDates(profile.blockedDates);
           }
         } catch {
-          // Provide rich creator defaults for immediate interactive use
+          // Provide clean zero defaults for new creator
           const fallbackPro: ProfessionalProfile = {
             id: user.id,
             userId: user.id,
-            name: user.name || 'Creator Studio',
-            title: 'Verified Professional Cinematographer & Photographer',
+            name: user.name || 'Creative Studio',
+            title: 'Creative Professional',
             avatar: user.avatar || '',
-            bannerImage: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200',
-            verified: true,
-            rating: 4.9,
-            reviewCount: 18,
-            experienceYears: 5,
-            ratePerDay: 18000,
-            bio: 'Award-winning cinematographer and visual director specializing in commercial, automotive, and fashion cinema.',
-            city: 'Mumbai',
-            state: 'Maharashtra',
-            district: 'Mumbai',
-            locations: ['Mumbai', 'Thane', 'Navi Mumbai'],
-            categories: ['Cinematographers', 'Photographers'],
-            equipment: ['Sony FX3 Cinema Line', 'Sony GM 24-70mm f/2.8', 'DJI Ronin RS3 Pro', 'Aputure 300d II Light'],
-            certifications: ['Camqrew Verified Creator'],
-            portfolio: [
-              'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800',
-              'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800',
-              'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=800'
-            ],
-            services: [
-              { id: 's1', title: 'Ad Film & Commercial Cinematography', category: 'Cinematography', rate: 22000, unit: 'day', description: 'Full cinema production package.' },
-              { id: 's2', title: 'Fashion & Editorial Lookbook Photoshoot', category: 'Photography', rate: 16000, unit: 'day', description: 'Studio or outdoor fashion shoot.' }
-            ],
+            bannerImage: '',
+            verified: false,
+            rating: 0,
+            reviewCount: 0,
+            experienceYears: 0,
+            ratePerDay: 0,
+            bio: '',
+            city: '',
+            state: '',
+            district: '',
+            locations: [],
+            categories: [],
+            equipment: [],
+            certifications: [],
+            portfolio: [],
+            services: [],
             reviews: [],
             weeklyAvailability: { mon: true, tue: true, wed: true, thu: true, fri: true, sat: true, sun: false },
-            blockedDates: ['2026-09-24', '2026-09-25'],
-            totalEarnings: 380000,
-            views: 1420
+            blockedDates: [],
+            totalEarnings: 0,
+            views: 0
           };
           setProProfile(fallbackPro);
         }
@@ -469,11 +462,27 @@ export const DashboardPage: React.FC = () => {
 
   // Instant Payout Request
   const handleRequestInstantPayout = async () => {
+    const clearedBalance = proBookings
+      .filter(b => b.status === 'completed')
+      .reduce((sum, b) => sum + (b.totalAmount || 0), 0)
+      - payouts.filter(p => p.status === 'completed').reduce((sum, p) => sum + (p.amount || 0), 0);
+    const availableAmount = Math.max(0, clearedBalance);
+
+    if (availableAmount <= 0) {
+      alert('You currently have ₹0 cleared balance available for payout.');
+      return;
+    }
+    if (!creatorAccount?.upiId) {
+      alert('Please link your UPI ID before requesting a payout.');
+      setShowAccountModal(true);
+      return;
+    }
+
     setPayoutInProgress(true);
     try {
-      const record = await payoutApi.requestInstantPayout(25000, 'upi');
+      const record = await payoutApi.requestInstantPayout(availableAmount, 'upi');
       setPayouts((prev) => [record, ...prev]);
-      showToast(`Payout sent! ₹25,000 transferred to ${creatorAccount?.upiId || 'UPI Account'}`);
+      showToast(`Payout sent! ₹${availableAmount.toLocaleString('en-IN')} transferred to ${creatorAccount.upiId}`);
     } catch (err: any) {
       alert(err.message || 'Payout transfer failed');
     } finally {
@@ -587,13 +596,13 @@ export const DashboardPage: React.FC = () => {
             <div className="pro-meta-pills">
               <span className="meta-pill rating-pill">
                 <Star size={13} fill="#f59e0b" color="#f59e0b" />
-                <strong>{proProfile?.rating?.toFixed(1) || '4.9'}</strong> ({proProfile?.reviewCount || 18} reviews)
+                <strong>{proProfile?.rating ? proProfile.rating.toFixed(1) : '0.0'}</strong> ({proProfile?.reviewCount || 0} reviews)
               </span>
               <span className="meta-pill">
-                Rate: <strong>₹{(proProfile?.ratePerDay || 18000).toLocaleString('en-IN')}/day</strong>
+                Rate: <strong>₹{(proProfile?.ratePerDay || 0).toLocaleString('en-IN')}/day</strong>
               </span>
               <span className="meta-pill">
-                Experience: <strong>{proProfile?.experienceYears || 5} Years</strong>
+                Experience: <strong>{proProfile?.experienceYears || 0} Years</strong>
               </span>
             </div>
           </div>
@@ -714,7 +723,7 @@ export const DashboardPage: React.FC = () => {
                   </div>
                   <div>
                     <span className="stat-label">Total Studio Earnings</span>
-                    <h3 className="stat-number">₹{(proProfile?.totalEarnings || 380000).toLocaleString('en-IN')}</h3>
+                    <h3 className="stat-number">₹{(proProfile?.totalEarnings || 0).toLocaleString('en-IN')}</h3>
                     <span className="stat-subtext">Verified escrow releases</span>
                   </div>
                 </div>
@@ -725,7 +734,7 @@ export const DashboardPage: React.FC = () => {
                   </div>
                   <div>
                     <span className="stat-label">This Month Bookings</span>
-                    <h3 className="stat-number">{proBookings.length > 0 ? proBookings.length : 8} Shoots</h3>
+                    <h3 className="stat-number">{proBookings.length} Shoots</h3>
                     <span className="stat-subtext">Active & confirmed schedule</span>
                   </div>
                 </div>
@@ -736,7 +745,7 @@ export const DashboardPage: React.FC = () => {
                   </div>
                   <div>
                     <span className="stat-label">Profile Views</span>
-                    <h3 className="stat-number">{(proProfile?.views || 1420).toLocaleString('en-IN')}</h3>
+                    <h3 className="stat-number">{(proProfile?.views || 0).toLocaleString('en-IN')}</h3>
                     <span className="stat-subtext">30-day client impressions</span>
                   </div>
                 </div>
@@ -747,8 +756,8 @@ export const DashboardPage: React.FC = () => {
                   </div>
                   <div>
                     <span className="stat-label">Average Client Rating</span>
-                    <h3 className="stat-number">{proProfile?.rating?.toFixed(1) || '4.9'} ★</h3>
-                    <span className="stat-subtext">From {proProfile?.reviewCount || 18} verified reviews</span>
+                    <h3 className="stat-number">{proProfile?.rating ? `${proProfile.rating.toFixed(1)} ★` : '0.0 ★'}</h3>
+                    <span className="stat-subtext">From {proProfile?.reviewCount || 0} verified reviews</span>
                   </div>
                 </div>
               </div>
@@ -762,28 +771,20 @@ export const DashboardPage: React.FC = () => {
                       <h3 className="chart-title">Monthly Revenue Trend</h3>
                       <p className="chart-subtitle">Escrow payouts received in 2026</p>
                     </div>
-                    <span className="chart-highlight-pill">+28% this quarter</span>
+                    <span className="chart-highlight-pill">₹{(proProfile?.totalEarnings || 0).toLocaleString('en-IN')} total</span>
                   </div>
 
                   <div className="revenue-bars-wrap">
-                    {[
-                      { month: 'Jan', value: 12000, height: 25 },
-                      { month: 'Feb', value: 25000, height: 48 },
-                      { month: 'Mar', value: 18000, height: 35 },
-                      { month: 'Apr', value: 32000, height: 62 },
-                      { month: 'May', value: 45000, height: 86 },
-                      { month: 'Jun', value: 38000, height: 72 },
-                      { month: 'Jul', value: 52000, height: 100, isPeak: true },
-                    ].map((item, idx) => (
-                      <div key={idx} className="revenue-bar-col">
+                    {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'].map((m) => (
+                      <div key={m} className="revenue-bar-col">
                         <div className="revenue-bar-track">
                           <div 
-                            className={`revenue-bar-fill ${item.isPeak ? 'is-peak' : ''}`}
-                            style={{ height: `${item.height}%` }}
-                            title={`${item.month}: ₹${item.value.toLocaleString('en-IN')}`}
+                            className="revenue-bar-fill"
+                            style={{ height: '0%' }}
+                            title={`${m}: ₹0`}
                           />
                         </div>
-                        <span className="bar-label">{item.month}</span>
+                        <span className="bar-label">{m}</span>
                       </div>
                     ))}
                   </div>
@@ -796,34 +797,31 @@ export const DashboardPage: React.FC = () => {
                       <h3 className="chart-title">Bookings by Category</h3>
                       <p className="chart-subtitle">Distribution of creative services</p>
                     </div>
-                    <span className="chart-highlight-pill">38 Total Shoots</span>
+                    <span className="chart-highlight-pill">{proBookings.length} Total Shoots</span>
                   </div>
 
-                  <div className="category-breakdown-list">
-                    {[
-                      { name: 'Commercial & Brand Films', count: 18, pct: 47, color: '#00dbe9' },
-                      { name: 'Fashion & Lookbook Shoots', count: 12, pct: 32, color: '#b600f8' },
-                      { name: 'Events & Documentaries', count: 8, pct: 21, color: '#22c55e' },
-                    ].map((cat, idx) => (
-                      <div key={idx} className="cat-breakdown-item">
-                        <div className="cat-breakdown-meta">
-                          <div className="cat-name-dot">
-                            <span className="cat-dot" style={{ background: cat.color }} />
-                            <span className="cat-name">{cat.name}</span>
+                  {proBookings.length === 0 ? (
+                    <div style={{ padding: '36px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                      <Calendar size={32} style={{ margin: '0 auto 8px', opacity: 0.4 }} />
+                      <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>No shoot bookings recorded yet</p>
+                    </div>
+                  ) : (
+                    <div className="category-breakdown-list">
+                      {proBookings.slice(0, 5).map((b, idx) => (
+                        <div key={idx} className="cat-breakdown-item">
+                          <div className="cat-breakdown-meta">
+                            <div className="cat-name-dot">
+                              <span className="cat-dot" style={{ background: '#3fb668' }} />
+                              <span className="cat-name">{b.serviceTitle || 'Shoot Service'}</span>
+                            </div>
+                            <span className="cat-stats">
+                              <strong>₹{b.totalAmount?.toLocaleString('en-IN')}</strong>
+                            </span>
                           </div>
-                          <span className="cat-stats">
-                            <strong>{cat.count} shoots</strong> ({cat.pct}%)
-                          </span>
                         </div>
-                        <div className="cat-progress-track">
-                          <div 
-                            className="cat-progress-fill" 
-                            style={{ width: `${cat.pct}%`, background: cat.color }} 
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1536,78 +1534,101 @@ export const DashboardPage: React.FC = () => {
           {/* ═════════════════════════════════════════════════════════
               TAB 7: PAYOUTS & EARNINGS
               ═════════════════════════════════════════════════════════ */}
-          {activeTab === 'earnings' && (
-            <div className="tab-earnings-content">
-              <div className="earnings-hero-card card">
-                <div className="earnings-hero-left">
-                  <span className="earnings-hero-label">Available Cleared Balance</span>
-                  <h2 className="earnings-hero-amount">₹38,000</h2>
-                  <p className="earnings-hero-sub">
-                    Ready for instant payout to: <strong>{creatorAccount?.upiId || 'thaha@okaxis'}</strong>
-                  </p>
+          {activeTab === 'earnings' && (() => {
+            const clearedBalance = proBookings
+              .filter(b => b.status === 'completed')
+              .reduce((sum, b) => sum + (b.totalAmount || 0), 0)
+              - payouts.filter(p => p.status === 'completed').reduce((sum, p) => sum + (p.amount || 0), 0);
+            const availableAmount = Math.max(0, clearedBalance);
+
+            return (
+              <div className="tab-earnings-content">
+                <div className="earnings-hero-card card">
+                  <div className="earnings-hero-left">
+                    <span className="earnings-hero-label">Available Cleared Balance</span>
+                    <h2 className="earnings-hero-amount">₹{availableAmount.toLocaleString('en-IN')}</h2>
+                    <p className="earnings-hero-sub">
+                      {creatorAccount?.upiId ? (
+                        <>Ready for instant payout to: <strong>{creatorAccount.upiId}</strong></>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)' }}>No UPI ID linked. Click below to add payout details.</span>
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="earnings-hero-right">
+                    <button 
+                      className="btn btn-primary instant-payout-btn"
+                      onClick={handleRequestInstantPayout}
+                      disabled={payoutInProgress || availableAmount <= 0 || !creatorAccount?.upiId}
+                      title={availableAmount <= 0 ? 'No cleared balance available for payout' : !creatorAccount?.upiId ? 'Please link your UPI ID first' : 'Request instant payout'}
+                    >
+                      {payoutInProgress ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <>
+                          <Zap size={16} /> Instant Payout via UPI →
+                        </>
+                      )}
+                    </button>
+
+                    <button 
+                      className="btn btn-outline btn-sm"
+                      onClick={() => setShowAccountModal(true)}
+                    >
+                      Manage Bank / UPI Account
+                    </button>
+                  </div>
                 </div>
 
-                <div className="earnings-hero-right">
-                  <button 
-                    className="btn btn-primary instant-payout-btn"
-                    onClick={handleRequestInstantPayout}
-                    disabled={payoutInProgress}
-                  >
-                    {payoutInProgress ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <>
-                        <Zap size={16} /> Instant Payout via UPI →
-                      </>
-                    )}
-                  </button>
+                {/* Payout Transactions History Table */}
+                <h3 className="section-heading" style={{ marginTop: 28, marginBottom: 16 }}>
+                  Payout History
+                </h3>
 
-                  <button 
-                    className="btn btn-outline btn-sm"
-                    onClick={() => setShowAccountModal(true)}
-                  >
-                    Manage Bank / UPI Account
-                  </button>
-                </div>
+                {payouts.length === 0 ? (
+                  <div className="card empty-state-card" style={{ padding: '40px 20px', textAlign: 'center' }}>
+                    <CreditCard size={40} color="var(--text-muted)" style={{ margin: '0 auto 12px' }} />
+                    <h4 style={{ margin: '0 0 6px', fontSize: 16 }}>No payout transactions yet</h4>
+                    <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
+                      When you withdraw cleared earnings to your UPI or bank account, records will appear here.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="card payouts-table-card">
+                    <table className="payouts-table">
+                      <thead>
+                        <tr>
+                          <th>Transaction Ref</th>
+                          <th>Method</th>
+                          <th>Destination</th>
+                          <th>Date</th>
+                          <th>Amount</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {payouts.map((po) => (
+                          <tr key={po.id}>
+                            <td className="tx-ref"><code>{po.transactionRef}</code></td>
+                            <td>{po.method.toUpperCase()}</td>
+                            <td>{po.destination}</td>
+                            <td>{new Date(po.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                            <td><strong style={{ color: 'var(--accent)' }}>₹{po.amount.toLocaleString('en-IN')}</strong></td>
+                            <td>
+                              <span className="status-pill status-completed">
+                                COMPLETED
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-
-              {/* Payout Transactions History Table */}
-              <h3 className="section-heading" style={{ marginTop: 28, marginBottom: 16 }}>
-                Payout History
-              </h3>
-
-              <div className="card payouts-table-card">
-                <table className="payouts-table">
-                  <thead>
-                    <tr>
-                      <th>Transaction Ref</th>
-                      <th>Method</th>
-                      <th>Destination</th>
-                      <th>Date</th>
-                      <th>Amount</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {payouts.map((po) => (
-                      <tr key={po.id}>
-                        <td className="tx-ref"><code>{po.transactionRef}</code></td>
-                        <td>{po.method.toUpperCase()}</td>
-                        <td>{po.destination}</td>
-                        <td>{new Date(po.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-                        <td><strong style={{ color: 'var(--accent)' }}>₹{po.amount.toLocaleString('en-IN')}</strong></td>
-                        <td>
-                          <span className="status-pill status-completed">
-                            COMPLETED
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ═════════════════════════════════════════════════════════
               TAB 8: CLIENT VIEW (CUSTOMER BOOKINGS & POSTED JOBS)
