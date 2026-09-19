@@ -53,6 +53,7 @@ import { ShootContractModal } from '../components/ShootContractModal';
 import { cloudStorageApi } from '../api/cloudStorageApi';
 import { ImageLightboxModal } from '../components/ImageLightboxModal';
 import { isCustomAvatar } from '../utils/avatarUtils';
+import { CustomSelect } from '../components/CustomSelect';
 
 type ProTab = 'overview' | 'bookings' | 'sales_rentals' | 'listings' | 'jobboard' | 'availability' | 'earnings' | 'client';
 
@@ -1748,30 +1749,32 @@ export const DashboardPage: React.FC = () => {
               <div className="form-row-2">
                 <div className="form-group">
                   <label className="form-label">Category</label>
-                  <select 
-                    className="input-field"
+                  <CustomSelect 
                     value={newGearCategory}
-                    onChange={(e) => setNewGearCategory(e.target.value)}
-                  >
-                    <option value="Cameras">Cameras</option>
-                    <option value="Lenses">Lenses</option>
-                    <option value="Lighting">Lighting</option>
-                    <option value="Audio">Audio</option>
-                    <option value="Drones">Drones</option>
-                    <option value="Gimbals">Gimbals & Rigs</option>
-                  </select>
+                    onChange={(val) => setNewGearCategory(val)}
+                    options={[
+                      { value: 'Cameras', label: 'Cameras' },
+                      { value: 'Lenses', label: 'Lenses' },
+                      { value: 'Lighting', label: 'Lighting' },
+                      { value: 'Audio', label: 'Audio' },
+                      { value: 'Drones', label: 'Drones' },
+                      { value: 'Gimbals', label: 'Gimbals & Rigs' },
+                    ]}
+                    searchable={false}
+                  />
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Listing Type</label>
-                  <select 
-                    className="input-field"
+                  <CustomSelect 
                     value={newGearType}
-                    onChange={(e) => setNewGearType(e.target.value as any)}
-                  >
-                    <option value="rental">For Rent (Per Day Rate)</option>
-                    <option value="sale">For Sale (Full Price)</option>
-                  </select>
+                    onChange={(val) => setNewGearType(val as any)}
+                    options={[
+                      { value: 'rental', label: 'For Rent (Per Day Rate)' },
+                      { value: 'sale', label: 'For Sale (Full Price)' },
+                    ]}
+                    searchable={false}
+                  />
                 </div>
               </div>
 
@@ -1782,7 +1785,7 @@ export const DashboardPage: React.FC = () => {
                   </label>
                   <input 
                     type="number" 
-                    className="input-field"
+                    className="input-field" 
                     value={newGearPrice}
                     onChange={(e) => setNewGearPrice(Number(e.target.value))}
                     required 
@@ -1791,16 +1794,17 @@ export const DashboardPage: React.FC = () => {
 
                 <div className="form-group">
                   <label className="form-label">Gear Condition</label>
-                  <select 
-                    className="input-field"
+                  <CustomSelect 
                     value={newGearCondition}
-                    onChange={(e) => setNewGearCondition(e.target.value)}
-                  >
-                    <option value="Brand New">Brand New</option>
-                    <option value="Like New">Like New (Mint)</option>
-                    <option value="Good">Good Condition</option>
-                    <option value="Fair">Fair / Workhorse</option>
-                  </select>
+                    onChange={(val) => setNewGearCondition(val)}
+                    options={[
+                      { value: 'Brand New', label: 'Brand New' },
+                      { value: 'Like New', label: 'Like New (Mint)' },
+                      { value: 'Good', label: 'Good Condition' },
+                      { value: 'Fair', label: 'Fair / Workhorse' },
+                    ]}
+                    searchable={false}
+                  />
                 </div>
               </div>
 
@@ -1998,19 +2002,20 @@ export const DashboardPage: React.FC = () => {
               <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div className="form-group">
                   <label className="form-label">Category / Tag</label>
-                  <select 
-                    className="input-field"
+                  <CustomSelect 
                     value={newReelCategory}
-                    onChange={(e) => setNewReelCategory(e.target.value)}
-                  >
-                    <option value="Cinematography">Cinematography</option>
-                    <option value="Wedding Film">Wedding Film</option>
-                    <option value="Commercial">Commercial / Brand</option>
-                    <option value="Fashion Reel">Fashion Reel</option>
-                    <option value="Drone & Aerial">Drone & Aerial</option>
-                    <option value="Music Video">Music Video</option>
-                    <option value="Event Highlight">Event Highlight</option>
-                  </select>
+                    onChange={(val) => setNewReelCategory(val)}
+                    options={[
+                      { value: 'Cinematography', label: 'Cinematography' },
+                      { value: 'Wedding Film', label: 'Wedding Film' },
+                      { value: 'Commercial', label: 'Commercial / Brand' },
+                      { value: 'Fashion Reel', label: 'Fashion Reel' },
+                      { value: 'Drone & Aerial', label: 'Drone & Aerial' },
+                      { value: 'Music Video', label: 'Music Video' },
+                      { value: 'Event Highlight', label: 'Event Highlight' },
+                    ]}
+                    searchable={false}
+                  />
                 </div>
 
                 <div className="form-group">

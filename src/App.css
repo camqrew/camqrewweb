@@ -2287,6 +2287,17 @@
   user-select: none;
 }
 
+.custom-select-root.is-open {
+  z-index: 60;
+}
+
+.form-group:has(.custom-select-root.is-open),
+.form-row-2:has(.custom-select-root.is-open),
+.form-row:has(.custom-select-root.is-open) {
+  position: relative;
+  z-index: 60;
+}
+
 /* Trigger button */
 .custom-select-trigger {
   width: 100%;
