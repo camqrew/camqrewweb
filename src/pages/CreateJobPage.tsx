@@ -9,7 +9,6 @@ import {
   Loader2, 
   ArrowLeft,
   Bell,
-  Sparkles,
   MapPin,
   ShieldCheck,
   CheckCircle,
@@ -296,7 +295,6 @@ export const CreateJobPage: React.FC = () => {
           {/* Live Card Preview */}
           <div className="card broadcast-preview-card">
             <div className="preview-card-header">
-              <Sparkles size={15} color="var(--accent)" />
               <span>Live Job Board Preview</span>
             </div>
 

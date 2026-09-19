@@ -5,7 +5,6 @@ import {
   Copy, 
   Check, 
   Share2, 
-  Sparkles,
   Star,
   ShieldCheck,
   CheckCircle2
@@ -108,7 +107,6 @@ export const SocialShareModal: React.FC<SocialShareModalProps> = ({
         {/* Floating Toast inside modal */}
         {toastMsg && (
           <div className="share-inline-toast">
-            <Sparkles size={14} />
             <span>{toastMsg}</span>
           </div>
         )}

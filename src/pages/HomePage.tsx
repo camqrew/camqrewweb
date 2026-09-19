@@ -7,7 +7,6 @@ import { CustomSelect } from '../components/CustomSelect';
 import { INDIA_LOCATIONS } from '../constants/locations';
 import { 
   Search, 
-  Sparkles, 
   ShieldCheck, 
   Radio, 
   ArrowRight, 
@@ -148,7 +147,6 @@ export const HomePage: React.FC = () => {
       <section className="hero-section">
         <div className="hero-container">
           <div className="hero-badge">
-            <Sparkles size={16} color="var(--accent)" />
             <span>India's Verified Creative Crew Marketplace</span>
           </div>
 

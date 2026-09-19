@@ -13,7 +13,6 @@ import {
   VolumeX, 
   ChevronUp, 
   ChevronDown, 
-  Sparkles, 
   MapPin, 
   ArrowRight,
   ExternalLink,
@@ -265,7 +264,7 @@ export const ReelsFeedPage: React.FC = () => {
                   <span className="reel-cat-badge">{currentReel?.category || 'Cinematography'}</span>
                   {currentReel?.isShort && (
                     <span className="reel-short-badge">
-                      <Sparkles size={11} /> 9:16 Short
+                      9:16 Short
                     </span>
                   )}
                 </div>

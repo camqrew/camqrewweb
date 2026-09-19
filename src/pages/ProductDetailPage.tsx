@@ -17,7 +17,6 @@ import {
   CheckCircle, 
   Package, 
   Clock, 
-  Sparkles, 
   ChevronRight,
   Layers,
   Zap,
@@ -166,7 +165,6 @@ export const ProductDetailPage: React.FC = () => {
   }
 
   const isRental = product.type === 'rental';
-  const isOfficial = product.isOfficial || false;
   const isUsed = product.isUsed || false;
 
   const allImages = product.gallery && product.gallery.length > 0
@@ -227,7 +225,6 @@ export const ProductDetailPage: React.FC = () => {
           <div className="product-hero-image-card card">
             <div className="product-hero-badge-strip">
               <span className={`detail-category-badge ${badgeClass}`}>
-                {isOfficial && <Sparkles size={12} style={{ marginRight: 4 }} />}
                 {badgeLabel}
               </span>
               <span className={`detail-stock-badge ${product.inStock ? 'in-stock' : 'out-of-stock'}`}>
