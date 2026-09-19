@@ -1,4 +1,3 @@
-import { Logo } from '../components/Logo';
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { authApi } from '../api/authApi';
@@ -140,11 +139,8 @@ export const AuthPage: React.FC = () => {
   return (
     <div className="auth-page-container container" style={{ maxWidth: isSignUp && role === 'professional' ? 520 : 480 }}>
       <div className="auth-card-redesigned card">
-        {/* Centered Logo & Title */}
+        {/* Title Header */}
         <div className="auth-header-block text-center">
-          <div className="auth-logo-center">
-            <Logo height={36} linkTo="/" />
-          </div>
           <h1 className="auth-title">
             {isSignUp ? 'Create Your Account' : 'Welcome Back'}
           </h1>
@@ -176,17 +172,6 @@ export const AuthPage: React.FC = () => {
         {!isSignUp ? (
           /* ================= SIGN IN FORM ================= */
           <div className="auth-form-body">
-            {/* Social Authentication: Google & Apple */}
-            <SocialAuthButtons
-              mode="signin"
-              redirectUrl={redirectUrl}
-              onError={setError}
-            />
-
-            <div className="auth-divider-line">
-              <span>or sign in with</span>
-            </div>
-
             <form onSubmit={handleLogin}>
               {/* Method Toggle: Email vs Mobile OTP */}
               <div className="auth-method-pill-switch">
@@ -288,6 +273,17 @@ export const AuthPage: React.FC = () => {
                 )}
               </button>
             </form>
+
+            <div className="auth-divider-line">
+              <span>or sign in with</span>
+            </div>
+
+            {/* Social Authentication: Google & Apple */}
+            <SocialAuthButtons
+              mode="signin"
+              redirectUrl={redirectUrl}
+              onError={setError}
+            />
           </div>
         ) : (
           /* ================= REGISTER FORM ================= */
@@ -326,18 +322,6 @@ export const AuthPage: React.FC = () => {
                   <span className="role-choice-sub">Pro Profile & Leads</span>
                 </button>
               </div>
-            </div>
-
-            {/* Social Authentication (Google & Apple) for Registration */}
-            <SocialAuthButtons
-              mode="signup"
-              role={role}
-              redirectUrl={redirectUrl}
-              onError={setError}
-            />
-
-            <div className="auth-divider-line">
-              <span>or register with email</span>
             </div>
 
             <form onSubmit={handleRegister}>
@@ -460,6 +444,18 @@ export const AuthPage: React.FC = () => {
               )}
             </button>
           </form>
+
+          <div className="auth-divider-line">
+            <span>or register with</span>
+          </div>
+
+          {/* Social Authentication (Google & Apple) for Registration */}
+          <SocialAuthButtons
+            mode="signup"
+            role={role}
+            redirectUrl={redirectUrl}
+            onError={setError}
+          />
         </div>
       )}
       </div>
