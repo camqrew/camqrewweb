@@ -49,6 +49,8 @@ import type { VideoReelItem } from '../types/professional';
 import { parseVideoUrl } from '../api/professionalApi';
 import { authApi } from '../api/authApi';
 import { ShootContractModal } from '../components/ShootContractModal';
+import { PhotoProofingModal } from '../components/PhotoProofingModal';
+import { CallSheetModal } from '../components/CallSheetModal';
 import { cloudStorageApi } from '../api/cloudStorageApi';
 import { ImageLightboxModal } from '../components/ImageLightboxModal';
 import { isCustomAvatar } from '../utils/avatarUtils';
@@ -129,6 +131,14 @@ export const DashboardPage: React.FC = () => {
   // Shoot Contract Modal State
   const [selectedContractBooking, setSelectedContractBooking] = useState<Booking | null>(null);
   const [showContractModal, setShowContractModal] = useState(false);
+
+  // Camqrew Vault (Photo Proofing) Modal State
+  const [selectedVaultBooking, setSelectedVaultBooking] = useState<Booking | null>(null);
+  const [showVaultModal, setShowVaultModal] = useState(false);
+
+  // Digital Call Sheet Modal State
+  const [selectedCallSheetBooking, setSelectedCallSheetBooking] = useState<Booking | null>(null);
+  const [showCallSheetModal, setShowCallSheetModal] = useState(false);
 
   // Account Deletion State
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
@@ -1271,6 +1281,30 @@ export const DashboardPage: React.FC = () => {
                             <FileText size={14} /> Contract
                           </button>
 
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-sm"
+                            onClick={() => {
+                              setSelectedVaultBooking(b);
+                              setShowVaultModal(true);
+                            }}
+                            title="Open Camqrew Vault Photo Proofing Gallery"
+                          >
+                            <Camera size={14} /> Vault Gallery
+                          </button>
+
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-sm"
+                            onClick={() => {
+                              setSelectedCallSheetBooking(b);
+                              setShowCallSheetModal(true);
+                            }}
+                            title="Open and broadcast Digital Call Sheet"
+                          >
+                            <FileText size={14} /> Call Sheet
+                          </button>
+
                           <Link 
                             to={`/chat?userId=${b.customerId}`} 
                             className="btn btn-outline btn-sm"
@@ -1688,6 +1722,30 @@ export const DashboardPage: React.FC = () => {
                             title="View and sign legal shoot contract"
                           >
                             <FileText size={14} /> Shoot Contract
+                          </button>
+
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-sm"
+                            onClick={() => {
+                              setSelectedVaultBooking(b);
+                              setShowVaultModal(true);
+                            }}
+                            title="Open Camqrew Vault Photo Proofing & Selection Gallery"
+                          >
+                            <Camera size={14} /> Vault (Proofing)
+                          </button>
+
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-sm"
+                            onClick={() => {
+                              setSelectedCallSheetBooking(b);
+                              setShowCallSheetModal(true);
+                            }}
+                            title="View Shoot Day Schedule & Call Sheet"
+                          >
+                            <FileText size={14} /> Call Sheet
                           </button>
                           <Link to={`/chat?userId=${b.professionalId}`} className="btn btn-outline btn-sm">
                             <MessageSquare size={14} /> Message Pro
@@ -2169,6 +2227,35 @@ export const DashboardPage: React.FC = () => {
           onClose={() => setShowContractModal(false)}
           onContractSigned={() => {
             loadDashboardData();
+          }}
+        />
+      )}
+
+      {/* ── CAMQREW VAULT PHOTO PROOFING MODAL ── */}
+      {showVaultModal && selectedVaultBooking && (
+        <PhotoProofingModal
+          isOpen={showVaultModal}
+          booking={selectedVaultBooking}
+          currentUserId={user?.id}
+          isClientView={activeTab === 'client'}
+          onClose={() => {
+            setShowVaultModal(false);
+            setSelectedVaultBooking(null);
+          }}
+          onMilestoneReleased={() => {
+            loadDashboardData();
+          }}
+        />
+      )}
+
+      {/* ── DIGITAL CALL SHEET & SHOOT SCHEDULE MODAL ── */}
+      {showCallSheetModal && selectedCallSheetBooking && (
+        <CallSheetModal
+          isOpen={showCallSheetModal}
+          booking={selectedCallSheetBooking}
+          onClose={() => {
+            setShowCallSheetModal(false);
+            setSelectedCallSheetBooking(null);
           }}
         />
       )}
