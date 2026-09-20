@@ -60,7 +60,7 @@ export const ProCard: React.FC<ProCardProps> = ({ pro }) => {
 
       <div className="pro-card-footer">
         <div className="pro-rate-box">
-          <span className="rate-label">Starting Rate</span>
+          <span className="rate-label">Starting from</span>
           <span className="rate-value">
             ₹{pro.ratePerDay?.toLocaleString('en-IN') || '—'}
             <small style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>

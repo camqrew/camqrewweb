@@ -1,4 +1,4 @@
-export type CategoryArchetype = 'media_crew' | 'catering' | 'event_management' | 'tech_digital';
+export type CategoryArchetype = 'media_crew' | 'catering' | 'event_management' | 'tech_digital' | 'beauty_bridal';
 
 export interface CategoryMeta {
   id: string;
@@ -38,7 +38,7 @@ export const ARCHETYPE_CONFIGS: Record<CategoryArchetype, ArchetypeConfig> = {
     archetype: 'media_crew',
     label: 'Media & Production Crew',
     roleNoun: 'Creator',
-    rateLabel: 'Starting Day Rate (₹)',
+    rateLabel: 'Starting from (₹)',
     ratePlaceholder: '15000',
     rateUnitDefault: 'Day',
     rateUnitOptions: ['Day', 'Half Day', 'Event', 'Project', 'Hour'],
@@ -78,7 +78,7 @@ export const ARCHETYPE_CONFIGS: Record<CategoryArchetype, ArchetypeConfig> = {
     archetype: 'catering',
     label: 'Catering & Culinary Services',
     roleNoun: 'Caterer',
-    rateLabel: 'Starting Rate per Plate / Guest (₹)',
+    rateLabel: 'Starting from per Plate (₹)',
     ratePlaceholder: '850',
     rateUnitDefault: 'Plate',
     rateUnitOptions: ['Plate', 'Guest', 'Event Package', 'Day', 'Fixed Package'],
@@ -120,7 +120,7 @@ export const ARCHETYPE_CONFIGS: Record<CategoryArchetype, ArchetypeConfig> = {
     archetype: 'event_management',
     label: 'Event Planning & Production',
     roleNoun: 'Organiser',
-    rateLabel: 'Starting Event Management Fee (₹)',
+    rateLabel: 'Starting from (₹)',
     ratePlaceholder: '75000',
     rateUnitDefault: 'Event',
     rateUnitOptions: ['Event', 'Project', 'Turnkey Package', 'Day', 'Custom'],
@@ -161,7 +161,7 @@ export const ARCHETYPE_CONFIGS: Record<CategoryArchetype, ArchetypeConfig> = {
     archetype: 'tech_digital',
     label: 'Software, Web & Digital Design',
     roleNoun: 'Developer',
-    rateLabel: 'Starting Project / Hourly Rate (₹)',
+    rateLabel: 'Starting from (₹)',
     ratePlaceholder: '35000',
     rateUnitDefault: 'Project',
     rateUnitOptions: ['Project', 'Hour', 'Sprint', 'Month', 'Day'],
@@ -199,6 +199,47 @@ export const ARCHETYPE_CONFIGS: Record<CategoryArchetype, ArchetypeConfig> = {
     serviceDeliverablesPlaceholder: 'e.g. Responsive Web App, Database Schema, Auth & Payment Integration, Deployment',
     bookingCtaPrefix: 'Hire Developer',
   },
+  beauty_bridal: {
+    archetype: 'beauty_bridal',
+    label: 'Beauty, Bridal Makeup & Mehendi Art',
+    roleNoun: 'Artist',
+    rateLabel: 'Starting from (₹)',
+    ratePlaceholder: '15000',
+    rateUnitDefault: 'Event',
+    rateUnitOptions: ['Event', 'Bride', 'Session', 'Person', 'Package'],
+    equipmentSectionTitle: 'Kit, Premium Products & Artistry',
+    equipmentInputLabel: 'Add Brands, Products & Tools',
+    equipmentInputPlaceholder: 'e.g. Temptu Airbrush, Charlotte Tilbury, MAC Pro, Organic Henna',
+    equipmentPresets: [
+      'HD & Airbrush Bridal Makeup',
+      'Temptu Airbrush System',
+      'Charlotte Tilbury & MAC Pro Kit',
+      'Huda Beauty & Estée Lauder',
+      'Dyson Supersonic & Airwrap',
+      '100% Organic Sojat Rajasthani Henna',
+      'Bridal Portrait Mehendi Art',
+      'Arabic & Indo-Western Henna',
+      'Fine Needle Henna Precision Cone',
+      'Jewellery & Saree/Lehenga Draping',
+      'Eyelash & Hair Extension Styling',
+    ],
+    skillsSectionTitle: 'Certifications & Masterclass Badges',
+    skillsInputLabel: 'Add Certifications & Diplomas',
+    skillsInputPlaceholder: 'e.g. Certified Bridal Makeup Artist, Airbrush Specialist',
+    skillsPresets: [
+      'Certified Bridal Makeup Artist',
+      'Temptu Certified Airbrush Specialist',
+      'Master Henna & Mehendi Artist Certificate',
+      'London School of Makeup Masterclass',
+      'CIDESCO Certified Aesthetician',
+    ],
+    travelCheckboxLabel: 'Available for bridal venue visits & destination weddings',
+    portfolioPromptTitle: 'Add Bridal Looks & Mehendi Stills',
+    portfolioPromptSubtitle: 'Showcase bridal transformations, intricate henna patterns, and hair styling.',
+    serviceTitlePlaceholder: 'e.g. Full Bridal HD Makeup & Hair Styling',
+    serviceDeliverablesPlaceholder: 'e.g. Airbrush Makeup, Lehenga Draping, Hair Extensions, Touch-up Kit',
+    bookingCtaPrefix: 'Book Artist',
+  },
 };
 
 export function getArchetype(categoryOrList?: string | string[]): ArchetypeConfig {
@@ -218,6 +259,9 @@ export function getArchetype(categoryOrList?: string | string[]): ArchetypeConfi
   }
   if (lowerCats.some(c => c.includes('develop') || c.includes('design') || c.includes('code') || c.includes('tech') || c.includes('web') || c.includes('app') || c.includes('software'))) {
     return ARCHETYPE_CONFIGS.tech_digital;
+  }
+  if (lowerCats.some(c => c.includes('makeup') || c.includes('mehendi') || c.includes('mehndi') || c.includes('beauty') || c.includes('bridal') || c.includes('hair') || c.includes('henna'))) {
+    return ARCHETYPE_CONFIGS.beauty_bridal;
   }
   return ARCHETYPE_CONFIGS.media_crew;
 }
@@ -254,6 +298,22 @@ export const PROFESSIONAL_CATEGORIES: CategoryMeta[] = [
     icon: 'calendar',
     description: 'Event Planning, Stage Direction & Logistics',
     bgGradient: ['#f857a6', '#ff5858'],
+  },
+  {
+    id: 'makeup_artists',
+    name: 'Makeup Artists',
+    archetype: 'beauty_bridal',
+    icon: 'heart',
+    description: 'Bridal, HD Airbrush, Party & Editorial Makeup',
+    bgGradient: ['#ff4b2b', '#ff416c'],
+  },
+  {
+    id: 'mehendi_artists',
+    name: 'Mehendi Artists',
+    archetype: 'beauty_bridal',
+    icon: 'palette',
+    description: 'Bridal Henna, Arabic, Indo-Western & Portrait Mehendi',
+    bgGradient: ['#11998e', '#38ef7d'],
   },
   {
     id: 'developers',

@@ -557,7 +557,7 @@ export const CreatorProfilePage: React.FC = () => {
           <aside className="profile-sidebar-col">
             <div className="card booking-sidebar-card">
               <div className="price-header">
-                <span className="price-label">Starting Rate</span>
+                <span className="price-label">Starting from</span>
                 <div className="price-val-row">
                   <span className="price-val">₹{pro.ratePerDay?.toLocaleString('en-IN')}</span>
                   <span className="price-unit">/ {proArchetype.rateUnitDefault.toLowerCase()}</span>

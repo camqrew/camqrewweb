@@ -19,7 +19,11 @@ import {
   CheckCircle,
   MapPin,
   ChevronDown,
-  X
+  X,
+  Heart,
+  Palette,
+  Utensils,
+  Calendar
 } from 'lucide-react';
 
 const POPULAR_HUBS = [
@@ -137,6 +141,10 @@ export const HomePage: React.FC = () => {
     { name: 'Photographers', icon: Camera, color: '#3fb668' },
     { name: 'Videographers', icon: Film, color: '#6366f1' },
     { name: 'Drone Pilots', icon: Plane, color: '#f59e0b' },
+    { name: 'Caterers', icon: Utensils, color: '#f97316' },
+    { name: 'Organisers', icon: Calendar, color: '#e11d48' },
+    { name: 'Makeup Artists', icon: Heart, color: '#ff416c' },
+    { name: 'Mehendi Artists', icon: Palette, color: '#10b981' },
     { name: 'Editors', icon: Scissors, color: '#ec4899' },
     { name: 'Studios', icon: Building2, color: '#10b981' },
     { name: 'Gear Rental', icon: ShoppingBag, color: '#8b5cf6', link: '/marketplace' },
