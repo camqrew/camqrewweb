@@ -361,7 +361,7 @@ export const professionalApi = {
                   creatorRatePerDay: pro.rate_per_day || 0,
                   creatorRating: pro.rating || 0,
                   creatorVerified: pro.verified ?? false,
-                  likesCount: (idx * 15),
+                  likesCount: 0,
                 });
               }
             });
@@ -369,153 +369,18 @@ export const professionalApi = {
         });
       }
 
-      const combined = [...dbReels, ...CURATED_FALLBACK_REELS];
       const seen = new Set<string>();
-      return combined.filter(r => {
+      return dbReels.filter(r => {
         const key = r.embedUrl || r.url || r.id;
         if (!key || seen.has(key)) return false;
         seen.add(key);
         return true;
       });
     } catch (err) {
-      console.warn('Failed to fetch reels from Supabase, using spotlight fallback:', err);
-      return CURATED_FALLBACK_REELS;
+      console.warn('Failed to fetch reels from Supabase:', err);
+      return [];
     }
   },
 };
 
-export const CURATED_FALLBACK_REELS: FeedReelItem[] = [
-  {
-    id: 'curated_1',
-    title: 'Supercar Sprint & Anamorphic Highway Cinema Run',
-    category: 'Commercial',
-    isShort: true,
-    type: 'direct',
-    url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
-    embedUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800',
-    creatorId: 'c1_arjun',
-    creatorName: 'Arjun Sharma',
-    creatorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400',
-    creatorTitle: 'Sony FX3 Commercial Cinematographer',
-    creatorCity: 'Mumbai',
-    creatorRatePerDay: 18000,
-    creatorRating: 4.95,
-    creatorVerified: true,
-    likesCount: 1840,
-  },
-  {
-    id: 'curated_2',
-    title: 'Scenic Royal Heritage & Landscape Showcase 4K',
-    category: 'Wedding Film',
-    isShort: false,
-    type: 'youtube',
-    url: 'https://www.youtube.com/watch?v=ScMzIvxBSi4',
-    embedUrl: 'https://www.youtube-nocookie.com/embed/ScMzIvxBSi4',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800',
-    creatorId: 'c2_rahul',
-    creatorName: 'Rahul & Meera Cinema',
-    creatorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400',
-    creatorTitle: 'Luxury Wedding Cinematographer',
-    creatorCity: 'Jaipur',
-    creatorRatePerDay: 25000,
-    creatorRating: 5.0,
-    creatorVerified: true,
-    likesCount: 3200,
-  },
-  {
-    id: 'curated_3',
-    title: 'Himalayan Ridge Chase & 4K Aerial FPV Flight',
-    category: 'Drone & Aerial',
-    isShort: true,
-    type: 'direct',
-    url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-    embedUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=800',
-    creatorId: 'c3_kabir',
-    creatorName: 'Kabir Sen',
-    creatorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400',
-    creatorTitle: 'DGCA Certified FPV Drone Pilot',
-    creatorCity: 'Manali',
-    creatorRatePerDay: 22000,
-    creatorRating: 4.92,
-    creatorVerified: true,
-    likesCount: 2750,
-  },
-  {
-    id: 'curated_4',
-    title: 'Tokyo Night Walk & Editorial Fashion BTS',
-    category: 'Fashion Reel',
-    isShort: false,
-    type: 'youtube',
-    url: 'https://www.youtube.com/watch?v=EngW7tLk6R8',
-    embedUrl: 'https://www.youtube-nocookie.com/embed/EngW7tLk6R8',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=800',
-    creatorId: 'c4_tanya',
-    creatorName: 'Tanya Kapoor',
-    creatorAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400',
-    creatorTitle: 'Editorial Fashion Director',
-    creatorCity: 'New Delhi',
-    creatorRatePerDay: 20000,
-    creatorRating: 4.88,
-    creatorVerified: true,
-    likesCount: 2190,
-  },
-  {
-    id: 'curated_5',
-    title: 'Dynamic Sports & Action Brand Commercial',
-    category: 'Commercial',
-    isShort: true,
-    type: 'direct',
-    url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-    embedUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=800',
-    creatorId: 'c5_vikram',
-    creatorName: 'Vikram Rao',
-    creatorAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400',
-    creatorTitle: 'High-Speed Action Cinematographer',
-    creatorCity: 'Bangalore',
-    creatorRatePerDay: 16000,
-    creatorRating: 4.9,
-    creatorVerified: true,
-    likesCount: 1680,
-  },
-  {
-    id: 'curated_6',
-    title: 'Tears of Steel Anamorphic Sci-Fi Cinema',
-    category: 'Cinematography',
-    isShort: true,
-    type: 'direct',
-    url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
-    embedUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=800',
-    creatorId: 'c6_priya',
-    creatorName: 'Priya Patel',
-    creatorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400',
-    creatorTitle: 'Cinema Director & Colorist',
-    creatorCity: 'Mumbai',
-    creatorRatePerDay: 24000,
-    creatorRating: 4.97,
-    creatorVerified: true,
-    likesCount: 3450,
-  },
-  {
-    id: 'curated_7',
-    title: '4K Costa Rica Tropical Wildlife & Color Showcase',
-    category: 'Cinematography',
-    isShort: false,
-    type: 'youtube',
-    url: 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
-    embedUrl: 'https://www.youtube-nocookie.com/embed/LXb3EKWsInQ',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800',
-    creatorId: 'c7_rohit',
-    creatorName: 'Rohit Varma',
-    creatorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400',
-    creatorTitle: 'Wildlife & Nature Documentarian',
-    creatorCity: 'Kochi',
-    creatorRatePerDay: 21000,
-    creatorRating: 4.93,
-    creatorVerified: true,
-    likesCount: 2900,
-  },
-];
+export const CURATED_FALLBACK_REELS: FeedReelItem[] = [];

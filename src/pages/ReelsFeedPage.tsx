@@ -57,7 +57,7 @@ export const ReelsFeedPage: React.FC = () => {
       setReels(data);
       const initialLikes: { [id: string]: number } = {};
       data.forEach(r => {
-        initialLikes[r.id] = r.likesCount || 150;
+        initialLikes[r.id] = r.likesCount || 0;
       });
       setLikeCounts(initialLikes);
     } catch (e) {
@@ -218,15 +218,21 @@ export const ReelsFeedPage: React.FC = () => {
         ) : filteredReels.length === 0 ? (
           <div className="reels-empty-box card">
             <Film size={48} color="var(--text-muted)" />
-            <h3>No reels found in this category</h3>
-            <p>Browse all categories to see cinematic showreels.</p>
-            <button 
-              type="button" 
-              className="btn btn-primary btn-sm"
-              onClick={() => setActiveCategory('All')}
-            >
-              Show All Categories
-            </button>
+            <h3>{reels.length === 0 ? 'No showreels uploaded yet' : 'No reels found in this category'}</h3>
+            <p>
+              {reels.length === 0
+                ? 'Creator video showreels will appear here once professionals upload them to their profiles.'
+                : 'Browse all categories to see cinematic showreels.'}
+            </p>
+            {activeCategory !== 'All' && (
+              <button 
+                type="button" 
+                className="btn btn-primary btn-sm"
+                onClick={() => setActiveCategory('All')}
+              >
+                Show All Categories
+              </button>
+            )}
           </div>
         ) : (
           <div className="reel-cinema-viewport">
