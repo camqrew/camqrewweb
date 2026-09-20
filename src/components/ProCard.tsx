@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import type { ProfessionalProfile } from '../types/professional';
 import { Star, MapPin, CheckCircle2, ArrowRight, User } from 'lucide-react';
 import { isCustomAvatar } from '../utils/avatarUtils';
+import { getArchetype } from '../constants/categories';
 
 interface ProCardProps {
   pro: ProfessionalProfile;
@@ -59,8 +60,13 @@ export const ProCard: React.FC<ProCardProps> = ({ pro }) => {
 
       <div className="pro-card-footer">
         <div className="pro-rate-box">
-          <span className="rate-label">Day Rate</span>
-          <span className="rate-value">₹{pro.ratePerDay?.toLocaleString('en-IN') || '—'}</span>
+          <span className="rate-label">Starting Rate</span>
+          <span className="rate-value">
+            ₹{pro.ratePerDay?.toLocaleString('en-IN') || '—'}
+            <small style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>
+              /{getArchetype(pro.categories).rateUnitDefault.toLowerCase()}
+            </small>
+          </span>
         </div>
         <div className="pro-card-actions">
           <Link to={`/creators/${pro.id}`} className="btn btn-outline btn-sm">

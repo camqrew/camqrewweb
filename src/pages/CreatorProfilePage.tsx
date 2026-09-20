@@ -31,6 +31,7 @@ import { SocialShareModal } from '../components/SocialShareModal';
 import { VideoReelsGallery } from '../components/VideoReelsGallery';
 import { isCustomAvatar } from '../utils/avatarUtils';
 import { ImageLightboxModal } from '../components/ImageLightboxModal';
+import { getArchetype } from '../constants/categories';
 
 export const CreatorProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -148,12 +149,14 @@ export const CreatorProfilePage: React.FC = () => {
     1: '⭐ Needs Improvement'
   };
 
+  const proArchetype = getArchetype(pro.categories);
+
   return (
     <div className="creator-profile-page">
       {/* Dynamic Open Graph / Twitter Meta Tags for WhatsApp & Social Sharing */}
       <SEOHead 
         title={`${pro.name} - ${pro.title}`}
-        description={`Book verified creator ${pro.name} (${pro.title}) in ${pro.city || pro.district}, ${pro.state}. Starting at ₹${pro.ratePerDay?.toLocaleString('en-IN')}/day with milestone escrow protection.`}
+        description={`Book verified ${proArchetype.roleNoun.toLowerCase()} ${pro.name} (${pro.title}) in ${pro.city || pro.district}, ${pro.state}. Starting at ₹${pro.ratePerDay?.toLocaleString('en-IN')}/${proArchetype.rateUnitDefault.toLowerCase()} with milestone escrow protection.`}
         image={pro.bannerImage || pro.avatar}
       />
 
@@ -239,19 +242,34 @@ export const CreatorProfilePage: React.FC = () => {
 
             {/* About Card */}
             <div className="card profile-section-card">
-              <h3 className="section-heading">About the Creator</h3>
+              <h3 className="section-heading">About the {proArchetype.roleNoun}</h3>
               <p className="bio-text">{pro.bio || 'No bio provided.'}</p>
             </div>
 
-            {/* Equipment Card */}
+            {/* Capabilities / Equipment Card */}
             {pro.equipment && pro.equipment.length > 0 && (
               <div className="card profile-section-card">
-                <h3 className="section-heading">Gear & Production Equipment</h3>
+                <h3 className="section-heading">{proArchetype.equipmentSectionTitle}</h3>
                 <div className="gear-grid">
                   {pro.equipment.map((item, idx) => (
                     <div key={idx} className="gear-item-card">
-                      <Camera size={18} color="var(--accent)" />
+                      <Briefcase size={18} color="var(--accent)" />
                       <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Certifications & Industry Badges Card */}
+            {pro.certifications && pro.certifications.length > 0 && (
+              <div className="card profile-section-card">
+                <h3 className="section-heading">{proArchetype.skillsSectionTitle}</h3>
+                <div className="gear-grid">
+                  {pro.certifications.map((cert, idx) => (
+                    <div key={idx} className="gear-item-card" style={{ borderColor: 'var(--accent-alpha, rgba(63, 182, 104, 0.25))' }}>
+                      <ShieldCheck size={18} color="var(--accent)" />
+                      <span>{cert}</span>
                     </div>
                   ))}
                 </div>
@@ -542,7 +560,7 @@ export const CreatorProfilePage: React.FC = () => {
                 <span className="price-label">Starting Rate</span>
                 <div className="price-val-row">
                   <span className="price-val">₹{pro.ratePerDay?.toLocaleString('en-IN')}</span>
-                  <span className="price-unit">/ day</span>
+                  <span className="price-unit">/ {proArchetype.rateUnitDefault.toLowerCase()}</span>
                 </div>
               </div>
 
@@ -558,7 +576,7 @@ export const CreatorProfilePage: React.FC = () => {
 
               <div className="action-buttons-stack">
                 <Link to={`/book/${pro.id}`} className="btn btn-primary btn-lg full-width">
-                  Book This Creator <ChevronRight size={18} />
+                  {proArchetype.bookingCtaPrefix} <ChevronRight size={18} />
                 </Link>
 
                 <Link to={`/chat?userId=${pro.id}`} className="btn btn-outline full-width">
@@ -575,7 +593,7 @@ export const CreatorProfilePage: React.FC = () => {
               </div>
 
               <div className="guarantee-points">
-                <span>✓ Verified equipment & skills</span>
+                <span>✓ Verified capabilities & credentials</span>
                 <span>✓ Direct calendar booking</span>
                 <span>✓ 100% money back if cancelled per policy</span>
               </div>

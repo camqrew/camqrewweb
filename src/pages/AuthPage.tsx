@@ -14,6 +14,7 @@ import {
   ArrowRight,
   CheckCircle2
 } from 'lucide-react';
+import { getArchetype, PROFESSIONAL_CATEGORIES } from '../constants/categories';
 
 export const AuthPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -47,6 +48,8 @@ export const AuthPage: React.FC = () => {
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
   
+  const [selectedCategory, setSelectedCategory] = useState('Photographers');
+  const proArchetype = getArchetype(selectedCategory);
   const [proTitle, setProTitle] = useState('');
   const [ratePerDay, setRatePerDay] = useState('');
   const [bio] = useState('');
@@ -113,7 +116,7 @@ export const AuthPage: React.FC = () => {
           state: location.state,
           district: location.district,
           city: location.city,
-          categories: ['Photographers', 'Videographers'],
+          categories: [selectedCategory],
         });
         await login(res.user, res.token);
       }
@@ -395,13 +398,52 @@ export const AuthPage: React.FC = () => {
             {/* Professional Specific Fields */}
             {role === 'professional' && (
               <div className="creator-fields-block">
+                <div className="auth-field-group">
+                  <label className="auth-field-label">Select Primary Category *</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6, marginBottom: 14 }}>
+                    {PROFESSIONAL_CATEGORIES.map(cat => {
+                      const isSel = selectedCategory === cat.name;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => setSelectedCategory(cat.name)}
+                          style={{
+                            padding: '6px 14px',
+                            borderRadius: 20,
+                            border: isSel ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border, #333)',
+                            background: isSel ? 'var(--accent-alpha, rgba(63, 182, 104, 0.15))' : 'var(--surface-elevated, #1f2937)',
+                            color: isSel ? 'var(--accent, #3fb668)' : 'var(--text-primary, #fff)',
+                            fontSize: 13,
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          {cat.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div className="auth-form-row-2">
                   <div className="auth-field-group">
                     <label className="auth-field-label">Professional title *</label>
                     <input
                       type="text"
                       className="auth-input-box no-icon"
-                      placeholder="e.g. Cinematographer & Drone"
+                      placeholder={
+                        selectedCategory === 'Caterers'
+                          ? 'e.g. Master Chef & Wedding Catering'
+                          : selectedCategory === 'Organisers'
+                          ? 'e.g. Turnkey Event Production & Stage Director'
+                          : selectedCategory === 'Developers'
+                          ? 'e.g. Full-Stack Web & Mobile Developer'
+                          : selectedCategory === 'Designers'
+                          ? 'e.g. UI/UX & Brand Identity Specialist'
+                          : 'e.g. Cinematographer & Drone Pilot'
+                      }
                       value={proTitle}
                       onChange={(e) => setProTitle(e.target.value)}
                       required
@@ -409,11 +451,11 @@ export const AuthPage: React.FC = () => {
                   </div>
 
                   <div className="auth-field-group">
-                    <label className="auth-field-label">Starting day rate (₹) *</label>
+                    <label className="auth-field-label">{proArchetype.rateLabel} *</label>
                     <input
                       type="number"
                       className="auth-input-box no-icon"
-                      placeholder="15000"
+                      placeholder={proArchetype.ratePlaceholder}
                       value={ratePerDay}
                       onChange={(e) => setRatePerDay(e.target.value)}
                       required

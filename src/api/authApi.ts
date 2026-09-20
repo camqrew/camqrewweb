@@ -164,6 +164,8 @@ export const authApi = {
       city: data.city,
       rate_per_day: data.ratePerDay,
       categories: data.categories || ['Photographers'],
+      equipment: data.equipment || [],
+      skills: data.skills || data.certifications || [],
     }]);
 
     return {
