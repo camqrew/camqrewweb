@@ -349,7 +349,7 @@ export const ReelsFeedPage: React.FC = () => {
                   <Heart 
                     size={22} 
                     fill={likedReels[currentReel?.id || ''] ? '#ff3b5c' : 'none'} 
-                    color={likedReels[currentReel?.id || ''] ? '#ff3b5c' : '#ffffff'} 
+                    color={likedReels[currentReel?.id || ''] ? '#ff3b5c' : 'currentColor'} 
                   />
                 </div>
                 <span className="action-label">
