@@ -94,7 +94,20 @@ export const VideoReelsGallery: React.FC<VideoReelsGalleryProps> = ({
               tabIndex={0}
             >
               <div className="reel-card-thumbnail-wrap">
-                <img src={thumb} alt={reel.title} loading="lazy" className="reel-card-thumb-img" />
+                {reel.thumbnailUrl ? (
+                  <img src={reel.thumbnailUrl} alt={reel.title} loading="lazy" className="reel-card-thumb-img" />
+                ) : (reel.type === 'direct' || reel.url?.includes('.mp4')) ? (
+                  <video 
+                    src={reel.url || reel.embedUrl}
+                    preload="metadata"
+                    muted
+                    playsInline
+                    className="reel-card-thumb-img"
+                    style={{ objectFit: 'cover' }}
+                  />
+                ) : (
+                  <img src={thumb} alt={reel.title} loading="lazy" className="reel-card-thumb-img" />
+                )}
                 
                 <div className="reel-card-overlay">
                   <div className="reel-play-circle">
@@ -103,7 +116,7 @@ export const VideoReelsGallery: React.FC<VideoReelsGalleryProps> = ({
 
                   <div className="reel-badge-top-row">
                     <span className="reel-platform-tag">
-                      {reel.type === 'youtube' ? (isShort ? 'Shorts' : 'YouTube') : reel.type === 'vimeo' ? 'Vimeo' : 'Video'}
+                      {isShort ? '9:16 Reel' : 'Cinema Video'}
                     </span>
                     {reel.category && (
                       <span className="reel-category-tag">{reel.category}</span>
@@ -148,7 +161,7 @@ export const VideoReelsGallery: React.FC<VideoReelsGalleryProps> = ({
             <div className={`theater-player-frame ${activeReel.isShort ? 'frame-vertical-short' : 'frame-widescreen'}`}>
               {activeReel.type === 'direct' ? (
                 <video 
-                  src={activeReel.embedUrl} 
+                  src={activeReel.embedUrl || activeReel.url} 
                   controls 
                   autoPlay 
                   playsInline 
@@ -156,7 +169,7 @@ export const VideoReelsGallery: React.FC<VideoReelsGalleryProps> = ({
                 />
               ) : (
                 <iframe
-                  src={activeReel.embedUrl}
+                  src={activeReel.embedUrl || activeReel.url}
                   title={activeReel.title}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
@@ -171,14 +184,25 @@ export const VideoReelsGallery: React.FC<VideoReelsGalleryProps> = ({
                 Interested in booking a shoot with this visual style?
               </span>
               <div className="theater-footer-btns">
-                <a 
-                  href={activeReel.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="btn btn-ghost btn-sm"
-                >
-                  <ExternalLink size={14} /> Open on {activeReel.type === 'youtube' ? 'YouTube' : 'Vimeo'}
-                </a>
+                {activeReel.type === 'direct' ? (
+                  <a 
+                    href={activeReel.url || activeReel.embedUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="btn btn-ghost btn-sm"
+                  >
+                    <ExternalLink size={14} /> Open Video
+                  </a>
+                ) : (
+                  <a 
+                    href={activeReel.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="btn btn-ghost btn-sm"
+                  >
+                    <ExternalLink size={14} /> Open on {activeReel.type === 'youtube' ? 'YouTube' : 'Vimeo'}
+                  </a>
+                )}
                 {onBookClick && (
                   <button 
                     type="button" 

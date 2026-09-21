@@ -85,4 +85,46 @@ export const cloudStorageApi = {
     }
     return urls;
   },
+
+  /**
+   * Upload a video File object directly to Supabase Storage ('reels' bucket).
+   * Returns public CDN URL of the uploaded video.
+   */
+  uploadVideo: async (
+    file: File,
+    folder: string = 'reels'
+  ): Promise<UploadResponse> => {
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'mp4';
+      const cleanExt = ext.replace(/[^a-z0-9]/g, '');
+      const filename = `reel_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${cleanExt || 'mp4'}`;
+      const filePath = filename;
+
+      // Upload directly to reels/target bucket
+      const uploadResult = await supabase.storage
+        .from(folder)
+        .upload(filePath, file, {
+          upsert: true,
+          contentType: file.type || `video/${cleanExt === 'mov' ? 'quicktime' : cleanExt === 'webm' ? 'webm' : 'mp4'}`,
+        });
+
+      if (uploadResult.error) {
+        throw new Error(uploadResult.error.message);
+      }
+
+      // Get public CDN URL
+      const { data: publicData } = supabase.storage
+        .from(folder)
+        .getPublicUrl(uploadResult.data.path);
+
+      return {
+        url: publicData.publicUrl,
+        publicId: uploadResult.data.path,
+        success: true,
+      };
+    } catch (e: any) {
+      console.error('Video upload failed:', e.message);
+      throw new Error('Video upload failed: ' + (e.message || 'Network error'));
+    }
+  },
 };

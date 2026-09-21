@@ -18,15 +18,18 @@ import {
   ExternalLink,
   Loader2,
   Check,
-  User
+  User,
+  Plus
 } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
 import { isCustomAvatar } from '../utils/avatarUtils';
+import { useAuthStore } from '../store/authStore';
 
 const CATEGORIES = ['All', 'Commercial', 'Wedding Film', 'Drone & Aerial', 'Fashion Reel', 'Cinematography'];
 
 export const ReelsFeedPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [reels, setReels] = useState<FeedReelItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
@@ -197,15 +200,26 @@ export const ReelsFeedPage: React.FC = () => {
           ))}
         </div>
 
-        <button
-          type="button"
-          className="reels-sound-toggle-btn"
-          onClick={() => setIsMuted(m => !m)}
-          title={isMuted ? "Unmute (M)" : "Mute (M)"}
-        >
-          {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} color="var(--accent, #3fb668)" />}
-          <span className="sound-text">{isMuted ? "Muted" : "Sound On"}</span>
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {user?.role === 'professional' && (
+            <Link
+              to="/dashboard?tab=overview"
+              className="btn btn-primary btn-sm"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 20, padding: '6px 14px', fontSize: 12, fontWeight: 700 }}
+            >
+              <Plus size={14} /> Upload Reel
+            </Link>
+          )}
+          <button
+            type="button"
+            className="reels-sound-toggle-btn"
+            onClick={() => setIsMuted(m => !m)}
+            title={isMuted ? "Unmute (M)" : "Mute (M)"}
+          >
+            {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} color="var(--accent, #3fb668)" />}
+            <span className="sound-text">{isMuted ? "Muted" : "Sound On"}</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Content Area */}
@@ -224,7 +238,15 @@ export const ReelsFeedPage: React.FC = () => {
                 ? 'Creator video showreels will appear here once professionals upload them to their profiles.'
                 : 'Browse all categories to see cinematic showreels.'}
             </p>
-            {activeCategory !== 'All' && (
+            {user?.role === 'professional' ? (
+              <Link
+                to="/dashboard?tab=overview"
+                className="btn btn-primary btn-sm"
+                style={{ marginTop: 12 }}
+              >
+                <Plus size={14} /> Upload Video Reel
+              </Link>
+            ) : activeCategory !== 'All' ? (
               <button 
                 type="button" 
                 className="btn btn-primary btn-sm"
@@ -232,7 +254,7 @@ export const ReelsFeedPage: React.FC = () => {
               >
                 Show All Categories
               </button>
-            )}
+            ) : null}
           </div>
         ) : (
           <div className="reel-cinema-viewport">

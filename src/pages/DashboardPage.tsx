@@ -96,6 +96,10 @@ export const DashboardPage: React.FC = () => {
 
   // Video Reel Modal state
   const [showReelModal, setShowReelModal] = useState(false);
+  const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
+  const [videoUploadProgress, setVideoUploadProgress] = useState<string | null>(null);
+  const [showUrlFallback, setShowUrlFallback] = useState(false);
   const [newReelUrl, setNewReelUrl] = useState('');
   const [newReelTitle, setNewReelTitle] = useState('');
   const [newReelCategory, setNewReelCategory] = useState('Cinematography');
@@ -311,24 +315,70 @@ export const DashboardPage: React.FC = () => {
     }
   };
 
-  const handleAddVideoReel = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newReelUrl.trim()) {
-      alert('Please enter a valid YouTube, YouTube Shorts, or Vimeo video URL.');
+  const handleSelectVideoFile = (file: File) => {
+    if (!file.type.startsWith('video/')) {
+      alert('Please select a valid video file (.mp4, .mov, .webm)');
       return;
     }
+    if (file.size > 100 * 1024 * 1024) {
+      alert('Video file size exceeds the 100MB limit. Please compress or select a smaller clip.');
+      return;
+    }
+    setSelectedVideoFile(file);
+    const objectUrl = URL.createObjectURL(file);
+    setVideoPreviewUrl(objectUrl);
+    if (!newReelTitle) {
+      setNewReelTitle(file.name.replace(/\.[^/.]+$/, ''));
+    }
+
+    const tempVid = document.createElement('video');
+    tempVid.src = objectUrl;
+    tempVid.onloadedmetadata = () => {
+      if (tempVid.videoHeight > tempVid.videoWidth) {
+        setNewReelIsShort(true);
+      } else {
+        setNewReelIsShort(false);
+      }
+    };
+  };
+
+  const handleAddVideoReel = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedVideoFile && !newReelUrl.trim()) {
+      alert('Please select a video file or enter a video URL.');
+      return;
+    }
+
     setSavingReel(true);
     try {
-      const parsed = parseVideoUrl(newReelUrl);
+      let finalUrl = '';
+      let finalType: 'direct' | 'youtube' | 'vimeo' = 'direct';
+      let finalEmbedUrl = '';
+      let finalThumb: string | undefined = undefined;
+
+      if (selectedVideoFile) {
+        setVideoUploadProgress('Uploading video to Camqrew Reels...');
+        const res = await cloudStorageApi.uploadVideo(selectedVideoFile, 'reels');
+        finalUrl = res.url;
+        finalEmbedUrl = res.url;
+        finalType = 'direct';
+      } else if (newReelUrl.trim()) {
+        const parsed = parseVideoUrl(newReelUrl);
+        finalUrl = newReelUrl.trim();
+        finalType = parsed.type;
+        finalEmbedUrl = parsed.embedUrl;
+        finalThumb = parsed.thumbnailUrl;
+      }
+
       const newReel: VideoReelItem = {
         id: 'reel_' + Date.now(),
-        title: newReelTitle.trim() || (parsed.isShort ? 'Vertical Reel' : 'Cinematic Showreel'),
-        url: newReelUrl.trim(),
-        type: parsed.type,
-        embedUrl: parsed.embedUrl,
-        thumbnailUrl: parsed.thumbnailUrl,
+        title: newReelTitle.trim() || (selectedVideoFile ? selectedVideoFile.name.replace(/\.[^/.]+$/, '') : (newReelIsShort ? 'Vertical Reel' : 'Cinematic Showreel')),
+        url: finalUrl,
+        type: finalType,
+        embedUrl: finalEmbedUrl,
+        thumbnailUrl: finalThumb,
         category: newReelCategory || 'Cinematography',
-        isShort: newReelIsShort !== undefined ? newReelIsShort : parsed.isShort,
+        isShort: newReelIsShort,
       };
 
       const existingReels = proProfile?.videoReels || [];
@@ -337,6 +387,15 @@ export const DashboardPage: React.FC = () => {
       await professionalApi.updateProfile({ videoReels: updatedReels });
       setProProfile(prev => prev ? { ...prev, videoReels: updatedReels } : null);
       showToast('🎉 Video reel successfully published to your creator profile!');
+
+      // Reset state
+      setSelectedVideoFile(null);
+      if (videoPreviewUrl) {
+        URL.revokeObjectURL(videoPreviewUrl);
+        setVideoPreviewUrl(null);
+      }
+      setVideoUploadProgress(null);
+      setShowUrlFallback(false);
       setShowReelModal(false);
       setNewReelUrl('');
       setNewReelTitle('');
@@ -344,6 +403,7 @@ export const DashboardPage: React.FC = () => {
       alert(err.message || 'Failed to save video reel');
     } finally {
       setSavingReel(false);
+      setVideoUploadProgress(null);
     }
   };
 
@@ -1084,14 +1144,14 @@ export const DashboardPage: React.FC = () => {
                   <div className="empty-reels-box">
                     <Film size={36} className="empty-reels-icon" />
                     <h4>No video reels added yet</h4>
-                    <p>Add YouTube videos, cinematic teasers, and 9:16 vertical shorts to attract more clients.</p>
+                    <p>Upload real video files, cinematic teasers, and 9:16 vertical reels to showcase your work to clients.</p>
                     <button 
                       type="button" 
                       className="btn btn-outline btn-sm"
                       onClick={() => setShowReelModal(true)}
                       style={{ marginTop: 12 }}
                     >
-                      <Plus size={14} /> Add First Reel
+                      <Plus size={14} /> Upload First Reel
                     </button>
                   </div>
                 ) : (
@@ -1099,13 +1159,30 @@ export const DashboardPage: React.FC = () => {
                     {proProfile.videoReels.map((reel) => (
                       <div key={reel.id} className="pro-dashboard-reel-card">
                         <div className="pro-reel-thumb-container">
-                          <img 
-                            src={reel.thumbnailUrl || 'https://images.unsplash.com/photo-1518173946687-a4c8a383392e?q=80&w=800'} 
-                            alt={reel.title} 
-                            className="pro-reel-thumb-img"
-                          />
+                          {reel.thumbnailUrl ? (
+                            <img 
+                              src={reel.thumbnailUrl} 
+                              alt={reel.title} 
+                              className="pro-reel-thumb-img"
+                            />
+                          ) : (reel.type === 'direct' || reel.url?.includes('.mp4')) ? (
+                            <video 
+                              src={reel.url || reel.embedUrl}
+                              preload="metadata"
+                              muted
+                              playsInline
+                              className="pro-reel-thumb-img"
+                              style={{ objectFit: 'cover', background: '#000' }}
+                            />
+                          ) : (
+                            <img 
+                              src="https://images.unsplash.com/photo-1518173946687-a4c8a383392e?q=80&w=800" 
+                              alt={reel.title} 
+                              className="pro-reel-thumb-img"
+                            />
+                          )}
                           <span className="pro-reel-type-pill">
-                            {reel.isShort ? '9:16 Short' : '16:9 Cinema'}
+                            {reel.isShort ? '9:16 Reel' : '16:9 Cinema'}
                           </span>
                         </div>
                         <div className="pro-reel-details">
@@ -1118,7 +1195,7 @@ export const DashboardPage: React.FC = () => {
                               rel="noopener noreferrer" 
                               className="pro-reel-external-link"
                             >
-                              <ExternalLink size={12} /> Test Link
+                              <ExternalLink size={12} /> View Video
                             </a>
                             <button 
                               type="button"
@@ -2005,8 +2082,14 @@ export const DashboardPage: React.FC = () => {
 
       {/* ── MODAL: ADD VIDEO REEL / SHOWREEL ── */}
       {showReelModal && (
-        <div className="dashboard-modal-backdrop" onClick={() => setShowReelModal(false)}>
-          <div className="dashboard-modal-content card" onClick={(e) => e.stopPropagation()}>
+        <div className="dashboard-modal-backdrop" onClick={() => {
+          if (savingReel) return;
+          setShowReelModal(false);
+          setSelectedVideoFile(null);
+          if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+          setVideoPreviewUrl(null);
+        }}>
+          <div className="dashboard-modal-content card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 540 }}>
             <div className="modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(63, 182, 104, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3fb668' }}>
@@ -2014,54 +2097,139 @@ export const DashboardPage: React.FC = () => {
                 </div>
                 <div>
                   <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Add Video Reel or Showreel</h3>
-                  <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>YouTube, YouTube Shorts, or Vimeo URL</p>
+                  <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>Upload video files (.mp4, .mov, .webm) directly to your profile</p>
                 </div>
               </div>
-              <button className="btn-close" onClick={() => setShowReelModal(false)}>
+              <button 
+                className="btn-close" 
+                disabled={savingReel}
+                onClick={() => {
+                  setShowReelModal(false);
+                  setSelectedVideoFile(null);
+                  if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+                  setVideoPreviewUrl(null);
+                }}
+              >
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleAddVideoReel} className="modal-form">
+              {/* Native Video Upload Dropzone */}
               <div className="form-group">
-                <label className="form-label">Video URL (YouTube or Vimeo)</label>
-                <input 
-                  type="url" 
-                  className="input-field" 
-                  placeholder="https://www.youtube.com/shorts/... or https://vimeo.com/..." 
-                  value={newReelUrl}
-                  onChange={(e) => {
-                    const url = e.target.value;
-                    setNewReelUrl(url);
-                    const parsed = parseVideoUrl(url);
-                    if (parsed.isShort) {
-                      setNewReelIsShort(true);
-                    }
-                  }}
-                  required 
-                />
-                <span style={{ fontSize: 11.5, color: 'var(--text-faint)', marginTop: 4, display: 'block' }}>
-                  Supports YouTube standard videos, 9:16 vertical Shorts, and Vimeo links.
-                </span>
-              </div>
+                <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Video Clip <span style={{ color: '#ef4444' }}>*</span></span>
+                  <span style={{ fontSize: 11.5, color: 'var(--text-faint)' }}>Max 100MB • MP4, MOV, WebM</span>
+                </label>
 
-              {/* Dynamic Thumbnail / Embed Detection preview */}
-              {newReelUrl.trim() && (() => {
-                const parsed = parseVideoUrl(newReelUrl);
-                return (
-                  <div className="reel-detect-preview-box">
-                    {parsed.thumbnailUrl && (
-                      <img src={parsed.thumbnailUrl} alt="" className="reel-detect-thumb" />
-                    )}
-                    <div className="reel-detect-info">
-                      <span className="reel-detect-badge">
-                        Detected: {parsed.type.toUpperCase()} {parsed.isShort ? '(9:16 Short)' : '(16:9 Cinema)'}
-                      </span>
-                      <p className="reel-detect-note">Ready to embed directly on your creator profile.</p>
+                {!selectedVideoFile ? (
+                  <div 
+                    className="video-dropzone-box"
+                    style={{
+                      border: '2px dashed var(--border, #333)',
+                      borderRadius: 12,
+                      padding: '28px 16px',
+                      textAlign: 'center',
+                      background: 'rgba(255,255,255,0.02)',
+                      cursor: 'pointer',
+                      transition: 'border-color 0.2s',
+                    }}
+                    onClick={() => document.getElementById('reel-video-file-input')?.click()}
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        handleSelectVideoFile(e.dataTransfer.files[0]);
+                      }
+                    }}
+                  >
+                    <input 
+                      id="reel-video-file-input"
+                      type="file" 
+                      accept="video/mp4,video/quicktime,video/webm,video/x-matroska" 
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          handleSelectVideoFile(e.target.files[0]);
+                        }
+                      }}
+                    />
+                    <div style={{ width: 44, height: 44, borderRadius: 22, background: 'rgba(63, 182, 104, 0.12)', color: 'var(--accent, #3fb668)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
+                      <UploadCloud size={22} />
+                    </div>
+                    <p style={{ margin: '0 0 4px', fontWeight: 600, fontSize: 14 }}>
+                      Click to choose video or drag file here
+                    </p>
+                    <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
+                      Vertical reels (9:16) or cinematic clips (16:9)
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{ border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', background: 'var(--surface-elevated, #141414)' }}>
+                    <div style={{ position: 'relative', background: '#000', maxHeight: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <video 
+                        src={videoPreviewUrl || undefined} 
+                        controls 
+                        playsInline 
+                        style={{ maxHeight: 220, maxWidth: '100%', objectFit: 'contain' }}
+                      />
+                    </div>
+                    <div style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border)' }}>
+                      <div style={{ overflow: 'hidden', marginRight: 10 }}>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {selectedVideoFile.name}
+                        </p>
+                        <span style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>
+                          {(selectedVideoFile.size / (1024 * 1024)).toFixed(1)} MB • {newReelIsShort ? '9:16 Reel' : '16:9 Cinema'}
+                        </span>
+                      </div>
+                      <button 
+                        type="button" 
+                        className="btn btn-ghost btn-sm"
+                        style={{ color: '#ef4444' }}
+                        disabled={savingReel}
+                        onClick={() => {
+                          setSelectedVideoFile(null);
+                          if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+                          setVideoPreviewUrl(null);
+                        }}
+                      >
+                        <X size={14} /> Remove
+                      </button>
                     </div>
                   </div>
-                );
-              })()}
+                )}
+              </div>
+
+              {/* URL Fallback toggle */}
+              <div style={{ margin: '8px 0 14px' }}>
+                <button
+                  type="button"
+                  style={{ background: 'none', border: 'none', color: 'var(--accent, #3fb668)', fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: 0 }}
+                  onClick={() => setShowUrlFallback(!showUrlFallback)}
+                >
+                  <LinkIcon size={12} /> {showUrlFallback ? 'Hide URL input' : 'Or paste a video link instead'}
+                </button>
+                {showUrlFallback && (
+                  <div style={{ marginTop: 8 }}>
+                    <input 
+                      type="url" 
+                      className="input-field" 
+                      placeholder="Direct video link (https://.../video.mp4) or YouTube/Vimeo URL" 
+                      value={newReelUrl}
+                      onChange={(e) => {
+                        const url = e.target.value;
+                        setNewReelUrl(url);
+                        const parsed = parseVideoUrl(url);
+                        if (parsed.isShort) {
+                          setNewReelIsShort(true);
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
 
               <div className="form-group">
                 <label className="form-label">Reel Title</label>
@@ -2071,7 +2239,7 @@ export const DashboardPage: React.FC = () => {
                   placeholder="e.g. Wedding Cinematic Teaser 2026, Fashion Lookbook Reel" 
                   value={newReelTitle}
                   onChange={(e) => setNewReelTitle(e.target.value)}
-                  required 
+                  required={!selectedVideoFile} 
                 />
               </div>
 
@@ -2117,20 +2285,40 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="modal-actions">
+              {videoUploadProgress && (
+                <div style={{ padding: '8px 12px', background: 'rgba(63, 182, 104, 0.1)', borderRadius: 8, color: 'var(--accent, #3fb668)', fontSize: 12.5, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Loader2 size={14} className="animate-spin" />
+                  <span>{videoUploadProgress}</span>
+                </div>
+              )}
+
+              <div className="modal-actions" style={{ marginTop: 16 }}>
                 <button 
                   type="button" 
                   className="btn btn-outline"
-                  onClick={() => setShowReelModal(false)}
+                  disabled={savingReel}
+                  onClick={() => {
+                    setShowReelModal(false);
+                    setSelectedVideoFile(null);
+                    if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+                    setVideoPreviewUrl(null);
+                  }}
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
                   className="btn btn-primary"
-                  disabled={savingReel}
+                  disabled={savingReel || (!selectedVideoFile && !newReelUrl.trim())}
                 >
-                  {savingReel ? <Loader2 size={16} className="animate-spin" /> : 'Save & Publish Reel'}
+                  {savingReel ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>{videoUploadProgress || 'Uploading...'}</span>
+                    </>
+                  ) : (
+                    'Upload & Publish Reel'
+                  )}
                 </button>
               </div>
             </form>
