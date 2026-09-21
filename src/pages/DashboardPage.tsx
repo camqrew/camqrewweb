@@ -44,12 +44,13 @@ import {
   ZoomIn,
   Link as LinkIcon,
   User,
-  UtensilsCrossed
+  UtensilsCrossed,
+  Search,
+  Edit3
 } from 'lucide-react';
 import type { VideoReelItem, MenuDishItem } from '../types/professional';
 import { parseVideoUrl } from '../api/professionalApi';
 import { authApi } from '../api/authApi';
-import { getArchetype } from '../constants/categories';
 import { ShootContractModal } from '../components/ShootContractModal';
 import { PhotoProofingModal } from '../components/PhotoProofingModal';
 import { CallSheetModal } from '../components/CallSheetModal';
@@ -72,6 +73,54 @@ export const DashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ProTab>(initialTab);
   const [proProfile, setProProfile] = useState<ProfessionalProfile | null>(null);
   const [isAvailable, setIsAvailable] = useState<boolean>(true);
+
+  // Caterer archetype detection
+  const isCaterer = Boolean(
+    proProfile?.categories?.some(c =>
+      c.toLowerCase().includes('cater') ||
+      c.toLowerCase().includes('chef') ||
+      c.toLowerCase().includes('food') ||
+      c.toLowerCase().includes('culinary')
+    )
+  );
+
+  // Swiggy-style catering menu filters
+  const [swiggyCategoryFilter, setSwiggyCategoryFilter] = useState<string>('All');
+  const [swiggyVegOnly, setSwiggyVegOnly] = useState<boolean>(false);
+  const [swiggySearchQuery, setSwiggySearchQuery] = useState<string>('');
+
+  const filteredDishes = useMemo(() => {
+    const dishes = proProfile?.menuItems || [];
+    return dishes.filter((dish) => {
+      if (swiggyCategoryFilter !== 'All' && dish.category !== swiggyCategoryFilter) {
+        return false;
+      }
+      const isVeg = dish.dietaryTags?.some(t => t === 'Veg' || t === 'Jain' || t === 'Vegan');
+      if (swiggyVegOnly && !isVeg) {
+        return false;
+      }
+      if (swiggySearchQuery.trim()) {
+        const q = swiggySearchQuery.toLowerCase();
+        const matchName = dish.name.toLowerCase().includes(q);
+        const matchDesc = dish.description ? dish.description.toLowerCase().includes(q) : false;
+        const matchCat = dish.category.toLowerCase().includes(q);
+        if (!matchName && !matchDesc && !matchCat) return false;
+      }
+      return true;
+    });
+  }, [proProfile?.menuItems, swiggyCategoryFilter, swiggyVegOnly, swiggySearchQuery]);
+
+  const vegDishesCount = useMemo(() => {
+    return (proProfile?.menuItems || []).filter(d => 
+      d.dietaryTags?.some(t => t === 'Veg' || t === 'Jain' || t === 'Vegan')
+    ).length;
+  }, [proProfile?.menuItems]);
+
+  const nonVegDishesCount = useMemo(() => {
+    return (proProfile?.menuItems || []).filter(d => 
+      d.dietaryTags?.includes('Non-Veg')
+    ).length;
+  }, [proProfile?.menuItems]);
 
   // Data states
   const [customerBookings, setCustomerBookings] = useState<Booking[]>([]);
@@ -808,12 +857,22 @@ export const DashboardPage: React.FC = () => {
             </Link>
           )}
 
-          <button 
-            className="btn btn-primary btn-sm"
-            onClick={() => setShowListGearModal(true)}
-          >
-            <Package size={14} /> + List Gear
-          </button>
+          {isCaterer ? (
+            <button 
+              className="btn btn-primary btn-sm"
+              onClick={handleOpenAddDish}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            >
+              <UtensilsCrossed size={14} /> + Add Menu Dish
+            </button>
+          ) : (
+            <button 
+              className="btn btn-primary btn-sm"
+              onClick={() => setShowListGearModal(true)}
+            >
+              <Package size={14} /> + List Gear
+            </button>
+          )}
 
           {/* Quick role switch for testing or multi-role users */}
           <button 
@@ -850,14 +909,22 @@ export const DashboardPage: React.FC = () => {
           className={`pro-tab-item ${activeTab === 'sales_rentals' ? 'active' : ''}`}
           onClick={() => handleTabChange('sales_rentals')}
         >
-          <ShoppingBag size={15} /> Sales & Rentals
+          <ShoppingBag size={15} /> {isCaterer ? 'Menu Orders' : 'Sales & Rentals'}
         </button>
 
         <button
           className={`pro-tab-item ${activeTab === 'listings' ? 'active' : ''}`}
           onClick={() => handleTabChange('listings')}
         >
-          <Package size={15} /> My Gear Store ({userProducts.length})
+          {isCaterer ? (
+            <>
+              <UtensilsCrossed size={15} /> Food Menu & Prices ({proProfile?.menuItems?.length || 0})
+            </>
+          ) : (
+            <>
+              <Package size={15} /> My Gear Store ({userProducts.length})
+            </>
+          )}
         </button>
 
         <button
@@ -1027,15 +1094,27 @@ export const DashboardPage: React.FC = () => {
                   <span className="action-arrow">Open Calendar →</span>
                 </div>
 
-                <div 
-                  className="quick-action-card card clickable"
-                  onClick={() => setShowListGearModal(true)}
-                >
-                  <div className="action-icon blue"><Package size={20} /></div>
-                  <h4>Sell or Rent Your Gear</h4>
-                  <p>List idle cameras and lenses on Camqrew Store for passive income</p>
-                  <span className="action-arrow">List New Equipment →</span>
-                </div>
+                {isCaterer ? (
+                  <div 
+                    className="quick-action-card card clickable"
+                    onClick={() => handleTabChange('listings')}
+                  >
+                    <div className="action-icon emerald"><UtensilsCrossed size={20} /></div>
+                    <h4>Food Menu & Prices</h4>
+                    <p>Manage catering dishes, per-plate pricing, veg/non-veg tags, and live menu availability</p>
+                    <span className="action-arrow">Open Menu Manager →</span>
+                  </div>
+                ) : (
+                  <div 
+                    className="quick-action-card card clickable"
+                    onClick={() => setShowListGearModal(true)}
+                  >
+                    <div className="action-icon blue"><Package size={20} /></div>
+                    <h4>Sell or Rent Your Gear</h4>
+                    <p>List idle cameras and lenses on Camqrew Store for passive income</p>
+                    <span className="action-arrow">List New Equipment →</span>
+                  </div>
+                )}
 
                 <div 
                   className="quick-action-card card clickable"
@@ -1332,7 +1411,7 @@ export const DashboardPage: React.FC = () => {
               </div>
 
               {/* ── CATERING MENU & DISHES MANAGER (CATERERS ONLY) ── */}
-              {getArchetype(proProfile?.categories).archetype === 'catering' && (
+              {isCaterer && (
                 <div className="card pro-menu-manager-card" style={{ marginTop: 28 }}>
                   <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
                     <div>
@@ -1348,14 +1427,23 @@ export const DashboardPage: React.FC = () => {
                       </p>
                     </div>
 
-                    <button
-                      type="button"
-                      className="btn btn-primary btn-sm"
-                      onClick={handleOpenAddDish}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-                    >
-                      <Plus size={14} /> + Add Dish
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={() => handleTabChange('listings')}
+                      >
+                        Open Full Menu Manager →
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        onClick={handleOpenAddDish}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                      >
+                        <Plus size={14} /> + Add Dish
+                      </button>
+                    </div>
                   </div>
 
                   {(!proProfile?.menuItems || proProfile.menuItems.length === 0) ? (
@@ -1659,101 +1747,362 @@ export const DashboardPage: React.FC = () => {
           )}
 
           {/* ═════════════════════════════════════════════════════════
-              TAB 3: SALES & RENTALS
+              TAB 3: SALES & RENTALS (OR MENU ORDERS FOR CATERERS)
               ═════════════════════════════════════════════════════════ */}
           {activeTab === 'sales_rentals' && (
             <div className="tab-sales-rentals-content">
               <div className="tab-section-header">
                 <div>
-                  <h2 className="section-title">Equipment Sales & Rental Orders</h2>
+                  <h2 className="section-title">
+                    {isCaterer ? 'Food Menu & Catering Orders' : 'Equipment Sales & Rental Orders'}
+                  </h2>
                   <p className="section-subtitle">
-                    Incoming gear rental bookings and verified store sale orders.
+                    {isCaterer 
+                      ? 'Incoming catering bookings and customized per-plate food orders.' 
+                      : 'Incoming gear rental bookings and verified store sale orders.'}
                   </p>
                 </div>
-                <button 
-                  className="btn btn-primary btn-sm"
-                  onClick={() => setShowListGearModal(true)}
-                >
-                  <Package size={14} /> + List More Gear
-                </button>
+                {isCaterer ? (
+                  <button 
+                    className="btn btn-primary btn-sm"
+                    onClick={handleOpenAddDish}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <UtensilsCrossed size={14} /> + Add Menu Dish
+                  </button>
+                ) : (
+                  <button 
+                    className="btn btn-primary btn-sm"
+                    onClick={() => setShowListGearModal(true)}
+                  >
+                    <Package size={14} /> + List More Gear
+                  </button>
+                )}
               </div>
 
               <div className="card empty-state-card">
-                <ShoppingBag size={48} color="var(--text-muted)" style={{ margin: '0 auto 16px' }} />
-                <h3>No incoming gear orders yet</h3>
-                <p>Post your cinema cameras, lenses, or lighting equipment for rent or sale to earn steady revenue between production shoots.</p>
-                <button 
-                  className="btn btn-primary" 
-                  style={{ marginTop: 16 }}
-                  onClick={() => setShowListGearModal(true)}
-                >
-                  List Equipment for Sale or Rent
-                </button>
+                {isCaterer ? (
+                  <>
+                    <UtensilsCrossed size={48} color="var(--text-muted)" style={{ margin: '0 auto 16px' }} />
+                    <h3>No incoming catering orders yet</h3>
+                    <p>Add your signature catering dishes and per-plate pricing in the Menu & Prices tab to receive instant quotations and bookings from clients.</p>
+                    <button 
+                      className="btn btn-primary" 
+                      style={{ marginTop: 16 }}
+                      onClick={() => handleTabChange('listings')}
+                    >
+                      Manage Food Menu & Prices
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag size={48} color="var(--text-muted)" style={{ margin: '0 auto 16px' }} />
+                    <h3>No incoming gear orders yet</h3>
+                    <p>Post your cinema cameras, lenses, or lighting equipment for rent or sale to earn steady revenue between production shoots.</p>
+                    <button 
+                      className="btn btn-primary" 
+                      style={{ marginTop: 16 }}
+                      onClick={() => setShowListGearModal(true)}
+                    >
+                      List Equipment for Sale or Rent
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           )}
 
           {/* ═════════════════════════════════════════════════════════
-              TAB 4: LISTINGS & GEAR STORE
+              TAB 4: LISTINGS & GEAR STORE (OR SWIGGY-STYLE FOOD MENU FOR CATERERS)
               ═════════════════════════════════════════════════════════ */}
           {activeTab === 'listings' && (
             <div className="tab-listings-content">
-              {/* Quick Action Banner */}
-              <div className="list-gear-banner card">
-                <div className="list-gear-banner-content">
-                  <div className="list-gear-icon-box">
-                    <Camera size={26} color="#ffffff" />
-                  </div>
-                  <div>
-                    <h3 className="banner-title">Sell or Rent Your Camera Gear</h3>
-                    <p className="banner-subtitle">
-                      Publish cameras, cinema lenses, or drones to the Camqrew Store with insured shipping.
-                    </p>
-                  </div>
-                </div>
-                <button 
-                  className="btn btn-primary list-now-btn"
-                  onClick={() => setShowListGearModal(true)}
-                >
-                  + List Equipment Now
-                </button>
-              </div>
-
-              {/* User Listings Grid */}
-              <h3 className="section-heading" style={{ marginTop: 28, marginBottom: 16 }}>
-                Your Listed Equipment ({userProducts.length})
-              </h3>
-
-              {userProducts.length === 0 ? (
-                <div className="card empty-state-card">
-                  <Package size={44} color="var(--text-muted)" style={{ margin: '0 auto 14px' }} />
-                  <h4>No equipment listed yet</h4>
-                  <p>Click "List Equipment Now" above to add your first camera or rental package.</p>
-                </div>
-              ) : (
-                <div className="products-grid">
-                  {userProducts.map((p) => (
-                    <div key={p.id} className="card pro-gear-item-card">
-                      <div className="gear-image-wrap">
-                        <img src={p.image} alt={p.name} className="gear-img" />
-                        <span className={`gear-type-badge ${p.type === 'rental' ? 'rental' : 'sale'}`}>
-                          {p.type === 'rental' ? 'FOR RENT' : 'FOR SALE'}
-                        </span>
+              {isCaterer ? (
+                /* ─────────────────────────────────────────────────────
+                   SWIGGY-STYLE FOOD MENU & PRICES DASHBOARD (CATERERS)
+                   ───────────────────────────────────────────────────── */
+                <div className="swiggy-menu-dashboard">
+                  {/* Swiggy Action Banner */}
+                  <div className="swiggy-menu-banner card">
+                    <div className="swiggy-menu-banner-content">
+                      <div className="swiggy-banner-icon-box">
+                        <UtensilsCrossed size={26} color="#ffffff" />
                       </div>
-                      <div className="gear-card-body">
-                        <span className="gear-category">{p.category}</span>
-                        <h4 className="gear-title">{p.name}</h4>
-                        <p className="gear-condition">Condition: <strong>{p.condition}</strong></p>
-                        <div className="gear-price-row">
-                          <strong className="gear-price">
-                            ₹{p.price?.toLocaleString('en-IN')}{p.type === 'rental' ? '/day' : ''}
-                          </strong>
-                          <span className="gear-stock-pill in-stock">Listed</span>
-                        </div>
+                      <div>
+                        <h3 className="banner-title" style={{ margin: '0 0 4px', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>
+                          Food Menu & Prices Management
+                        </h3>
+                        <p className="banner-subtitle" style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
+                          Publish signature dishes, configure per-plate prices, manage Veg/Non-Veg FSSAI badges, and toggle real-time stock availability.
+                        </p>
                       </div>
                     </div>
-                  ))}
+                    <button 
+                      className="btn btn-primary list-now-btn"
+                      onClick={handleOpenAddDish}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <Plus size={15} /> Add Menu Dish
+                    </button>
+                  </div>
+
+                  {/* Filter & Controls Bar */}
+                  <div className="swiggy-filter-bar">
+                    {/* Search box */}
+                    <div className="swiggy-search-box">
+                      <Search size={16} className="swiggy-search-icon" />
+                      <input
+                        type="text"
+                        placeholder="Search menu dishes..."
+                        className="swiggy-search-input"
+                        value={swiggySearchQuery}
+                        onChange={(e) => setSwiggySearchQuery(e.target.value)}
+                      />
+                      {swiggySearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setSwiggySearchQuery('')}
+                          style={{
+                            position: 'absolute',
+                            right: 10,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--text-muted)',
+                            cursor: 'pointer',
+                            fontSize: 14,
+                            padding: 2,
+                          }}
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Category Filter Chips */}
+                    <div className="swiggy-filter-chips-row">
+                      {['All', 'Starter', 'Main Course', 'Dessert', 'Beverage', 'Live Counter', 'Other'].map((cat) => (
+                        <button
+                          key={cat}
+                          type="button"
+                          className={`swiggy-cat-chip ${swiggyCategoryFilter === cat ? 'active' : ''}`}
+                          onClick={() => setSwiggyCategoryFilter(cat)}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+
+                      {/* Veg Only Toggle Button */}
+                      <button
+                        type="button"
+                        className={`swiggy-veg-toggle-btn ${swiggyVegOnly ? 'active' : ''}`}
+                        onClick={() => setSwiggyVegOnly((v) => !v)}
+                        title="Filter vegetarian dishes only"
+                      >
+                        <div className="swiggy-fssai-box veg">
+                          <div className="swiggy-fssai-dot veg" />
+                        </div>
+                        Veg Only
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Count & Dietary Summary Bar */}
+                  <div className="swiggy-summary-bar">
+                    <span>
+                      Showing <strong>{filteredDishes.length}</strong> of {(proProfile?.menuItems || []).length} dishes
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#16a34a', fontWeight: 600, fontSize: 12 }}>
+                        <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#16a34a' }} />
+                        {vegDishesCount} Veg
+                      </span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#dc2626', fontWeight: 600, fontSize: 12 }}>
+                        <span style={{ display: 'inline-block', width: 0, height: 0, borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderBottom: '7px solid #dc2626' }} />
+                        {nonVegDishesCount} Non-Veg
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Dishes Grid or Empty State */}
+                  {(!proProfile?.menuItems || proProfile.menuItems.length === 0) ? (
+                    <div className="card empty-state-card" style={{ padding: '48px 24px' }}>
+                      <UtensilsCrossed size={48} color="var(--text-muted)" style={{ margin: '0 auto 16px' }} />
+                      <h4 style={{ margin: '0 0 6px', fontSize: 17, color: 'var(--text-primary)' }}>
+                        No dishes added to your menu yet
+                      </h4>
+                      <p style={{ margin: '0 0 20px', color: 'var(--text-secondary)', maxWidth: 440 }}>
+                        Build your Swiggy-style catering menu with pricing per plate so clients can customize their wedding or event feasts and get instant quotations.
+                      </p>
+                      <button 
+                        className="btn btn-primary"
+                        onClick={handleOpenAddDish}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                      >
+                        <Plus size={16} /> Add First Menu Dish
+                      </button>
+                    </div>
+                  ) : filteredDishes.length === 0 ? (
+                    <div className="card empty-state-card" style={{ padding: '36px 20px' }}>
+                      <p style={{ color: 'var(--text-secondary)', margin: '0 0 12px' }}>
+                        No dishes match your current search or category filter.
+                      </p>
+                      <button
+                        className="btn btn-outline btn-sm"
+                        onClick={() => {
+                          setSwiggyCategoryFilter('All');
+                          setSwiggyVegOnly(false);
+                          setSwiggySearchQuery('');
+                        }}
+                      >
+                        Reset All Filters
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="swiggy-dishes-grid">
+                      {filteredDishes.map((dish) => {
+                        const isGreen = dish.dietaryTags?.some(t => t === 'Veg' || t === 'Jain' || t === 'Vegan');
+                        return (
+                          <div key={dish.id} className="swiggy-dish-card-modern">
+                            <div>
+                              {/* Header: FSSAI Symbol + Dish Name + Stock Toggle */}
+                              <div className="swiggy-dish-header">
+                                <div className="swiggy-dish-title-group">
+                                  <div className={`swiggy-fssai-box ${isGreen ? 'veg' : 'nonveg'}`} title={isGreen ? 'Vegetarian' : 'Non-Vegetarian'}>
+                                    {isGreen ? (
+                                      <div className="swiggy-fssai-dot veg" />
+                                    ) : (
+                                      <div className="swiggy-fssai-triangle" />
+                                    )}
+                                  </div>
+                                  <h4 className="swiggy-dish-name">{dish.name}</h4>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  className={`swiggy-stock-toggle-btn ${dish.isAvailable ? 'in-stock' : 'out-stock'}`}
+                                  onClick={() => handleToggleDishAvailability(dish.id)}
+                                  title="Click to toggle availability"
+                                >
+                                  {dish.isAvailable ? '● IN STOCK' : '○ SOLD OUT'}
+                                </button>
+                              </div>
+
+                              {/* Tags: Category & Dietary Badges */}
+                              <div className="swiggy-tags-row">
+                                <span className="swiggy-tag-pill cat">{dish.category}</span>
+                                {dish.dietaryTags?.map((tag) => {
+                                  const tagIsVeg = tag === 'Veg' || tag === 'Jain' || tag === 'Vegan';
+                                  return (
+                                    <span key={tag} className={`swiggy-tag-pill ${tagIsVeg ? 'veg' : 'nonveg'}`}>
+                                      {tag}
+                                    </span>
+                                  );
+                                })}
+                              </div>
+
+                              {/* Description (if present) */}
+                              {dish.description && (
+                                <p className="swiggy-dish-desc">{dish.description}</p>
+                              )}
+                            </div>
+
+                            {/* Footer: Price per plate + Edit & Delete Actions */}
+                            <div className="swiggy-dish-footer">
+                              <div className="swiggy-dish-price-box">
+                                <span className="swiggy-dish-price-val">₹{dish.pricePerPlate.toLocaleString('en-IN')}</span>
+                                <span className="swiggy-dish-price-unit">/ plate</span>
+                              </div>
+
+                              <div className="swiggy-dish-action-btns">
+                                <button
+                                  type="button"
+                                  className="swiggy-icon-action-btn"
+                                  onClick={() => handleOpenEditDish(dish)}
+                                  title="Edit dish details & price"
+                                >
+                                  <Edit3 size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="swiggy-icon-action-btn delete"
+                                  onClick={() => handleDeleteDish(dish.id)}
+                                  title="Delete dish from menu"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
+              ) : (
+                /* ─────────────────────────────────────────────────────
+                   STANDARD CAMERA GEAR STORE (CREATORS / PHOTOGRAPHERS)
+                   ───────────────────────────────────────────────────── */
+                <>
+                  {/* Quick Action Banner */}
+                  <div className="list-gear-banner card">
+                    <div className="list-gear-banner-content">
+                      <div className="list-gear-icon-box">
+                        <Camera size={26} color="#ffffff" />
+                      </div>
+                      <div>
+                        <h3 className="banner-title">Sell or Rent Your Camera Gear</h3>
+                        <p className="banner-subtitle">
+                          Publish cameras, cinema lenses, or drones to the Camqrew Store with insured shipping.
+                        </p>
+                      </div>
+                    </div>
+                    <button 
+                      className="btn btn-primary list-now-btn"
+                      onClick={() => setShowListGearModal(true)}
+                    >
+                      + List Equipment Now
+                    </button>
+                  </div>
+
+                  {/* User Listings Grid */}
+                  <h3 className="section-heading" style={{ marginTop: 28, marginBottom: 16 }}>
+                    Your Listed Equipment ({userProducts.length})
+                  </h3>
+
+                  {userProducts.length === 0 ? (
+                    <div className="card empty-state-card">
+                      <Package size={44} color="var(--text-muted)" style={{ margin: '0 auto 14px' }} />
+                      <h4>No equipment listed yet</h4>
+                      <p>Click "List Equipment Now" above to add your first camera or rental package.</p>
+                    </div>
+                  ) : (
+                    <div className="products-grid">
+                      {userProducts.map((p) => (
+                        <div key={p.id} className="card pro-gear-item-card">
+                          <div className="gear-image-wrap">
+                            <img src={p.image} alt={p.name} className="gear-img" />
+                            <span className={`gear-type-badge ${p.type === 'rental' ? 'rental' : 'sale'}`}>
+                              {p.type === 'rental' ? 'FOR RENT' : 'FOR SALE'}
+                            </span>
+                          </div>
+                          <div className="gear-card-body">
+                            <span className="gear-category">{p.category}</span>
+                            <h4 className="gear-title">{p.name}</h4>
+                            <p className="gear-condition">Condition: <strong>{p.condition}</strong></p>
+                            <div className="gear-price-row">
+                              <strong className="gear-price">
+                                ₹{p.price?.toLocaleString('en-IN')}{p.type === 'rental' ? '/day' : ''}
+                              </strong>
+                              <span className="gear-stock-pill in-stock">Listed</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
