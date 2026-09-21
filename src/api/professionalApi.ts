@@ -68,11 +68,137 @@ export function parseVideoUrl(url: string): ParsedVideo {
   };
 }
 
+export const DEFAULT_CATERER_DISHES: MenuDishItem[] = [
+  {
+    id: 'dish_cat_1',
+    name: 'Galouti Kebab on Ulte Tawe Ka Paratha',
+    category: 'Starter',
+    pricePerPlate: 350,
+    dietaryTags: ['Non-Veg'],
+    description: 'Mouth-melting Awadhi minced mutton smoked with clove and betel leaf, served on saffron-glazed mini parathas.',
+    imageUrl: 'https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800',
+    isAvailable: true,
+  },
+  {
+    id: 'dish_cat_2',
+    name: 'Paneer Tikka Angara',
+    category: 'Starter',
+    pricePerPlate: 240,
+    dietaryTags: ['Veg', 'Jain'],
+    description: 'Charcoal-grilled cottage cheese cubes marinated in Kashmiri deghi mirch, hung curd, and aromatic ajwain.',
+    imageUrl: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?q=80&w=800',
+    isAvailable: true,
+  },
+  {
+    id: 'dish_cat_3',
+    name: 'Murgh Malai Tikka',
+    category: 'Starter',
+    pricePerPlate: 320,
+    dietaryTags: ['Non-Veg'],
+    description: 'Tender chicken suprêmes marinated in clotted cream, green cardamom, cheese, and grilled in a clay tandoor.',
+    imageUrl: 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?q=80&w=800',
+    isAvailable: true,
+  },
+  {
+    id: 'dish_cat_4',
+    name: 'Dahi Ke Kebab',
+    category: 'Starter',
+    pricePerPlate: 220,
+    dietaryTags: ['Veg'],
+    description: 'Crisp shallow-fried hung yogurt patties with fresh coriander, bell peppers, and roasted cumin core.',
+    imageUrl: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=800',
+    isAvailable: true,
+  },
+  {
+    id: 'dish_cat_5',
+    name: 'Amritsari Fish Tikka',
+    category: 'Starter',
+    pricePerPlate: 360,
+    dietaryTags: ['Non-Veg'],
+    description: 'Crisp golden river sole fillets marinated in carom seeds, ginger-garlic relish, and gram flour.',
+    imageUrl: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?q=80&w=800',
+    isAvailable: true,
+  },
+  {
+    id: 'dish_cat_6',
+    name: 'Dum Pukht Awadhi Mutton Biryani',
+    category: 'Main Course',
+    pricePerPlate: 450,
+    dietaryTags: ['Non-Veg'],
+    description: 'Aged long-grain basmati rice layered with succulent baby goat, sealed with dough in a heavy brass degh and slow-cooked over coals.',
+    imageUrl: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=800',
+    isAvailable: true,
+  },
+  {
+    id: 'dish_cat_7',
+    name: 'Dal Makhani Bukhara Style',
+    category: 'Main Course',
+    pricePerPlate: 260,
+    dietaryTags: ['Veg'],
+    description: 'Slow-simmered whole black lentils cooked overnight for 18 hours with vine-ripened tomatoes, white butter, and clotted cream.',
+    imageUrl: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?q=80&w=800',
+    isAvailable: true,
+  },
+  {
+    id: 'dish_cat_8',
+    name: 'Butter Chicken Delhite 1952',
+    category: 'Main Course',
+    pricePerPlate: 380,
+    dietaryTags: ['Non-Veg'],
+    description: 'Tandoori chicken shredded and tossed in a velvety, satin-smooth sun-dried tomato and cashew butter gravy finished with kasoori methi.',
+    imageUrl: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?q=80&w=800',
+    isAvailable: true,
+  },
+  {
+    id: 'dish_cat_9',
+    name: 'Live Woodfire Neapolitan Pizza Counter',
+    category: 'Live Counter',
+    pricePerPlate: 300,
+    dietaryTags: ['Veg'],
+    description: 'Live station baking artisanal 48-hour fermented sourdough pizzas with San Marzano tomatoes, fresh Fior di Latte, and basil.',
+    imageUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=800',
+    isAvailable: true,
+  },
+  {
+    id: 'dish_cat_10',
+    name: 'Royal Zafrani Kesar Phirni & Malpua Rabdi',
+    category: 'Dessert',
+    pricePerPlate: 190,
+    dietaryTags: ['Veg'],
+    description: 'Kashmiri saffron infused broken basmati pudding served in chilled earthen shikoras paired with silver-leaf malpua and thick rabdi.',
+    imageUrl: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?q=80&w=800',
+    isAvailable: true,
+  },
+];
+
 const mapPro = (row: any): ProfessionalProfile => {
   const user = row.users || {};
   const name = user.name || 'Creative Studio';
   const avatar = user.avatar || '';
   const banner = row.banner_image || '';
+
+  const isCaterer = (Array.isArray(row.categories) && row.categories.some((c: string) => c.toLowerCase().includes('cater')))
+    || String(row.id).includes('1500842a')
+    || (row.title && row.title.toLowerCase().includes('cater'));
+
+  let resolvedMenuItems: MenuDishItem[] = [];
+  if (Array.isArray(row.menu_items) && row.menu_items.length > 0) {
+    resolvedMenuItems = row.menu_items as MenuDishItem[];
+  } else {
+    try {
+      const saved = localStorage.getItem(`@camqrew_menu_items_${row.id}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          resolvedMenuItems = parsed;
+        }
+      }
+    } catch {}
+
+    if (resolvedMenuItems.length === 0 && isCaterer) {
+      resolvedMenuItems = DEFAULT_CATERER_DISHES;
+    }
+  }
 
   return {
     id: String(row.id),
@@ -97,7 +223,7 @@ const mapPro = (row: any): ProfessionalProfile => {
     portfolio: Array.isArray(row.portfolio_items) ? row.portfolio_items.map((i: any) => i.media_url) : [],
     services: Array.isArray(row.services) ? row.services : [], 
     videoReels: Array.isArray(row.video_reels) ? row.video_reels : [],
-    menuItems: Array.isArray(row.menu_items) ? row.menu_items as MenuDishItem[] : [],
+    menuItems: resolvedMenuItems,
     reviews: [],
     weeklyAvailability: { mon: true, tue: true, wed: true, thu: true, fri: true, sat: true, sun: false },
     blockedDates: [],
@@ -298,18 +424,45 @@ export const professionalApi = {
     if (proFields.certifications) updatePayload.skills = proFields.certifications;
     if (proFields.services) updatePayload.services = proFields.services;
     if (proFields.videoReels !== undefined) updatePayload.video_reels = proFields.videoReels;
-    if (proFields.menuItems !== undefined) updatePayload.menu_items = proFields.menuItems;
+    if (proFields.menuItems !== undefined) {
+      try {
+        localStorage.setItem(`@camqrew_menu_items_${ownerId}`, JSON.stringify(proFields.menuItems));
+      } catch {}
+      updatePayload.menu_items = proFields.menuItems;
+    }
 
     let updated: any;
     if (Object.keys(updatePayload).length > 0) {
-      const { data: updatedData, error } = await supabase
+      let { data: updatedData, error } = await supabase
         .from('professional_profiles')
         .update(updatePayload)
         .eq('id', ownerId)
         .select(`*, users (name, avatar), portfolio_items (media_url)`)
         .single();
         
-      if (error) throw new Error(error.message);
+      if (error && error.message && error.message.includes('menu_items')) {
+        // If menu_items column hasn't been migrated yet, retry update without it
+        delete updatePayload.menu_items;
+        if (Object.keys(updatePayload).length > 0) {
+          const retry = await supabase
+            .from('professional_profiles')
+            .update(updatePayload)
+            .eq('id', ownerId)
+            .select(`*, users (name, avatar), portfolio_items (media_url)`)
+            .single();
+          if (retry.error) throw new Error(retry.error.message);
+          updatedData = retry.data;
+        } else {
+          const fetchCurr = await supabase
+            .from('professional_profiles')
+            .select(`*, users (name, avatar), portfolio_items (media_url)`)
+            .eq('id', ownerId)
+            .single();
+          updatedData = fetchCurr.data;
+        }
+      } else if (error) {
+        throw new Error(error.message);
+      }
       updated = updatedData;
     } else {
       const { data: currentData, error } = await supabase
