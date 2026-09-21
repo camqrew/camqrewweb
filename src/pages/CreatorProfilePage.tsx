@@ -367,46 +367,56 @@ export const CreatorProfilePage: React.FC = () => {
                           justifyContent: 'space-between'
                         }}
                       >
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                            <span 
-                              style={{ 
-                                display: 'inline-block',
-                                width: 9,
-                                height: 9,
-                                borderRadius: '50%',
-                                backgroundColor: isGreen ? '#22c55e' : '#ef4444',
-                                flexShrink: 0
-                              }} 
-                              title={isGreen ? 'Vegetarian' : 'Non-Vegetarian'}
-                            />
-                            <h4 style={{ margin: 0, fontSize: 14.5, fontWeight: 700, color: 'var(--text-primary)' }}>
-                              {dish.name}
-                            </h4>
-                          </div>
+                        <div className={dish.imageUrl ? 'public-dish-card-split' : ''}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                              <span 
+                                style={{ 
+                                  display: 'inline-block',
+                                  width: 9,
+                                  height: 9,
+                                  borderRadius: '50%',
+                                  backgroundColor: isGreen ? '#22c55e' : '#ef4444',
+                                  flexShrink: 0
+                                }} 
+                                title={isGreen ? 'Vegetarian' : 'Non-Vegetarian'}
+                              />
+                              <h4 style={{ margin: 0, fontSize: 14.5, fontWeight: 700, color: 'var(--text-primary)' }}>
+                                {dish.name}
+                              </h4>
+                            </div>
 
-                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '4px 0 6px' }}>
-                            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(63, 182, 104, 0.12)', color: 'var(--accent, #3fb668)' }}>
-                              {dish.category}
-                            </span>
-                            {dish.dietaryTags?.map(t => (
-                              <span key={t} style={{ 
-                                fontSize: 10, 
-                                fontWeight: 700, 
-                                padding: '2px 6px', 
-                                borderRadius: 4, 
-                                background: (t === 'Veg' || t === 'Jain' || t === 'Vegan') ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)',
-                                color: (t === 'Veg' || t === 'Jain' || t === 'Vegan') ? '#16a34a' : '#dc2626'
-                              }}>
-                                {t}
+                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '4px 0 6px' }}>
+                              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(63, 182, 104, 0.12)', color: 'var(--accent, #3fb668)' }}>
+                                {dish.category}
                               </span>
-                            ))}
+                              {dish.dietaryTags?.map(t => (
+                                <span key={t} style={{ 
+                                  fontSize: 10, 
+                                  fontWeight: 700, 
+                                  padding: '2px 6px', 
+                                  borderRadius: 4, 
+                                  background: (t === 'Veg' || t === 'Jain' || t === 'Vegan') ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                                  color: (t === 'Veg' || t === 'Jain' || t === 'Vegan') ? '#16a34a' : '#dc2626'
+                                }}>
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
+
+                            {dish.description && (
+                              <p style={{ margin: '4px 0 8px', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                                {dish.description}
+                              </p>
+                            )}
                           </div>
 
-                          {dish.description && (
-                            <p style={{ margin: '4px 0 8px', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-                              {dish.description}
-                            </p>
+                          {dish.imageUrl && (
+                            <img 
+                              src={dish.imageUrl} 
+                              alt={dish.name} 
+                              className="public-dish-img-thumbnail" 
+                            />
                           )}
                         </div>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { bookingApi } from '../api/bookingApi';
 import { jobApi } from '../api/jobApi';
@@ -165,7 +165,11 @@ export const DashboardPage: React.FC = () => {
   const [dishPrice, setDishPrice] = useState<number>(250);
   const [dishDietaryTags, setDishDietaryTags] = useState<MenuDishItem['dietaryTags']>(['Veg']);
   const [dishDescription, setDishDescription] = useState('');
+  const [dishImageUrl, setDishImageUrl] = useState('');
+  const [uploadingDishImage, setUploadingDishImage] = useState(false);
+  const [showImageUrlInput, setShowImageUrlInput] = useState(false);
   const [savingDish, setSavingDish] = useState(false);
+  const dishFileInputRef = useRef<HTMLInputElement>(null);
 
   // Portfolio Photos Modal & Upload state
   const [uploadingPortfolio, setUploadingPortfolio] = useState(false);
@@ -489,6 +493,8 @@ export const DashboardPage: React.FC = () => {
     setDishPrice(250);
     setDishDietaryTags(['Veg']);
     setDishDescription('');
+    setDishImageUrl('');
+    setShowImageUrlInput(false);
     setShowDishModal(true);
   };
 
@@ -499,7 +505,28 @@ export const DashboardPage: React.FC = () => {
     setDishPrice(dish.pricePerPlate);
     setDishDietaryTags(dish.dietaryTags || ['Veg']);
     setDishDescription(dish.description || '');
+    setDishImageUrl(dish.imageUrl || '');
+    setShowImageUrlInput(Boolean(dish.imageUrl && !dish.imageUrl.includes('supabase')));
     setShowDishModal(true);
+  };
+
+  const handleDishImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload a valid image file (PNG, JPG, WEBP).');
+      return;
+    }
+    setUploadingDishImage(true);
+    try {
+      const res = await cloudStorageApi.uploadImage(file, 'portfolio');
+      setDishImageUrl(res.url);
+      showToast('Dish photo uploaded successfully!');
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload dish image');
+    } finally {
+      setUploadingDishImage(false);
+    }
   };
 
   const handleSaveDish = async (e: React.FormEvent) => {
@@ -528,6 +555,7 @@ export const DashboardPage: React.FC = () => {
                 pricePerPlate: Number(dishPrice),
                 dietaryTags: dishDietaryTags.length > 0 ? dishDietaryTags : ['Veg'],
                 description: dishDescription.trim() || undefined,
+                imageUrl: dishImageUrl.trim() || undefined,
               }
             : d
         );
@@ -539,6 +567,7 @@ export const DashboardPage: React.FC = () => {
           pricePerPlate: Number(dishPrice),
           dietaryTags: dishDietaryTags.length > 0 ? dishDietaryTags : ['Veg'],
           description: dishDescription.trim() || undefined,
+          imageUrl: dishImageUrl.trim() || undefined,
           isAvailable: true,
         };
         updatedDishes = [newDish, ...existingDishes];
@@ -553,6 +582,8 @@ export const DashboardPage: React.FC = () => {
       setDishPrice(250);
       setDishDietaryTags(['Veg']);
       setDishDescription('');
+      setDishImageUrl('');
+      setShowImageUrlInput(false);
     } catch (err: any) {
       alert(err.message || 'Failed to save menu dish');
     } finally {
@@ -1514,6 +1545,13 @@ export const DashboardPage: React.FC = () => {
                               </div>
 
                               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+                                {dish.imageUrl && (
+                                  <img 
+                                    src={dish.imageUrl} 
+                                    alt={dish.name} 
+                                    style={{ width: 56, height: 56, borderRadius: 8, objectFit: 'cover', border: '1px solid var(--border-color, #e5e7eb)', flexShrink: 0 }} 
+                                  />
+                                )}
                                 <button
                                   type="button"
                                   className={`dish-status-toggle-btn ${dish.isAvailable ? 'live' : 'hidden'}`}
@@ -1966,46 +2004,65 @@ export const DashboardPage: React.FC = () => {
                         return (
                           <div key={dish.id} className="swiggy-dish-card-modern">
                             <div>
-                              {/* Header: FSSAI Symbol + Dish Name + Stock Toggle */}
-                              <div className="swiggy-dish-header">
-                                <div className="swiggy-dish-title-group">
-                                  <div className={`swiggy-fssai-box ${isGreen ? 'veg' : 'nonveg'}`} title={isGreen ? 'Vegetarian' : 'Non-Vegetarian'}>
-                                    {isGreen ? (
-                                      <div className="swiggy-fssai-dot veg" />
-                                    ) : (
-                                      <div className="swiggy-fssai-triangle" />
-                                    )}
+                              <div className="swiggy-dish-card-split">
+                                <div className="swiggy-dish-main-col">
+                                  {/* Header: FSSAI Symbol + Dish Name */}
+                                  <div className="swiggy-dish-header" style={{ marginBottom: 6 }}>
+                                    <div className="swiggy-dish-title-group">
+                                      <div className={`swiggy-fssai-box ${isGreen ? 'veg' : 'nonveg'}`} title={isGreen ? 'Vegetarian' : 'Non-Vegetarian'}>
+                                        {isGreen ? (
+                                          <div className="swiggy-fssai-dot veg" />
+                                        ) : (
+                                          <div className="swiggy-fssai-triangle" />
+                                        )}
+                                      </div>
+                                      <h4 className="swiggy-dish-name">{dish.name}</h4>
+                                    </div>
                                   </div>
-                                  <h4 className="swiggy-dish-name">{dish.name}</h4>
+
+                                  {/* Tags: Category & Dietary Badges */}
+                                  <div className="swiggy-tags-row">
+                                    <span className="swiggy-tag-pill cat">{dish.category}</span>
+                                    {dish.dietaryTags?.map((tag) => {
+                                      const tagIsVeg = tag === 'Veg' || tag === 'Jain' || tag === 'Vegan';
+                                      return (
+                                        <span key={tag} className={`swiggy-tag-pill ${tagIsVeg ? 'veg' : 'nonveg'}`}>
+                                          {tag}
+                                        </span>
+                                      );
+                                    })}
+                                  </div>
+
+                                  {/* Description (if present) */}
+                                  {dish.description && (
+                                    <p className="swiggy-dish-desc">{dish.description}</p>
+                                  )}
                                 </div>
 
-                                <button
-                                  type="button"
-                                  className={`swiggy-stock-toggle-btn ${dish.isAvailable ? 'in-stock' : 'out-stock'}`}
-                                  onClick={() => handleToggleDishAvailability(dish.id)}
-                                  title="Click to toggle availability"
-                                >
-                                  {dish.isAvailable ? '● IN STOCK' : '○ SOLD OUT'}
-                                </button>
+                                {/* Right Visual Column: Dish Image or Standalone Stock Toggle */}
+                                {dish.imageUrl ? (
+                                  <div className="swiggy-dish-visual-col">
+                                    <img src={dish.imageUrl} alt={dish.name} className="swiggy-dish-visual-img" />
+                                    <button
+                                      type="button"
+                                      className={`swiggy-dish-img-stock-badge ${dish.isAvailable ? 'in-stock' : 'out-stock'}`}
+                                      onClick={() => handleToggleDishAvailability(dish.id)}
+                                      title="Click to toggle availability"
+                                    >
+                                      {dish.isAvailable ? '● IN STOCK' : '○ SOLD OUT'}
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className={`swiggy-stock-toggle-btn ${dish.isAvailable ? 'in-stock' : 'out-stock'}`}
+                                    onClick={() => handleToggleDishAvailability(dish.id)}
+                                    title="Click to toggle availability"
+                                  >
+                                    {dish.isAvailable ? '● IN STOCK' : '○ SOLD OUT'}
+                                  </button>
+                                )}
                               </div>
-
-                              {/* Tags: Category & Dietary Badges */}
-                              <div className="swiggy-tags-row">
-                                <span className="swiggy-tag-pill cat">{dish.category}</span>
-                                {dish.dietaryTags?.map((tag) => {
-                                  const tagIsVeg = tag === 'Veg' || tag === 'Jain' || tag === 'Vegan';
-                                  return (
-                                    <span key={tag} className={`swiggy-tag-pill ${tagIsVeg ? 'veg' : 'nonveg'}`}>
-                                      {tag}
-                                    </span>
-                                  );
-                                })}
-                              </div>
-
-                              {/* Description (if present) */}
-                              {dish.description && (
-                                <p className="swiggy-dish-desc">{dish.description}</p>
-                              )}
                             </div>
 
                             {/* Footer: Price per plate + Edit & Delete Actions */}
@@ -3191,19 +3248,19 @@ export const DashboardPage: React.FC = () => {
                   <label className="form-label" style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 13 }}>
                     Category
                   </label>
-                  <select
-                    className="input-field"
+                  <CustomSelect 
                     value={dishCategory}
-                    onChange={(e) => setDishCategory(e.target.value as any)}
-                    style={{ width: '100%', height: 42 }}
-                  >
-                    <option value="Starter">Starter</option>
-                    <option value="Main Course">Main Course</option>
-                    <option value="Dessert">Dessert</option>
-                    <option value="Beverage">Beverage</option>
-                    <option value="Live Counter">Live Counter</option>
-                    <option value="Other">Other</option>
-                  </select>
+                    onChange={(val) => setDishCategory(val as any)}
+                    options={[
+                      { value: 'Starter', label: 'Starter' },
+                      { value: 'Main Course', label: 'Main Course' },
+                      { value: 'Dessert', label: 'Dessert' },
+                      { value: 'Beverage', label: 'Beverage' },
+                      { value: 'Live Counter', label: 'Live Counter' },
+                      { value: 'Other', label: 'Other' },
+                    ]}
+                    searchable={false}
+                  />
                 </div>
 
                 <div className="form-group">
@@ -3220,6 +3277,142 @@ export const DashboardPage: React.FC = () => {
                     required 
                   />
                 </div>
+              </div>
+
+              {/* Dish Photo / Image Upload */}
+              <div className="form-group" style={{ marginBottom: 14 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <label className="form-label" style={{ margin: 0, fontWeight: 600, fontSize: 13 }}>
+                    Dish Photo (Optional)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowImageUrlInput(!showImageUrlInput)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--accent, #3fb668)',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      padding: 0
+                    }}
+                  >
+                    <LinkIcon size={12} />
+                    {showImageUrlInput ? 'Upload file instead' : 'Or paste image URL'}
+                  </button>
+                </div>
+
+                {dishImageUrl ? (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: 10,
+                    borderRadius: 10,
+                    border: '1px solid var(--border-color, #e5e7eb)',
+                    background: 'var(--bg-elevated, #f9fafb)'
+                  }}>
+                    <img
+                      src={dishImageUrl}
+                      alt="Dish preview"
+                      style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: 8,
+                        objectFit: 'cover',
+                        border: '1px solid var(--border-color, #e5e7eb)'
+                      }}
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Dish photo attached</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {dishImageUrl}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setDishImageUrl('')}
+                      style={{
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        border: 'none',
+                        color: '#ef4444',
+                        padding: '6px 10px',
+                        borderRadius: 6,
+                        fontSize: 12,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4
+                      }}
+                    >
+                      <Trash2 size={13} />
+                      Remove
+                    </button>
+                  </div>
+                ) : showImageUrlInput ? (
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input
+                      type="url"
+                      className="input-field"
+                      placeholder="https://images.unsplash.com/photo-..."
+                      value={dishImageUrl}
+                      onChange={(e) => setDishImageUrl(e.target.value)}
+                      style={{ flex: 1 }}
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <input
+                      type="file"
+                      ref={dishFileInputRef}
+                      onChange={handleDishImageUpload}
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => dishFileInputRef.current?.click()}
+                      disabled={uploadingDishImage}
+                      style={{
+                        width: '100%',
+                        padding: '16px 12px',
+                        border: '2px dashed var(--border-color, #d1d5db)',
+                        borderRadius: 10,
+                        background: 'var(--bg-elevated, #f9fafb)',
+                        cursor: uploadingDishImage ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 6,
+                        transition: 'border-color 0.2s'
+                      }}
+                    >
+                      {uploadingDishImage ? (
+                        <>
+                          <Loader2 size={20} className="animate-spin" style={{ color: 'var(--accent, #3fb668)' }} />
+                          <span style={{ fontSize: 12.5, color: 'var(--text-secondary)' }}>Uploading dish photo...</span>
+                        </>
+                      ) : (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--accent, #3fb668)', fontWeight: 600, fontSize: 13 }}>
+                            <UploadCloud size={18} />
+                            <span>Upload Dish Photo</span>
+                          </div>
+                          <span style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>
+                            PNG, JPG, WEBP up to 10MB (appears on client menu cards)
+                          </span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Dietary Tags Checkboxes */}
