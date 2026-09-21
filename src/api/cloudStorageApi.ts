@@ -105,7 +105,7 @@ export const cloudStorageApi = {
         .from(folder)
         .upload(filePath, file, {
           upsert: true,
-          contentType: file.type || `video/${cleanExt === 'mov' ? 'quicktime' : cleanExt === 'webm' ? 'webm' : 'mp4'}`,
+          contentType: file.type || (cleanExt === 'mov' ? 'video/quicktime' : cleanExt === 'webm' ? 'video/webm' : cleanExt === 'mkv' ? 'video/x-matroska' : cleanExt === 'avi' ? 'video/x-msvideo' : cleanExt === 'wmv' ? 'video/x-ms-wmv' : cleanExt === 'flv' ? 'video/x-flv' : cleanExt === '3gp' ? 'video/3gpp' : `video/${cleanExt || 'mp4'}`),
         });
 
       if (uploadResult.error) {

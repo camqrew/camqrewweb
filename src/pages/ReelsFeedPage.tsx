@@ -179,9 +179,31 @@ export const ReelsFeedPage: React.FC = () => {
 
       {/* Top Floating Category Bar */}
       <div className="reels-top-nav-bar">
-        <div className="reels-brand-pill">
-          <Film size={18} color="var(--accent, #3fb668)" />
-          <span className="brand-text">Showcase Reels</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {user?.role === 'professional' && (
+            <Link
+              to="/dashboard?tab=overview"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                color: '#ffffff',
+                textDecoration: 'none',
+              }}
+              title="Upload Video Reel"
+            >
+              <Plus size={20} color="#ffffff" strokeWidth={2.5} />
+            </Link>
+          )}
+
+          <div className="reels-brand-pill">
+            <Film size={18} color="var(--accent, #3fb668)" />
+            <span className="brand-text">Showcase Reels</span>
+          </div>
         </div>
 
         <div className="reels-category-pills">
@@ -201,15 +223,6 @@ export const ReelsFeedPage: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {user?.role === 'professional' && (
-            <Link
-              to="/dashboard?tab=overview"
-              className="btn btn-primary btn-sm"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 20, padding: '6px 14px', fontSize: 12, fontWeight: 700 }}
-            >
-              <Plus size={14} /> Upload Reel
-            </Link>
-          )}
           <button
             type="button"
             className="reels-sound-toggle-btn"

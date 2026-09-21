@@ -2147,7 +2147,7 @@ export const DashboardPage: React.FC = () => {
                     <input 
                       id="reel-video-file-input"
                       type="file" 
-                      accept="video/mp4,video/quicktime,video/webm,video/x-matroska" 
+                      accept="video/*" 
                       style={{ display: 'none' }}
                       onChange={(e) => {
                         if (e.target.files && e.target.files[0]) {
