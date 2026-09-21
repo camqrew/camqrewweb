@@ -27,6 +27,8 @@ export const BookingPage: React.FC = () => {
   const jobTitleParam = searchParams.get('jobTitle');
   const jobBudgetParam = searchParams.get('jobBudget');
   const jobLocationParam = searchParams.get('jobLocation');
+  const totalParam = searchParams.get('total');
+  const notesParam = searchParams.get('notes');
 
   const [pro, setPro] = useState<ProfessionalProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,7 @@ export const BookingPage: React.FC = () => {
     city: 'Mumbai',
   });
   const [venueAddress, setVenueAddress] = useState(jobLocationParam || '');
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState(notesParam || '');
 
   useEffect(() => {
     if (proId) {
@@ -75,10 +77,10 @@ export const BookingPage: React.FC = () => {
     }
   }, [startDate, endDate]);
 
-  const isBudgetLocked = Boolean(jobBudgetParam);
-  const totalAmount = isBudgetLocked 
-    ? Number(jobBudgetParam) 
-    : ((pro?.ratePerDay || 15000) * daysCount);
+  const isBudgetLocked = Boolean(totalParam || jobBudgetParam);
+  const totalAmount = totalParam
+    ? Number(totalParam)
+    : (jobBudgetParam ? Number(jobBudgetParam) : ((pro?.ratePerDay || 15000) * daysCount));
 
   const advanceEscrow = Math.round(totalAmount * 0.3);
   const wrapEscrow = Math.round(totalAmount * 0.4);

@@ -1,4 +1,16 @@
+export interface MenuDishItem {
+  id: string;
+  name: string;
+  category: 'Starter' | 'Main Course' | 'Dessert' | 'Beverage' | 'Live Counter' | 'Other';
+  pricePerPlate: number;
+  dietaryTags: ('Veg' | 'Non-Veg' | 'Jain' | 'Vegan')[];
+  description?: string;
+  imageUrl?: string;
+  isAvailable: boolean;
+}
+
 export interface ServiceItem {
+
   id: string;
   type?: 'standard' | 'package';
   title: string;
@@ -78,6 +90,7 @@ export interface ProfessionalProfile {
     facebook?: string;
   };
   videoReels?: VideoReelItem[];
+  menuItems?: MenuDishItem[];
   views?: number;
   totalEarnings?: number;
 }

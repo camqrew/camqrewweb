@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { professionalApi } from '../api/professionalApi';
 import type { ProfessionalProfile, ReviewItem } from '../types/professional';
@@ -24,7 +24,11 @@ import {
   Plus,
   ZoomIn,
   Image as ImageIcon,
-  User
+  User,
+  UtensilsCrossed,
+  Minus,
+  Users,
+  ArrowRight
 } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
 import { SocialShareModal } from '../components/SocialShareModal';
@@ -54,6 +58,60 @@ export const CreatorProfilePage: React.FC = () => {
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  // Catering Menu & Quotation State
+  const [selectedMenuCategory, setSelectedMenuCategory] = useState<string>('All');
+  const [dishQuantities, setDishQuantities] = useState<Record<string, number>>({});
+  const [guestCount, setGuestCount] = useState<number>(50);
+
+  const availableDishes = useMemo(() => {
+    return (pro?.menuItems || []).filter(d => d.isAvailable);
+  }, [pro?.menuItems]);
+
+  const menuCategories = useMemo(() => {
+    const cats = ['All'];
+    availableDishes.forEach(d => {
+      if (!cats.includes(d.category)) cats.push(d.category);
+    });
+    return cats;
+  }, [availableDishes]);
+
+  const filteredDishes = useMemo(() => {
+    if (selectedMenuCategory === 'All') return availableDishes;
+    return availableDishes.filter(d => d.category === selectedMenuCategory);
+  }, [availableDishes, selectedMenuCategory]);
+
+  const selectedDishesList = useMemo(() => {
+    return availableDishes.filter(d => (dishQuantities[d.id] || 0) > 0);
+  }, [availableDishes, dishQuantities]);
+
+  const totalDishesSelectedCount = useMemo(() => {
+    return Object.values(dishQuantities).reduce((acc, q) => acc + q, 0);
+  }, [dishQuantities]);
+
+  const perPlateSubtotal = useMemo(() => {
+    return selectedDishesList.reduce((acc, d) => acc + (d.pricePerPlate * (dishQuantities[d.id] || 0)), 0);
+  }, [selectedDishesList, dishQuantities]);
+
+  const grandQuotationTotal = useMemo(() => {
+    return perPlateSubtotal * guestCount;
+  }, [perPlateSubtotal, guestCount]);
+
+  const handleUpdateDishQty = (dishId: string, delta: number) => {
+    setDishQuantities(prev => {
+      const current = prev[dishId] || 0;
+      const next = Math.max(0, current + delta);
+      return { ...prev, [dishId]: next };
+    });
+  };
+
+  const handleBookWithQuotation = () => {
+    const itemsSummary = selectedDishesList
+      .map(d => `${d.name} (${dishQuantities[d.id]}x @ ₹${d.pricePerPlate}/plate)`)
+      .join(', ');
+    const notes = `Catering Quotation for ${guestCount} Guests:\nSelected Dishes: ${itemsSummary}\nPer Plate: ₹${perPlateSubtotal.toLocaleString('en-IN')}\nEstimated Total: ₹${grandQuotationTotal.toLocaleString('en-IN')}`;
+    navigate(`/book/${pro?.id}?total=${grandQuotationTotal}&jobTitle=${encodeURIComponent(`Catering Package - ${guestCount} Guests`)}&notes=${encodeURIComponent(notes)}`);
+  };
 
   useEffect(() => {
     if (id) {
@@ -245,6 +303,251 @@ export const CreatorProfilePage: React.FC = () => {
               <h3 className="section-heading">About the {proArchetype.roleNoun}</h3>
               <p className="bio-text">{pro.bio || 'No bio provided.'}</p>
             </div>
+
+            {/* ── CATERING MENU & DISHES WITH INSTANT QUOTATION (CATERERS ONLY) ── */}
+            {proArchetype.archetype === 'catering' && availableDishes.length > 0 && (
+              <div className="card profile-section-card catering-menu-section-card">
+                <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+                  <div>
+                    <h3 className="section-heading" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <UtensilsCrossed size={20} color="var(--accent, #3fb668)" />
+                      Menu & Dishes
+                      <span className="badge-sub" style={{ fontSize: 12, padding: '2px 8px' }}>
+                        {availableDishes.length} available
+                      </span>
+                    </h3>
+                    <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
+                      Select dishes below to calculate an instant quotation for your event guest count.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Category Filter Pills */}
+                <div className="menu-cat-filter-pills" style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, marginBottom: 16 }}>
+                  {menuCategories.map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setSelectedMenuCategory(cat)}
+                      className={`cat-pill clickable ${selectedMenuCategory === cat ? 'active' : ''}`}
+                      style={{
+                        padding: '6px 14px',
+                        borderRadius: 20,
+                        fontSize: 12.5,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        border: selectedMenuCategory === cat ? '1px solid var(--accent, #3fb668)' : '1px solid var(--border-color)',
+                        background: selectedMenuCategory === cat ? 'rgba(63, 182, 104, 0.15)' : 'var(--surface-elevated, #1a1e24)',
+                        color: selectedMenuCategory === cat ? 'var(--accent, #3fb668)' : 'var(--text-secondary)',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Dish Cards Grid */}
+                <div className="catering-dishes-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14, marginBottom: 20 }}>
+                  {filteredDishes.map(dish => {
+                    const qty = dishQuantities[dish.id] || 0;
+                    const isGreen = dish.dietaryTags?.some(t => t === 'Veg' || t === 'Jain' || t === 'Vegan');
+                    return (
+                      <div 
+                        key={dish.id} 
+                        className={`catering-dish-item-card ${qty > 0 ? 'selected-dish' : ''}`}
+                        style={{
+                          padding: '14px 16px',
+                          borderRadius: 12,
+                          background: qty > 0 ? 'rgba(63, 182, 104, 0.06)' : 'var(--surface-elevated, #161a1f)',
+                          border: qty > 0 ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border-color)',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between'
+                        }}
+                      >
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                            <span 
+                              style={{ 
+                                display: 'inline-block',
+                                width: 9,
+                                height: 9,
+                                borderRadius: '50%',
+                                backgroundColor: isGreen ? '#22c55e' : '#ef4444',
+                                flexShrink: 0
+                              }} 
+                              title={isGreen ? 'Vegetarian' : 'Non-Vegetarian'}
+                            />
+                            <h4 style={{ margin: 0, fontSize: 14.5, fontWeight: 700, color: 'var(--text-primary)' }}>
+                              {dish.name}
+                            </h4>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '4px 0 6px' }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(63, 182, 104, 0.12)', color: 'var(--accent, #3fb668)' }}>
+                              {dish.category}
+                            </span>
+                            {dish.dietaryTags?.map(t => (
+                              <span key={t} style={{ 
+                                fontSize: 10, 
+                                fontWeight: 700, 
+                                padding: '2px 6px', 
+                                borderRadius: 4, 
+                                background: (t === 'Veg' || t === 'Jain' || t === 'Vegan') ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                                color: (t === 'Veg' || t === 'Jain' || t === 'Vegan') ? '#16a34a' : '#dc2626'
+                              }}>
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+
+                          {dish.description && (
+                            <p style={{ margin: '4px 0 8px', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                              {dish.description}
+                            </p>
+                          )}
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                          <div>
+                            <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--accent, #3fb668)' }}>
+                              ₹{dish.pricePerPlate.toLocaleString('en-IN')}
+                            </span>
+                            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 3 }}>/ plate</span>
+                          </div>
+
+                          {/* Stepper */}
+                          <div className="dish-qty-stepper" style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface-card, #111)', padding: '4px 8px', borderRadius: 20, border: '1px solid var(--border-color)' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateDishQty(dish.id, -1)}
+                              disabled={qty <= 0}
+                              style={{ border: 'none', background: 'transparent', cursor: qty > 0 ? 'pointer' : 'default', opacity: qty > 0 ? 1 : 0.4, color: 'var(--text-primary)', display: 'flex', alignItems: 'center' }}
+                            >
+                              <Minus size={13} />
+                            </button>
+                            <span style={{ fontSize: 13, fontWeight: 700, minWidth: 16, textAlign: 'center', color: 'var(--text-primary)' }}>
+                              {qty}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateDishQty(dish.id, 1)}
+                              style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--accent, #3fb668)', display: 'flex', alignItems: 'center' }}
+                            >
+                              <Plus size={13} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Quotation Calculator Box */}
+                <div className="catering-quotation-summary-box card" style={{ padding: 18, background: 'var(--surface-card, #111418)', border: '1px solid rgba(63, 182, 104, 0.3)', borderRadius: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 14 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 18, background: 'rgba(63, 182, 104, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent, #3fb668)' }}>
+                        <Users size={18} />
+                      </div>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
+                          Event Guest Count
+                        </h4>
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Prices will multiply by guest count</span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={() => setGuestCount(g => Math.max(10, g - 10))}
+                        style={{ width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <div style={{ textAlign: 'center', minWidth: 70 }}>
+                        <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>{guestCount}</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginTop: -2 }}>guests</span>
+                      </div>
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={() => setGuestCount(g => g + 10)}
+                        style={{ width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {selectedDishesList.length > 0 ? (
+                    <div>
+                      {/* Breakdown table */}
+                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 12, marginBottom: 14 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8, letterSpacing: '0.5px' }}>
+                          <span>Selected Dish ({totalDishesSelectedCount})</span>
+                          <span>Rate × Guests</span>
+                        </div>
+                        {selectedDishesList.map(dish => {
+                          const q = dishQuantities[dish.id] || 0;
+                          const lineTotal = dish.pricePerPlate * q * guestCount;
+                          return (
+                            <div key={dish.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', fontSize: 13, borderBottom: '1px dashed rgba(255,255,255,0.06)' }}>
+                              <div>
+                                <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{dish.name}</span>
+                                <span style={{ color: 'var(--text-muted)', fontSize: 12, marginLeft: 6 }}>
+                                  ({q}x @ ₹{dish.pricePerPlate}/plate)
+                                </span>
+                              </div>
+                              <span style={{ fontWeight: 700, color: 'var(--accent, #3fb668)' }}>
+                                ₹{lineTotal.toLocaleString('en-IN')}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14, paddingTop: 4 }}>
+                        <div>
+                          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                            Per Guest Subtotal: <strong>₹{perPlateSubtotal.toLocaleString('en-IN')}</strong> × {guestCount} guests
+                          </span>
+                          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--accent, #3fb668)', letterSpacing: '-0.5px' }}>
+                            ₹{grandQuotationTotal.toLocaleString('en-IN')}
+                            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', marginLeft: 6 }}>estimated quotation</span>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-md"
+                          onClick={handleBookWithQuotation}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 24 }}
+                        >
+                          <span>Proceed to Book with Menu</span>
+                          <ArrowRight size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ padding: '10px 0 4px', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                      <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)' }}>
+                        👉 Click the <strong>+</strong> button on any dish above to calculate an instant quotation.
+                      </p>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: 12, color: 'var(--text-muted)' }}>
+                    <ShieldCheck size={14} color="var(--accent, #3fb668)" />
+                    <span>Camqrew Escrow Protection: 30% Advance • 40% Wrap • 30% Final Wrap</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Capabilities / Equipment Card */}
             {pro.equipment && pro.equipment.length > 0 && (
@@ -557,10 +860,18 @@ export const CreatorProfilePage: React.FC = () => {
           <aside className="profile-sidebar-col">
             <div className="card booking-sidebar-card">
               <div className="price-header">
-                <span className="price-label">Starting from</span>
+                <span className="price-label">
+                  {selectedDishesList.length > 0 ? `Quotation (${guestCount} Guests)` : 'Starting from'}
+                </span>
                 <div className="price-val-row">
-                  <span className="price-val">₹{pro.ratePerDay?.toLocaleString('en-IN')}</span>
-                  <span className="price-unit">/ {proArchetype.rateUnitDefault.toLowerCase()}</span>
+                  <span className="price-val">
+                    ₹{selectedDishesList.length > 0
+                      ? grandQuotationTotal.toLocaleString('en-IN')
+                      : pro.ratePerDay?.toLocaleString('en-IN')}
+                  </span>
+                  <span className="price-unit">
+                    {selectedDishesList.length > 0 ? ' estimated' : `/ ${proArchetype.rateUnitDefault.toLowerCase()}`}
+                  </span>
                 </div>
               </div>
 
@@ -575,9 +886,20 @@ export const CreatorProfilePage: React.FC = () => {
               </div>
 
               <div className="action-buttons-stack">
-                <Link to={`/book/${pro.id}`} className="btn btn-primary btn-lg full-width">
-                  {proArchetype.bookingCtaPrefix} <ChevronRight size={18} />
-                </Link>
+                {selectedDishesList.length > 0 ? (
+                  <button 
+                    type="button" 
+                    onClick={handleBookWithQuotation} 
+                    className="btn btn-primary btn-lg full-width"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                  >
+                    <span>Book with Quotation</span> <ChevronRight size={18} />
+                  </button>
+                ) : (
+                  <Link to={`/book/${pro.id}`} className="btn btn-primary btn-lg full-width">
+                    {proArchetype.bookingCtaPrefix} <ChevronRight size={18} />
+                  </Link>
+                )}
 
                 <Link to={`/chat?userId=${pro.id}`} className="btn btn-outline full-width">
                   <MessageSquare size={16} /> Direct Message

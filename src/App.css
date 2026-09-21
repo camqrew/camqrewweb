@@ -9801,3 +9801,55 @@
   background: #1a2228;
   color: #9ca3af;
 }
+
+/* ==========================================================================
+   CATERING MENU & DISHES QUOTATION STYLES
+   ========================================================================== */
+.catering-dish-item-card {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.catering-dish-item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.catering-dish-item-card.selected-dish {
+  box-shadow: 0 4px 18px rgba(63, 182, 104, 0.18);
+}
+
+.dish-qty-stepper button {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.dish-qty-stepper button:hover:not(:disabled) {
+  transform: scale(1.15);
+}
+
+.catering-quotation-summary-box {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.catering-quotation-summary-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3fb668, #10b981);
+}
+
+.pro-dish-card {
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.pro-dish-card:hover {
+  border-color: rgba(63, 182, 104, 0.4) !important;
+}
+
+.dish-status-toggle-btn:hover {
+  opacity: 0.85;
+}

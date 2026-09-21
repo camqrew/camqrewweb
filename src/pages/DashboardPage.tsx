@@ -43,11 +43,13 @@ import {
   UploadCloud,
   ZoomIn,
   Link as LinkIcon,
-  User
+  User,
+  UtensilsCrossed
 } from 'lucide-react';
-import type { VideoReelItem } from '../types/professional';
+import type { VideoReelItem, MenuDishItem } from '../types/professional';
 import { parseVideoUrl } from '../api/professionalApi';
 import { authApi } from '../api/authApi';
+import { getArchetype } from '../constants/categories';
 import { ShootContractModal } from '../components/ShootContractModal';
 import { PhotoProofingModal } from '../components/PhotoProofingModal';
 import { CallSheetModal } from '../components/CallSheetModal';
@@ -105,6 +107,16 @@ export const DashboardPage: React.FC = () => {
   const [newReelCategory, setNewReelCategory] = useState('Cinematography');
   const [newReelIsShort, setNewReelIsShort] = useState(false);
   const [savingReel, setSavingReel] = useState(false);
+
+  // Catering Menu Dish Modal state
+  const [showDishModal, setShowDishModal] = useState(false);
+  const [editingDishId, setEditingDishId] = useState<string | null>(null);
+  const [dishName, setDishName] = useState('');
+  const [dishCategory, setDishCategory] = useState<MenuDishItem['category']>('Starter');
+  const [dishPrice, setDishPrice] = useState<number>(250);
+  const [dishDietaryTags, setDishDietaryTags] = useState<MenuDishItem['dietaryTags']>(['Veg']);
+  const [dishDescription, setDishDescription] = useState('');
+  const [savingDish, setSavingDish] = useState(false);
 
   // Portfolio Photos Modal & Upload state
   const [uploadingPortfolio, setUploadingPortfolio] = useState(false);
@@ -417,6 +429,112 @@ export const DashboardPage: React.FC = () => {
       showToast('Video reel removed from profile.');
     } catch (err: any) {
       alert(err.message || 'Failed to remove reel');
+    }
+  };
+
+  // Catering Menu Dish Handlers
+  const handleOpenAddDish = () => {
+    setEditingDishId(null);
+    setDishName('');
+    setDishCategory('Starter');
+    setDishPrice(250);
+    setDishDietaryTags(['Veg']);
+    setDishDescription('');
+    setShowDishModal(true);
+  };
+
+  const handleOpenEditDish = (dish: MenuDishItem) => {
+    setEditingDishId(dish.id);
+    setDishName(dish.name);
+    setDishCategory(dish.category);
+    setDishPrice(dish.pricePerPlate);
+    setDishDietaryTags(dish.dietaryTags || ['Veg']);
+    setDishDescription(dish.description || '');
+    setShowDishModal(true);
+  };
+
+  const handleSaveDish = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dishName.trim()) {
+      alert('Please enter a dish name.');
+      return;
+    }
+    if (!dishPrice || Number(dishPrice) <= 0) {
+      alert('Please enter a valid price per plate.');
+      return;
+    }
+
+    setSavingDish(true);
+    try {
+      const existingDishes = proProfile?.menuItems || [];
+      let updatedDishes: MenuDishItem[];
+
+      if (editingDishId) {
+        updatedDishes = existingDishes.map((d) =>
+          d.id === editingDishId
+            ? {
+                ...d,
+                name: dishName.trim(),
+                category: dishCategory,
+                pricePerPlate: Number(dishPrice),
+                dietaryTags: dishDietaryTags.length > 0 ? dishDietaryTags : ['Veg'],
+                description: dishDescription.trim() || undefined,
+              }
+            : d
+        );
+      } else {
+        const newDish: MenuDishItem = {
+          id: 'dish_' + Date.now(),
+          name: dishName.trim(),
+          category: dishCategory,
+          pricePerPlate: Number(dishPrice),
+          dietaryTags: dishDietaryTags.length > 0 ? dishDietaryTags : ['Veg'],
+          description: dishDescription.trim() || undefined,
+          isAvailable: true,
+        };
+        updatedDishes = [newDish, ...existingDishes];
+      }
+
+      await professionalApi.updateProfile({ menuItems: updatedDishes });
+      setProProfile((prev) => (prev ? { ...prev, menuItems: updatedDishes } : null));
+      showToast(editingDishId ? 'Dish updated successfully!' : '🎉 New dish added to your catering menu!');
+      setShowDishModal(false);
+      setEditingDishId(null);
+      setDishName('');
+      setDishPrice(250);
+      setDishDietaryTags(['Veg']);
+      setDishDescription('');
+    } catch (err: any) {
+      alert(err.message || 'Failed to save menu dish');
+    } finally {
+      setSavingDish(false);
+    }
+  };
+
+  const handleToggleDishAvailability = async (dishId: string) => {
+    try {
+      const existingDishes = proProfile?.menuItems || [];
+      const updatedDishes = existingDishes.map((d) =>
+        d.id === dishId ? { ...d, isAvailable: !d.isAvailable } : d
+      );
+      await professionalApi.updateProfile({ menuItems: updatedDishes });
+      setProProfile((prev) => (prev ? { ...prev, menuItems: updatedDishes } : null));
+      showToast('Dish status updated.');
+    } catch (err: any) {
+      alert(err.message || 'Failed to update dish');
+    }
+  };
+
+  const handleDeleteDish = async (dishId: string) => {
+    if (!confirm('Are you sure you want to remove this dish from your catering menu?')) return;
+    try {
+      const existingDishes = proProfile?.menuItems || [];
+      const updatedDishes = existingDishes.filter((d) => d.id !== dishId);
+      await professionalApi.updateProfile({ menuItems: updatedDishes });
+      setProProfile((prev) => (prev ? { ...prev, menuItems: updatedDishes } : null));
+      showToast('Dish removed from menu.');
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete dish');
     }
   };
 
@@ -1212,6 +1330,149 @@ export const DashboardPage: React.FC = () => {
                   </div>
                 )}
               </div>
+
+              {/* ── CATERING MENU & DISHES MANAGER (CATERERS ONLY) ── */}
+              {getArchetype(proProfile?.categories).archetype === 'catering' && (
+                <div className="card pro-menu-manager-card" style={{ marginTop: 28 }}>
+                  <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+                    <div>
+                      <h3 className="section-heading" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <UtensilsCrossed size={20} color="var(--accent, #3fb668)" />
+                        Catering Menu & Dishes
+                        <span className="badge-sub" style={{ fontSize: 12, padding: '2px 8px' }}>
+                          {proProfile?.menuItems?.length || 0} dishes
+                        </span>
+                      </h3>
+                      <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
+                        List your signature dishes and catering items so clients can select what they need and receive an instant quotation.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={handleOpenAddDish}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <Plus size={14} /> + Add Dish
+                    </button>
+                  </div>
+
+                  {(!proProfile?.menuItems || proProfile.menuItems.length === 0) ? (
+                    <div className="empty-portfolio-box" style={{ textAlign: 'center', padding: '40px 20px', border: '1.5px dashed rgba(255,255,255,0.12)', borderRadius: 12 }}>
+                      <UtensilsCrossed size={38} style={{ color: 'var(--text-muted)', margin: '0 auto 12px' }} />
+                      <h4 style={{ margin: '0 0 6px', fontSize: 16, color: 'var(--text-primary)' }}>No dishes added to your menu yet</h4>
+                      <p style={{ margin: '0 auto 16px', maxWidth: 460, fontSize: 13, color: 'var(--text-secondary)' }}>
+                        Add starters, main courses, desserts, and live counters with per-plate pricing so customers can calculate quotations without contacting you.
+                      </p>
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        onClick={handleOpenAddDish}
+                      >
+                        <Plus size={14} /> Add First Dish
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="pro-dashboard-dishes-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
+                      {proProfile.menuItems.map((dish) => {
+                        const isGreen = dish.dietaryTags?.some(t => t === 'Veg' || t === 'Jain' || t === 'Vegan');
+                        return (
+                          <div key={dish.id} className="pro-dish-card card" style={{ padding: '14px 16px', background: 'var(--surface-elevated, #161a1f)', border: '1px solid var(--border-color)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+                                  <span 
+                                    style={{ 
+                                      display: 'inline-block',
+                                      width: 10,
+                                      height: 10,
+                                      borderRadius: '50%',
+                                      backgroundColor: isGreen ? '#22c55e' : '#ef4444',
+                                      flexShrink: 0
+                                    }} 
+                                    title={isGreen ? 'Vegetarian' : 'Non-Vegetarian'} 
+                                  />
+                                  <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{dish.name}</h4>
+                                </div>
+                                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '4px 0 6px' }}>
+                                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(63, 182, 104, 0.15)', color: 'var(--accent, #3fb668)' }}>
+                                    {dish.category}
+                                  </span>
+                                  {dish.dietaryTags?.map(t => (
+                                    <span key={t} style={{ 
+                                      fontSize: 10, 
+                                      fontWeight: 700, 
+                                      padding: '2px 6px', 
+                                      borderRadius: 4, 
+                                      background: (t === 'Veg' || t === 'Jain' || t === 'Vegan') ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                                      color: (t === 'Veg' || t === 'Jain' || t === 'Vegan') ? '#16a34a' : '#dc2626'
+                                    }}>
+                                      {t}
+                                    </span>
+                                  ))}
+                                </div>
+                                {dish.description && (
+                                  <p style={{ margin: '4px 0', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                                    {dish.description}
+                                  </p>
+                                )}
+                                <div style={{ marginTop: 8 }}>
+                                  <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--accent, #3fb668)' }}>
+                                    ₹{dish.pricePerPlate.toLocaleString('en-IN')}
+                                  </span>
+                                  <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 4 }}>/ plate</span>
+                                </div>
+                              </div>
+
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+                                <button
+                                  type="button"
+                                  className={`dish-status-toggle-btn ${dish.isAvailable ? 'live' : 'hidden'}`}
+                                  onClick={() => handleToggleDishAvailability(dish.id)}
+                                  title="Click to toggle visibility on public profile"
+                                  style={{
+                                    fontSize: 11,
+                                    fontWeight: 700,
+                                    padding: '3px 8px',
+                                    borderRadius: 12,
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    background: dish.isAvailable ? 'rgba(34, 197, 94, 0.15)' : 'rgba(150, 150, 150, 0.15)',
+                                    color: dish.isAvailable ? '#22c55e' : 'var(--text-muted)'
+                                  }}
+                                >
+                                  {dish.isAvailable ? '● Live' : '○ Hidden'}
+                                </button>
+                                <div style={{ display: 'flex', gap: 4 }}>
+                                  <button
+                                    type="button"
+                                    className="btn btn-ghost btn-xs"
+                                    onClick={() => handleOpenEditDish(dish)}
+                                    title="Edit dish"
+                                    style={{ fontSize: 11, padding: '2px 6px' }}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn btn-ghost btn-xs"
+                                    onClick={() => handleDeleteDish(dish.id)}
+                                    title="Delete dish"
+                                    style={{ color: 'var(--danger, #ef4444)', padding: '2px 6px' }}
+                                  >
+                                    <Trash2 size={13} />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* ── LEGAL, PRIVACY & DANGER ZONE ── */}
               <div className="card legal-danger-zone-card" style={{ marginTop: 28, borderColor: 'rgba(239,68,68,0.2)' }}>
@@ -2529,6 +2790,160 @@ export const DashboardPage: React.FC = () => {
                 {deletingAccount ? <Loader2 size={16} className="animate-spin" /> : 'Permanently Delete My Account'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── CATERING DISH MODAL (ADD / EDIT) ── */}
+      {showDishModal && (
+        <div className="modal-backdrop" onClick={() => !savingDish && setShowDishModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
+            <div className="modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ background: 'rgba(63, 182, 104, 0.15)', padding: 8, borderRadius: 10, color: 'var(--accent, #3fb668)' }}>
+                  <UtensilsCrossed size={20} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>
+                    {editingDishId ? 'Edit Menu Dish' : 'Add Dish to Menu'}
+                  </h3>
+                  <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
+                    Catering menu item for client quotation calculator
+                  </p>
+                </div>
+              </div>
+              <button 
+                className="btn-close" 
+                onClick={() => setShowDishModal(false)} 
+                disabled={savingDish}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveDish} className="modal-form" style={{ padding: '16px 20px' }}>
+              <div className="form-group" style={{ marginBottom: 14 }}>
+                <label className="form-label" style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 13 }}>
+                  Dish / Menu Item Name *
+                </label>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="e.g. Paneer Tikka Angara, Dal Makhani, Tiramisu" 
+                  value={dishName}
+                  onChange={(e) => setDishName(e.target.value)}
+                  required 
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+                <div className="form-group">
+                  <label className="form-label" style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 13 }}>
+                    Category
+                  </label>
+                  <select
+                    className="input-field"
+                    value={dishCategory}
+                    onChange={(e) => setDishCategory(e.target.value as any)}
+                    style={{ width: '100%', height: 42 }}
+                  >
+                    <option value="Starter">Starter</option>
+                    <option value="Main Course">Main Course</option>
+                    <option value="Dessert">Dessert</option>
+                    <option value="Beverage">Beverage</option>
+                    <option value="Live Counter">Live Counter</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 13 }}>
+                    Price per Plate / Serving (₹) *
+                  </label>
+                  <input 
+                    type="number" 
+                    className="input-field" 
+                    placeholder="250" 
+                    value={dishPrice || ''}
+                    onChange={(e) => setDishPrice(Number(e.target.value))}
+                    min="1"
+                    required 
+                  />
+                </div>
+              </div>
+
+              {/* Dietary Tags Checkboxes */}
+              <div className="form-group" style={{ marginBottom: 14 }}>
+                <label className="form-label" style={{ display: 'block', marginBottom: 8, fontWeight: 600, fontSize: 13 }}>
+                  Dietary Classification
+                </label>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {(['Veg', 'Non-Veg', 'Jain', 'Vegan'] as ('Veg' | 'Non-Veg' | 'Jain' | 'Vegan')[]).map((tag) => {
+                    const isSelected = dishDietaryTags.includes(tag);
+                    const isGreen = tag === 'Veg' || tag === 'Jain' || tag === 'Vegan';
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => {
+                          setDishDietaryTags((prev) =>
+                            isSelected ? prev.filter((t) => t !== tag) : [...prev, tag]
+                          );
+                        }}
+                        style={{
+                          padding: '6px 14px',
+                          borderRadius: 20,
+                          fontSize: 12.5,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          border: `1.5px solid ${isSelected ? (isGreen ? '#22c55e' : '#ef4444') : 'var(--border-color)'}`,
+                          background: isSelected
+                            ? (isGreen ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)')
+                            : 'var(--surface-card, #111)',
+                          color: isSelected
+                            ? (isGreen ? '#22c55e' : '#ef4444')
+                            : 'var(--text-secondary)'
+                        }}
+                      >
+                        {isSelected ? '✓ ' : ''}{tag}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 18 }}>
+                <label className="form-label" style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 13 }}>
+                  Description / Portion Details (Optional)
+                </label>
+                <textarea 
+                  className="input-field" 
+                  rows={2}
+                  placeholder="e.g. Clay-oven charred cottage cheese cubes marinated in Kashmiri chili and aromatic spices." 
+                  value={dishDescription}
+                  onChange={(e) => setDishDescription(e.target.value)}
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
+
+              <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                <button 
+                  type="button" 
+                  className="btn btn-outline"
+                  onClick={() => setShowDishModal(false)}
+                  disabled={savingDish}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn btn-primary"
+                  disabled={!dishName.trim() || !dishPrice || savingDish}
+                >
+                  {savingDish ? <Loader2 size={16} className="animate-spin" /> : (editingDishId ? 'Save Changes' : 'Add Dish to Menu')}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
