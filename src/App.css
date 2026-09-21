@@ -9868,12 +9868,12 @@
   align-items: center;
   justify-content: space-between;
   padding: 24px 28px;
-  background: var(--surface-card, #12151a);
+  background: var(--bg-card, #12151a);
   border: 1px solid var(--border-color, #232730);
   border-radius: 16px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   flex-wrap: wrap;
   gap: 16px;
 }
@@ -9896,6 +9896,19 @@
   min-width: 280px;
 }
 
+.swiggy-menu-banner .banner-title {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary, #ffffff);
+}
+
+.swiggy-menu-banner .banner-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary, #9aa5b8);
+}
+
 .swiggy-banner-icon-box {
   width: 52px;
   height: 52px;
@@ -9915,7 +9928,7 @@
   justify-content: space-between;
   gap: 14px;
   padding: 16px 20px;
-  background: var(--surface-card, #12151a);
+  background: var(--bg-card, #12151a);
   border: 1px solid var(--border-color, #232730);
   border-radius: 14px;
 }
@@ -9930,7 +9943,7 @@
 .swiggy-search-input {
   width: 100%;
   padding: 10px 14px 10px 38px;
-  background: var(--surface-elevated, #181d24);
+  background: var(--bg-elevated, #181d24);
   border: 1px solid var(--border-color, #2a313d);
   border-radius: 10px;
   font-size: 14px;
@@ -9966,7 +9979,7 @@
   font-size: 13px;
   font-weight: 500;
   border: 1px solid var(--border-color, #2a313d);
-  background: var(--surface-elevated, #181d24);
+  background: var(--bg-elevated, #181d24);
   color: var(--text-secondary, #9aa5b8);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -9975,7 +9988,7 @@
 
 .swiggy-cat-chip:hover {
   border-color: #10b981;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
 }
 
 .swiggy-cat-chip.active {
@@ -9994,7 +10007,7 @@
   font-size: 13px;
   font-weight: 600;
   border: 1px solid var(--border-color, #2a313d);
-  background: var(--surface-elevated, #181d24);
+  background: var(--bg-elevated, #181d24);
   color: var(--text-secondary, #9aa5b8);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -10058,7 +10071,7 @@
 }
 
 .swiggy-dish-card-modern {
-  background: var(--surface-card, #12151a);
+  background: var(--bg-card, #12151a);
   border: 1px solid var(--border-color, #232730);
   border-radius: 14px;
   padding: 18px 20px;
@@ -10150,7 +10163,7 @@
 }
 
 .swiggy-tag-pill.cat {
-  background: var(--surface-elevated, #1c222b);
+  background: var(--bg-elevated, #1c222b);
   color: var(--text-secondary, #9aa5b8);
 }
 
@@ -10215,7 +10228,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface-elevated, #1c222b);
+  background: var(--bg-elevated, #1c222b);
   border: 1px solid var(--border-color, #2a313d);
   color: var(--text-secondary, #9aa5b8);
   cursor: pointer;
@@ -10232,4 +10245,178 @@
   background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
   border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* ═════════════════════════════════════════════════════════
+   LIGHT THEME OVERRIDES FOR SWIGGY & MODALS
+   ═════════════════════════════════════════════════════════ */
+[data-theme="light"] .swiggy-menu-banner {
+  background: #ffffff !important;
+  border-color: #e5e7eb !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .swiggy-menu-banner .banner-title {
+  color: #111827 !important;
+}
+
+[data-theme="light"] .swiggy-menu-banner .banner-subtitle {
+  color: #4b5563 !important;
+}
+
+[data-theme="light"] .swiggy-filter-bar {
+  background: #ffffff !important;
+  border-color: #e5e7eb !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .swiggy-search-input {
+  background: #f9fafb !important;
+  border-color: #e5e7eb !important;
+  color: #111827 !important;
+}
+
+[data-theme="light"] .swiggy-search-input:focus {
+  background: #ffffff !important;
+  border-color: #10b981 !important;
+}
+
+[data-theme="light"] .swiggy-cat-chip {
+  background: #f3f4f6 !important;
+  border-color: #e5e7eb !important;
+  color: #4b5563 !important;
+}
+
+[data-theme="light"] .swiggy-cat-chip:hover {
+  background: #e5e7eb !important;
+  color: #111827 !important;
+}
+
+[data-theme="light"] .swiggy-cat-chip.active {
+  background: #10b981 !important;
+  border-color: #10b981 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] .swiggy-veg-toggle-btn {
+  background: #f3f4f6 !important;
+  border-color: #e5e7eb !important;
+  color: #4b5563 !important;
+}
+
+[data-theme="light"] .swiggy-veg-toggle-btn.active {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border-color: #10b981 !important;
+  color: #10b981 !important;
+}
+
+[data-theme="light"] .swiggy-summary-bar {
+  color: #6b7280 !important;
+}
+
+[data-theme="light"] .swiggy-dish-card-modern {
+  background: #ffffff !important;
+  border-color: #e5e7eb !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .swiggy-dish-card-modern:hover {
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .swiggy-dish-name {
+  color: #111827 !important;
+}
+
+[data-theme="light"] .swiggy-tag-pill.cat {
+  background: #f3f4f6 !important;
+  color: #4b5563 !important;
+}
+
+[data-theme="light"] .swiggy-dish-desc {
+  color: #4b5563 !important;
+}
+
+[data-theme="light"] .swiggy-dish-footer {
+  border-color: #e5e7eb !important;
+}
+
+[data-theme="light"] .swiggy-dish-price-val {
+  color: #111827 !important;
+}
+
+[data-theme="light"] .swiggy-dish-price-unit {
+  color: #6b7280 !important;
+}
+
+[data-theme="light"] .swiggy-icon-action-btn {
+  background: #f3f4f6 !important;
+  border-color: #e5e7eb !important;
+  color: #4b5563 !important;
+}
+
+[data-theme="light"] .swiggy-icon-action-btn:hover {
+  background: #e5e7eb !important;
+  color: #111827 !important;
+}
+
+[data-theme="light"] .swiggy-icon-action-btn.delete:hover {
+  background: #fee2e2 !important;
+  color: #ef4444 !important;
+  border-color: #fca5a5 !important;
+}
+
+[data-theme="light"] .swiggy-stock-toggle-btn.out-stock {
+  background: #f3f4f6 !important;
+  color: #9ca3af !important;
+  border-color: #e5e7eb !important;
+}
+
+[data-theme="light"] .pro-menu-manager-card {
+  background: #ffffff !important;
+  border-color: #e5e7eb !important;
+}
+
+[data-theme="light"] .pro-dish-card {
+  background: #ffffff !important;
+  border-color: #e5e7eb !important;
+}
+
+/* ── Universal Modal Backdrop & Card Aliases ── */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 540px;
+  background: #14181d;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+  padding: 24px;
+  animation: customSelectSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="light"] .modal-card {
+  background: #ffffff !important;
+  border-color: #e5e7eb !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-theme="light"] .modal-card .modal-header {
+  border-bottom-color: #e5e7eb !important;
 }

@@ -1829,10 +1829,10 @@ export const DashboardPage: React.FC = () => {
                         <UtensilsCrossed size={26} color="#ffffff" />
                       </div>
                       <div>
-                        <h3 className="banner-title" style={{ margin: '0 0 4px', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>
+                        <h3 className="banner-title">
                           Food Menu & Prices Management
                         </h3>
-                        <p className="banner-subtitle" style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
+                        <p className="banner-subtitle">
                           Publish signature dishes, configure per-plate prices, manage Veg/Non-Veg FSSAI badges, and toggle real-time stock availability.
                         </p>
                       </div>
@@ -3145,15 +3145,15 @@ export const DashboardPage: React.FC = () => {
 
       {/* ── CATERING DISH MODAL (ADD / EDIT) ── */}
       {showDishModal && (
-        <div className="modal-backdrop" onClick={() => !savingDish && setShowDishModal(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
+        <div className="dashboard-modal-backdrop" onClick={() => !savingDish && setShowDishModal(false)}>
+          <div className="dashboard-modal-content card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 540 }}>
             <div className="modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ background: 'rgba(63, 182, 104, 0.15)', padding: 8, borderRadius: 10, color: 'var(--accent, #3fb668)' }}>
                   <UtensilsCrossed size={20} />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>
+                  <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>
                     {editingDishId ? 'Edit Menu Dish' : 'Add Dish to Menu'}
                   </h3>
                   <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
@@ -3162,6 +3162,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
               <button 
+                type="button"
                 className="btn-close" 
                 onClick={() => setShowDishModal(false)} 
                 disabled={savingDish}
@@ -3170,7 +3171,7 @@ export const DashboardPage: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleSaveDish} className="modal-form" style={{ padding: '16px 20px' }}>
+            <form onSubmit={handleSaveDish} className="modal-form">
               <div className="form-group" style={{ marginBottom: 14 }}>
                 <label className="form-label" style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 13 }}>
                   Dish / Menu Item Name *
@@ -3245,13 +3246,13 @@ export const DashboardPage: React.FC = () => {
                           fontSize: 12.5,
                           fontWeight: 700,
                           cursor: 'pointer',
-                          border: `1.5px solid ${isSelected ? (isGreen ? '#22c55e' : '#ef4444') : 'var(--border-color)'}`,
+                          border: `1.5px solid ${isSelected ? (isGreen ? '#22c55e' : '#ef4444') : 'var(--border-color, #e5e7eb)'}`,
                           background: isSelected
                             ? (isGreen ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)')
-                            : 'var(--surface-card, #111)',
+                            : 'var(--bg-elevated, #f3f4f6)',
                           color: isSelected
                             ? (isGreen ? '#22c55e' : '#ef4444')
-                            : 'var(--text-secondary)'
+                            : 'var(--text-secondary, #4b5563)'
                         }}
                       >
                         {isSelected ? '✓ ' : ''}{tag}
