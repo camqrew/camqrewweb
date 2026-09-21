@@ -1860,30 +1860,6 @@ export const DashboardPage: React.FC = () => {
                    SWIGGY-STYLE FOOD MENU & PRICES DASHBOARD (CATERERS)
                    ───────────────────────────────────────────────────── */
                 <div className="swiggy-menu-dashboard">
-                  {/* Swiggy Action Banner */}
-                  <div className="swiggy-menu-banner card">
-                    <div className="swiggy-menu-banner-content">
-                      <div className="swiggy-banner-icon-box">
-                        <UtensilsCrossed size={26} color="#ffffff" />
-                      </div>
-                      <div>
-                        <h3 className="banner-title">
-                          Food Menu & Prices Management
-                        </h3>
-                        <p className="banner-subtitle">
-                          Publish signature dishes, configure per-plate prices, manage Veg/Non-Veg FSSAI badges, and toggle real-time stock availability.
-                        </p>
-                      </div>
-                    </div>
-                    <button 
-                      className="btn btn-primary list-now-btn"
-                      onClick={handleOpenAddDish}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-                    >
-                      <Plus size={15} /> Add Menu Dish
-                    </button>
-                  </div>
-
                   {/* Filter & Controls Bar */}
                   <div className="swiggy-filter-bar">
                     {/* Search box */}
@@ -1944,6 +1920,16 @@ export const DashboardPage: React.FC = () => {
                         Veg Only
                       </button>
                     </div>
+
+                    {/* Add Menu Dish Button */}
+                    <button 
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={handleOpenAddDish}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', fontSize: 13, flexShrink: 0, marginLeft: 'auto' }}
+                    >
+                      <Plus size={15} /> Add Menu Dish
+                    </button>
                   </div>
 
                   {/* Count & Dietary Summary Bar */}

@@ -5402,7 +5402,7 @@
   background: linear-gradient(135deg, rgba(20, 24, 29, 0.95) 0%, rgba(15, 18, 23, 0.98) 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 18px;
-  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.2);
 }
 
 .pro-header-profile-col {
@@ -5425,7 +5425,7 @@
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid rgba(63, 182, 104, 0.6);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .pro-verified-badge {
@@ -6687,6 +6687,11 @@
 [data-theme="light"] .pro-dashboard-header-card {
   background: #ffffff;
   border-color: #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .pro-header-avatar {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 [data-theme="light"] .pro-stat-card,
@@ -6701,6 +6706,7 @@
 [data-theme="light"] .dashboard-modal-content {
   background: #ffffff;
   border-color: #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
 [data-theme="light"] .dashboard-modal-backdrop,
