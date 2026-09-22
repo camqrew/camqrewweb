@@ -23,6 +23,7 @@ export const ExplorePage: React.FC = () => {
     'All',
     'Photographers',
     'Videographers',
+    'Models',
     'Drone Pilots',
     'Caterers',
     'Organisers',

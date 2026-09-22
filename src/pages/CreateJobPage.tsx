@@ -36,8 +36,15 @@ export const CreateJobPage: React.FC = () => {
   const categories = [
     'Videographers',
     'Photographers',
+    'Models',
     'Drone Pilots',
     'Cinematographers',
+    'Caterers',
+    'Organisers',
+    'Makeup Artists',
+    'Mehendi Artists',
+    'Developers',
+    'Designers',
     'Editors',
     'All Creative Pros',
   ];

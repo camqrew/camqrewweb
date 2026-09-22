@@ -1,4 +1,4 @@
-export type CategoryArchetype = 'media_crew' | 'catering' | 'event_management' | 'tech_digital' | 'beauty_bridal';
+export type CategoryArchetype = 'media_crew' | 'catering' | 'event_management' | 'tech_digital' | 'beauty_bridal' | 'modeling_talent';
 
 export interface CategoryMeta {
   id: string;
@@ -240,6 +240,48 @@ export const ARCHETYPE_CONFIGS: Record<CategoryArchetype, ArchetypeConfig> = {
     serviceDeliverablesPlaceholder: 'e.g. Airbrush Makeup, Lehenga Draping, Hair Extensions, Touch-up Kit',
     bookingCtaPrefix: 'Book Artist',
   },
+  modeling_talent: {
+    archetype: 'modeling_talent',
+    label: 'Fashion, Commercial & Runway Models',
+    roleNoun: 'Model',
+    rateLabel: 'Starting from (₹)',
+    ratePlaceholder: '20000',
+    rateUnitDefault: 'Day',
+    rateUnitOptions: ['Day', 'Half Day', 'Event', 'Project', 'Hour'],
+    equipmentSectionTitle: 'Vitals, Measurements & Look Specialties',
+    equipmentInputLabel: 'Add Vitals, Measurements & Specialties',
+    equipmentInputPlaceholder: 'e.g. Height: 5\'10", Vitals: 34-25-36, High-Fashion Runway, Couture Bridal',
+    equipmentPresets: [
+      'Height: 5\'10" (178 cm)',
+      'Height: 5\'8" (173 cm)',
+      'Height: 6\'1" (185 cm)',
+      'High-Fashion Runway & Ramp Walk',
+      'Couture Bridal & Heritage Jewelry',
+      'Editorial & Magazine Lookbooks',
+      'Commercial TVC & Brand Endorsements',
+      'E-Commerce & Designer Catalog Fit',
+      'Swimwear & Athleisure Fit',
+      'Passport Ready for Destination Shoots',
+    ],
+    skillsSectionTitle: 'Industry Badges & Fashion Week Appearances',
+    skillsInputLabel: 'Add Fashion Weeks, Agency Affiliations & Editorial Credits',
+    skillsInputPlaceholder: 'e.g. Lakmé Fashion Week, FDCI India Fashion Week, Vogue Feature',
+    skillsPresets: [
+      'Lakmé Fashion Week Runway Model',
+      'FDCI India Fashion Week Model',
+      'Vogue India Editorial Feature',
+      'Harper\'s Bazaar Lookbook Feature',
+      'Elle India Campaign Model',
+      'Elite Model Look Finalist',
+      'Professional Ramp Walk Certified',
+    ],
+    travelCheckboxLabel: 'Available for destination campaigns & global shoots',
+    portfolioPromptTitle: 'Add Lookbook & Campaign Stills',
+    portfolioPromptSubtitle: 'Showcase editorial spreads, runway walks, and commercial catalog shots.',
+    serviceTitlePlaceholder: 'e.g. Full Day Campaign / Lookbook Shoot',
+    serviceDeliverablesPlaceholder: 'e.g. 8 Hours Shoot, up to 10 Garment Changes, Commercial Rights',
+    bookingCtaPrefix: 'Book Model',
+  },
 };
 
 export function getArchetype(categoryOrList?: string | string[]): ArchetypeConfig {
@@ -251,6 +293,9 @@ export function getArchetype(categoryOrList?: string | string[]): ArchetypeConfi
 
   const lowerCats = catArray.map(c => (c || '').toLowerCase().trim());
 
+  if (lowerCats.some(c => c.includes('model') || c.includes('runway') || c.includes('fashion model'))) {
+    return ARCHETYPE_CONFIGS.modeling_talent;
+  }
   if (lowerCats.some(c => c.includes('cater') || c.includes('chef') || c.includes('food') || c.includes('culinary'))) {
     return ARCHETYPE_CONFIGS.catering;
   }
@@ -282,6 +327,14 @@ export const PROFESSIONAL_CATEGORIES: CategoryMeta[] = [
     icon: 'video',
     description: 'Cinematography, Events, Reels & Documentaries',
     bgGradient: ['#8a2387', '#e94057'],
+  },
+  {
+    id: 'models',
+    name: 'Models',
+    archetype: 'modeling_talent',
+    icon: 'user',
+    description: 'Fashion, Runway, Commercial & Editorial Models',
+    bgGradient: ['#ec4899', '#8b5cf6'],
   },
   {
     id: 'caterers',
