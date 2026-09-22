@@ -10878,3 +10878,73 @@
   color: #6b7280 !important;
 }
 
+/* ── Light Theme Mild Shadows for All Sections & Cards ── */
+[data-theme="light"] .card,
+[data-theme="light"] .profile-section-card,
+[data-theme="light"] .profile-header-card,
+[data-theme="light"] .booking-sidebar-card,
+[data-theme="light"] .catering-menu-section-card,
+[data-theme="light"] .reviews-section-card,
+[data-theme="light"] .stat-card,
+[data-theme="light"] .pro-chart-card,
+[data-theme="light"] .pro-booking-card,
+[data-theme="light"] .pro-job-lead-card,
+[data-theme="light"] .pro-reels-manager-card,
+[data-theme="light"] .pro-menu-manager-card,
+[data-theme="light"] .payouts-table-card,
+[data-theme="light"] .cal-container-card,
+[data-theme="light"] .empty-state-card,
+[data-theme="light"] .summary-card,
+[data-theme="light"] .booking-form-card,
+[data-theme="light"] .booking-success-card,
+[data-theme="light"] .broadcast-preview-card,
+[data-theme="light"] .broadcast-assurance-card,
+[data-theme="light"] .table-wrapper,
+[data-theme="light"] .auth-card-redesigned,
+[data-theme="light"] .checkout-modal-card,
+[data-theme="light"] .checkout-review-card,
+[data-theme="light"] .checkout-items-card,
+[data-theme="light"] .checkout-payable-card,
+[data-theme="light"] .checkout-option-card,
+[data-theme="light"] .cart-summary-card-redesigned {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .pro-card,
+[data-theme="light"] .product-card {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .pro-card:hover,
+[data-theme="light"] .product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.08), 0 2px 8px -2px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .customer-dish-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .customer-dish-card:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .gear-item-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .cat-pill {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+}
+

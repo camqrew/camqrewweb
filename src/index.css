@@ -159,9 +159,15 @@ body {
 /* --- STANDARD UI UTILITIES --- */
 .card {
   background-color: var(--bg-card);
-  border: none !important;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
   border-radius: 12px;
   padding: 24px;
+}
+
+[data-theme="light"] .card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(0, 0, 0, 0.04);
 }
 
 a {
