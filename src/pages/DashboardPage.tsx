@@ -74,8 +74,18 @@ export const DashboardPage: React.FC = () => {
   const [proProfile, setProProfile] = useState<ProfessionalProfile | null>(null);
   const [isAvailable, setIsAvailable] = useState<boolean>(true);
 
-  // Caterer archetype detection
+  // Caterer & Home Baker archetype detection
+  const isBaker = Boolean(
+    proProfile?.categories?.some(c =>
+      c.toLowerCase().includes('baker') ||
+      c.toLowerCase().includes('bake') ||
+      c.toLowerCase().includes('cake') ||
+      c.toLowerCase().includes('pastry')
+    )
+  );
+
   const isCaterer = Boolean(
+    isBaker ||
     proProfile?.categories?.some(c =>
       c.toLowerCase().includes('cater') ||
       c.toLowerCase().includes('chef') ||
@@ -894,7 +904,7 @@ export const DashboardPage: React.FC = () => {
               onClick={handleOpenAddDish}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
             >
-              <UtensilsCrossed size={14} /> + Add Menu Dish
+              <UtensilsCrossed size={14} /> {isBaker ? '+ Add Bake / Item' : '+ Add Menu Dish'}
             </button>
           ) : (
             <button 
@@ -940,7 +950,7 @@ export const DashboardPage: React.FC = () => {
           className={`pro-tab-item ${activeTab === 'sales_rentals' ? 'active' : ''}`}
           onClick={() => handleTabChange('sales_rentals')}
         >
-          <ShoppingBag size={15} /> {isCaterer ? 'Menu Orders' : 'Sales & Rentals'}
+          <ShoppingBag size={15} /> {isCaterer ? (isBaker ? 'Bakery Orders' : 'Menu Orders') : 'Sales & Rentals'}
         </button>
 
         <button
@@ -949,7 +959,7 @@ export const DashboardPage: React.FC = () => {
         >
           {isCaterer ? (
             <>
-              <UtensilsCrossed size={15} /> Food Menu & Prices ({proProfile?.menuItems?.length || 0})
+              <UtensilsCrossed size={15} /> {isBaker ? 'Bakes & Food Menu' : 'Food Menu & Prices'} ({proProfile?.menuItems?.length || 0})
             </>
           ) : (
             <>
@@ -1441,20 +1451,22 @@ export const DashboardPage: React.FC = () => {
                 )}
               </div>
 
-              {/* ── CATERING MENU & DISHES MANAGER (CATERERS ONLY) ── */}
+              {/* ── CATERING & BAKERY MENU MANAGER ── */}
               {isCaterer && (
                 <div className="card pro-menu-manager-card" style={{ marginTop: 28 }}>
                   <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
                     <div>
                       <h3 className="section-heading" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
                         <UtensilsCrossed size={20} color="var(--accent, #3fb668)" />
-                        Catering Menu & Dishes
+                        {isBaker ? 'Cakes, Bakes & Food Menu' : 'Catering Menu & Dishes'}
                         <span className="badge-sub" style={{ fontSize: 12, padding: '2px 8px' }}>
-                          {proProfile?.menuItems?.length || 0} dishes
+                          {proProfile?.menuItems?.length || 0} {isBaker ? 'items' : 'dishes'}
                         </span>
                       </h3>
                       <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
-                        List your signature dishes and catering items so clients can select what they need and receive an instant quotation.
+                        {isBaker 
+                          ? 'List your signature cakes, baked goods, and foods with minimum batch quantities so clients can order directly.'
+                          : 'List your signature dishes and catering items so clients can select what they need and receive an instant quotation.'}
                       </p>
                     </div>
 
@@ -1472,7 +1484,7 @@ export const DashboardPage: React.FC = () => {
                         onClick={handleOpenAddDish}
                         style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
                       >
-                        <Plus size={14} /> + Add Dish
+                        <Plus size={14} /> {isBaker ? '+ Add Bake / Item' : '+ Add Dish'}
                       </button>
                     </div>
                   </div>

@@ -59,7 +59,10 @@ export const CreatorProfilePage: React.FC = () => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
-  // Catering Menu & Quotation State
+  const proArchetype = useMemo(() => getArchetype(pro?.categories), [pro?.categories]);
+  const isBaker = proArchetype.archetype === 'home_baker';
+
+  // Catering & Bakery Menu State
   const [selectedMenuCategory, setSelectedMenuCategory] = useState<string>('All');
   const [dishQuantities, setDishQuantities] = useState<Record<string, number>>({});
   const [guestCount, setGuestCount] = useState<number>(50);
@@ -93,9 +96,10 @@ export const CreatorProfilePage: React.FC = () => {
     return selectedDishesList.reduce((acc, d) => acc + (d.pricePerPlate * (dishQuantities[d.id] || 0)), 0);
   }, [selectedDishesList, dishQuantities]);
 
+  // Home bakers do NOT use per-head / guest count multiplication; total is direct sum of items
   const grandQuotationTotal = useMemo(() => {
-    return perPlateSubtotal * guestCount;
-  }, [perPlateSubtotal, guestCount]);
+    return isBaker ? perPlateSubtotal : (perPlateSubtotal * guestCount);
+  }, [isBaker, perPlateSubtotal, guestCount]);
 
   const handleUpdateDishQty = (dishId: string, delta: number) => {
     setDishQuantities(prev => {
@@ -107,10 +111,15 @@ export const CreatorProfilePage: React.FC = () => {
 
   const handleBookWithQuotation = () => {
     const itemsSummary = selectedDishesList
-      .map(d => `${d.name} (${dishQuantities[d.id]}x @ ₹${d.pricePerPlate}/plate)`)
+      .map(d => `${d.name} (${dishQuantities[d.id]}x @ ₹${d.pricePerPlate}${d.unit ? `/${d.unit}` : (isBaker ? '/kg' : '/plate')})`)
       .join(', ');
-    const notes = `Catering Quotation for ${guestCount} Guests:\nSelected Dishes: ${itemsSummary}\nPer Plate: ₹${perPlateSubtotal.toLocaleString('en-IN')}\nEstimated Total: ₹${grandQuotationTotal.toLocaleString('en-IN')}`;
-    navigate(`/book/${pro?.id}?total=${grandQuotationTotal}&jobTitle=${encodeURIComponent(`Catering Package - ${guestCount} Guests`)}&notes=${encodeURIComponent(notes)}`);
+    const notes = isBaker
+      ? `Bakery Order:\nSelected Items: ${itemsSummary}\nTotal Order Value: ₹${grandQuotationTotal.toLocaleString('en-IN')}`
+      : `Catering Quotation for ${guestCount} Guests:\nSelected Dishes: ${itemsSummary}\nPer Plate: ₹${perPlateSubtotal.toLocaleString('en-IN')}\nEstimated Total: ₹${grandQuotationTotal.toLocaleString('en-IN')}`;
+    const jobTitle = isBaker
+      ? `Bakery Order - ${totalDishesSelectedCount} Items`
+      : `Catering Package - ${guestCount} Guests`;
+    navigate(`/book/${pro?.id}?total=${grandQuotationTotal}&jobTitle=${encodeURIComponent(jobTitle)}&notes=${encodeURIComponent(notes)}`);
   };
 
   useEffect(() => {
@@ -206,8 +215,6 @@ export const CreatorProfilePage: React.FC = () => {
     2: '⭐⭐ Fair / Minor Issues',
     1: '⭐ Needs Improvement'
   };
-
-  const proArchetype = getArchetype(pro.categories);
 
   return (
     <div className="creator-profile-page">
@@ -402,7 +409,7 @@ export const CreatorProfilePage: React.FC = () => {
 
                             {qty > 0 && (
                               <div style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11.5, fontWeight: 700, color: 'var(--accent, #3fb668)', background: 'rgba(63, 182, 104, 0.12)', padding: '3px 8px', borderRadius: 6 }}>
-                                ✓ {qty} {qty === 1 ? 'plate' : 'plates'} selected (₹{(dish.pricePerPlate * qty).toLocaleString('en-IN')})
+                                ✓ {qty} {isBaker ? (dish.unit ? `${dish.unit}s` : 'units') : (qty === 1 ? 'plate' : 'plates')} selected (₹{(dish.pricePerPlate * qty).toLocaleString('en-IN')})
                               </div>
                             )}
                           </div>
@@ -424,7 +431,7 @@ export const CreatorProfilePage: React.FC = () => {
                                     type="button"
                                     className="swiggy-add-btn"
                                     onClick={() => handleUpdateDishQty(dish.id, 1)}
-                                    title="Add dish to quotation"
+                                    title={isBaker ? "Add item to order" : "Add dish to quotation"}
                                   >
                                     ADD <Plus size={13} />
                                   </button>
@@ -433,7 +440,7 @@ export const CreatorProfilePage: React.FC = () => {
                                     <button 
                                       type="button" 
                                       onClick={() => handleUpdateDishQty(dish.id, -1)}
-                                      title="Decrease plates"
+                                      title="Decrease quantity"
                                     >
                                       <Minus size={13} />
                                     </button>
@@ -441,7 +448,7 @@ export const CreatorProfilePage: React.FC = () => {
                                     <button 
                                       type="button" 
                                       onClick={() => handleUpdateDishQty(dish.id, 1)}
-                                      title="Increase plates"
+                                      title="Increase quantity"
                                     >
                                       <Plus size={13} />
                                     </button>
@@ -456,14 +463,14 @@ export const CreatorProfilePage: React.FC = () => {
                         {!dish.imageUrl && (
                           <div className="swiggy-dish-footer" style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border-color, rgba(255,255,255,0.06))', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                              {qty > 0 ? `${qty} plates added` : 'Customize servings'}
+                              {qty > 0 ? `${qty} ${isBaker ? (dish.unit || 'units') : 'plates'} added` : (isBaker ? 'Customize quantity' : 'Customize servings')}
                             </span>
                             {qty === 0 ? (
                               <button
                                 type="button"
                                 className="swiggy-add-btn"
                                 onClick={() => handleUpdateDishQty(dish.id, 1)}
-                                title="Add dish to quotation"
+                                title={isBaker ? "Add item to order" : "Add dish to quotation"}
                               >
                                 ADD <Plus size={13} />
                               </button>
@@ -472,7 +479,7 @@ export const CreatorProfilePage: React.FC = () => {
                                 <button 
                                   type="button" 
                                   onClick={() => handleUpdateDishQty(dish.id, -1)}
-                                  title="Decrease plates"
+                                  title="Decrease quantity"
                                 >
                                   <Minus size={13} />
                                 </button>
@@ -480,7 +487,7 @@ export const CreatorProfilePage: React.FC = () => {
                                 <button 
                                   type="button" 
                                   onClick={() => handleUpdateDishQty(dish.id, 1)}
-                                  title="Increase plates"
+                                  title="Increase quantity"
                                 >
                                   <Plus size={13} />
                                 </button>
@@ -495,60 +502,80 @@ export const CreatorProfilePage: React.FC = () => {
 
                 {/* Quotation Calculator Box */}
                 <div className="catering-quotation-summary-box">
-                  <div className="catering-quote-top-row">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div className="catering-quote-icon-badge">
-                        <Users size={18} />
+                  {!isBaker ? (
+                    <div className="catering-quote-top-row">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div className="catering-quote-icon-badge">
+                          <Users size={18} />
+                        </div>
+                        <div>
+                          <h4 className="catering-quote-heading">
+                            Event Guest Count
+                          </h4>
+                          <span className="catering-quote-sub">Prices will multiply by guest count</span>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="catering-quote-heading">
-                          Event Guest Count
-                        </h4>
-                        <span className="catering-quote-sub">Prices will multiply by guest count</span>
-                      </div>
-                    </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <button
-                        type="button"
-                        className="guest-stepper-btn"
-                        onClick={() => setGuestCount(g => Math.max(10, g - 10))}
-                        title="Decrease guests"
-                      >
-                        <Minus size={14} />
-                      </button>
-                      <div style={{ textAlign: 'center', minWidth: 70 }}>
-                        <span className="guest-count-val">{guestCount}</span>
-                        <span className="guest-count-label">guests</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <button
+                          type="button"
+                          className="guest-stepper-btn"
+                          onClick={() => setGuestCount(g => Math.max(10, g - 10))}
+                          title="Decrease guests"
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <div style={{ textAlign: 'center', minWidth: 70 }}>
+                          <span className="guest-count-val">{guestCount}</span>
+                          <span className="guest-count-label">guests</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="guest-stepper-btn"
+                          onClick={() => setGuestCount(g => g + 10)}
+                          title="Increase guests"
+                        >
+                          <Plus size={14} />
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        className="guest-stepper-btn"
-                        onClick={() => setGuestCount(g => g + 10)}
-                        title="Increase guests"
-                      >
-                        <Plus size={14} />
-                      </button>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="catering-quote-top-row">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div className="catering-quote-icon-badge" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' }}>
+                          <UtensilsCrossed size={18} />
+                        </div>
+                        <div>
+                          <h4 className="catering-quote-heading">
+                            Bakery Order Summary
+                          </h4>
+                          <span className="catering-quote-sub">Direct order pricing based on item quantities (no per-head calculation)</span>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--surface-elevated, #f8fafc)', padding: '6px 14px', borderRadius: 20, border: '1px solid var(--border-color, #e2e8f0)', fontSize: 13, fontWeight: 700, color: 'var(--accent, #3fb668)' }}>
+                        <span>{totalDishesSelectedCount} {totalDishesSelectedCount === 1 ? 'item' : 'items'} in order</span>
+                      </div>
+                    </div>
+                  )}
 
                   {selectedDishesList.length > 0 ? (
                     <div>
                       {/* Breakdown table */}
                       <div className="catering-quote-divider" style={{ paddingTop: 12, marginBottom: 14 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8, letterSpacing: '0.5px' }}>
-                          <span>Selected Dish ({totalDishesSelectedCount})</span>
-                          <span>Rate × Guests</span>
+                          <span>{isBaker ? 'Selected Bakes & Foods' : 'Selected Dish'} ({totalDishesSelectedCount})</span>
+                          <span>{isBaker ? 'Item Subtotal' : 'Rate × Guests'}</span>
                         </div>
                         {selectedDishesList.map(dish => {
                           const q = dishQuantities[dish.id] || 0;
-                          const lineTotal = dish.pricePerPlate * q * guestCount;
+                          const lineTotal = isBaker ? (dish.pricePerPlate * q) : (dish.pricePerPlate * q * guestCount);
                           return (
                             <div key={dish.id} className="catering-quote-item-row">
                               <div>
                                 <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{dish.name}</span>
                                 <span style={{ color: 'var(--text-muted)', fontSize: 12, marginLeft: 6 }}>
-                                  ({q}x @ ₹{dish.pricePerPlate}/plate)
+                                  ({q}x @ ₹{dish.pricePerPlate}{dish.unit ? `/${dish.unit}` : (isBaker ? '/kg' : '/plate')})
                                 </span>
                               </div>
                               <span style={{ fontWeight: 700, color: 'var(--accent, #3fb668)' }}>
@@ -561,12 +588,20 @@ export const CreatorProfilePage: React.FC = () => {
 
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14, paddingTop: 4 }}>
                         <div>
-                          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                            Per Guest Subtotal: <strong>₹{perPlateSubtotal.toLocaleString('en-IN')}</strong> × {guestCount} guests
-                          </span>
+                          {!isBaker ? (
+                            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                              Per Guest Subtotal: <strong>₹{perPlateSubtotal.toLocaleString('en-IN')}</strong> × {guestCount} guests
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                              Total of {totalDishesSelectedCount} handcrafted {totalDishesSelectedCount === 1 ? 'item' : 'items'} • Freshly baked to order
+                            </span>
+                          )}
                           <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--accent, #3fb668)', letterSpacing: '-0.5px' }}>
                             ₹{grandQuotationTotal.toLocaleString('en-IN')}
-                            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', marginLeft: 6 }}>estimated quotation</span>
+                            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', marginLeft: 6 }}>
+                              {isBaker ? 'order total' : 'estimated quotation'}
+                            </span>
                           </div>
                         </div>
 
@@ -576,7 +611,7 @@ export const CreatorProfilePage: React.FC = () => {
                           onClick={handleBookWithQuotation}
                           style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 24 }}
                         >
-                          <span>Proceed to Book with Menu</span>
+                          <span>{isBaker ? 'Proceed to Order Bakes' : 'Proceed to Book with Menu'}</span>
                           <ArrowRight size={16} />
                         </button>
                       </div>
@@ -584,7 +619,7 @@ export const CreatorProfilePage: React.FC = () => {
                   ) : (
                     <div className="catering-quote-empty-hint">
                       <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
-                        👉 Click the <strong>+</strong> button on any dish above to calculate an instant quotation.
+                        👉 Click the <strong>+</strong> button on any {isBaker ? 'bake or cake' : 'dish'} above to calculate an instant order total.
                       </p>
                     </div>
                   )}
