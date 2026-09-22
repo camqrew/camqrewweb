@@ -2049,8 +2049,30 @@ export const DashboardPage: React.FC = () => {
                                   </div>
 
                                   {/* Tags: Category & Dietary Badges */}
-                                  <div className="swiggy-tags-row">
+                                  <div className="swiggy-tags-row" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
                                     <span className="swiggy-tag-pill cat">{dish.category}</span>
+                                    {dish.minQuantity && (
+                                      <span className="swiggy-tag-pill" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.3)', fontWeight: 700 }}>
+                                        Min: {dish.minQuantity}
+                                      </span>
+                                    )}
+                                    {dish.prepTime && (
+                                      <span 
+                                        className="swiggy-tag-pill prep" 
+                                        style={{ 
+                                          background: 'rgba(59, 130, 246, 0.12)', 
+                                          color: '#3b82f6', 
+                                          borderColor: 'rgba(59, 130, 246, 0.25)', 
+                                          fontWeight: 700, 
+                                          display: 'inline-flex', 
+                                          alignItems: 'center', 
+                                          gap: 4 
+                                        }}
+                                        title="Preparation / Lead Notice"
+                                      >
+                                        <Clock size={11} /> Prep: {dish.prepTime}
+                                      </span>
+                                    )}
                                     {dish.dietaryTags?.map((tag) => {
                                       const tagIsVeg = tag === 'Veg' || tag === 'Jain' || tag === 'Vegan';
                                       return (

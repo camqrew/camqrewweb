@@ -593,7 +593,7 @@ export const CreatorProfilePage: React.FC = () => {
                               <div>
                                 <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{dish.name}</span>
                                 <span style={{ color: 'var(--text-muted)', fontSize: 12, marginLeft: 6 }}>
-                                  ({q}x @ ₹{dish.pricePerPlate}{dish.unit ? `/${dish.unit}` : (isBaker ? '/kg' : '/plate')})
+                                  ({q}x @ ₹{dish.pricePerPlate}{dish.unit ? `/${dish.unit}` : (isBaker ? '/kg' : '/plate')}{dish.prepTime ? ` • ⏱️ ${dish.prepTime}` : ''})
                                 </span>
                               </div>
                               <span style={{ fontWeight: 700, color: 'var(--accent, #3fb668)' }}>
