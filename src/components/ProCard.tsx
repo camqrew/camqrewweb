@@ -12,39 +12,45 @@ interface ProCardProps {
 export const ProCard: React.FC<ProCardProps> = ({ pro }) => {
   return (
     <div className="pro-card">
-      <div className="pro-card-header">
-        <div className="pro-avatar-wrapper">
-          {isCustomAvatar(pro.avatar) ? (
-            <img src={pro.avatar} alt={pro.name} className="pro-avatar" />
-          ) : (
-            <div className="pro-avatar pro-avatar-placeholder">
-              <User size={24} />
+      {pro.bannerImage && (
+        <div className="pro-card-cover-banner">
+          <img src={pro.bannerImage} alt={pro.name} className="pro-card-cover-img" loading="lazy" />
+        </div>
+      )}
+      <div className="pro-card-inner-body">
+        <div className="pro-card-header">
+          <div className="pro-avatar-wrapper">
+            {isCustomAvatar(pro.avatar) ? (
+              <img src={pro.avatar} alt={pro.name} className="pro-avatar" />
+            ) : (
+              <div className="pro-avatar pro-avatar-placeholder">
+                <User size={24} />
+              </div>
+            )}
+            {pro.verified && (
+              <span className="pro-verified-badge" title="Verified Creator">
+                <CheckCircle2 size={16} fill="var(--accent)" color="#fff" />
+              </span>
+            )}
+          </div>
+          <div className="pro-header-info">
+            <div className="pro-name-row">
+              <h3 className="pro-name">{pro.name}</h3>
             </div>
-          )}
-          {pro.verified && (
-            <span className="pro-verified-badge" title="Verified Creator">
-              <CheckCircle2 size={16} fill="var(--accent)" color="#fff" />
-            </span>
-          )}
-        </div>
-        <div className="pro-header-info">
-          <div className="pro-name-row">
-            <h3 className="pro-name">{pro.name}</h3>
-          </div>
-          <p className="pro-title">{pro.title}</p>
-          <div className="pro-rating-location">
-            <span className="pro-rating">
-              <Star size={14} fill="#F5A623" color="#F5A623" />
-              <strong>{pro.rating?.toFixed(1) || '5.0'}</strong>
-              <span className="pro-reviews">({pro.reviewCount || 0})</span>
-            </span>
-            <span className="pro-loc">
-              <MapPin size={14} color="var(--text-muted)" />
-              {pro.city || pro.district}, {pro.state}
-            </span>
+            <p className="pro-title">{pro.title}</p>
+            <div className="pro-rating-location">
+              <span className="pro-rating">
+                <Star size={14} fill="#F5A623" color="#F5A623" />
+                <strong>{pro.rating?.toFixed(1) || '5.0'}</strong>
+                <span className="pro-reviews">({pro.reviewCount || 0})</span>
+              </span>
+              <span className="pro-loc">
+                <MapPin size={14} color="var(--text-muted)" />
+                {pro.city || pro.district}, {pro.state}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
       <p className="pro-bio" title={pro.bio}>
         {pro.bio && pro.bio.length > 110 ? pro.bio.slice(0, 110) + '...' : pro.bio}
@@ -78,5 +84,6 @@ export const ProCard: React.FC<ProCardProps> = ({ pro }) => {
         </div>
       </div>
     </div>
+  </div>
   );
 };

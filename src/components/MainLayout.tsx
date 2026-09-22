@@ -5,6 +5,8 @@ import { Footer } from './Footer';
 import { CursorBackgroundFollower } from './CursorBackgroundFollower';
 import { GlobalRealtimeAlerts } from './GlobalRealtimeAlerts';
 
+import { MobileBottomNav } from './MobileBottomNav';
+
 interface MainLayoutProps {
   theme: 'light' | 'dark';
   toggleTheme: () => void;
@@ -20,6 +22,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ theme, toggleTheme }) =>
         <Outlet />
       </main>
       <Footer />
+      <MobileBottomNav />
     </div>
   );
 };
