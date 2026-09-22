@@ -7,6 +7,7 @@ export interface User {
   phone?: string;
   role: UserRole;
   avatar?: string;
+  banner_image?: string;
   subscription_tier?: 'free' | 'pro' | 'prime';
   subscription_status?: 'inactive' | 'active';
   subscription_end_date?: string;

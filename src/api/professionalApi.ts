@@ -171,11 +171,26 @@ export const DEFAULT_CATERER_DISHES: MenuDishItem[] = [
   },
 ];
 
+export const getCategoryDefaultCover = (categories?: string[]): string => {
+  const cats = (categories || []).map(c => (c || '').toLowerCase());
+  if (cats.some(c => c.includes('model') || c.includes('runway'))) return 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1600';
+  if (cats.some(c => c.includes('cater') || c.includes('chef') || c.includes('food') || c.includes('culinary'))) return 'https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=1600';
+  if (cats.some(c => c.includes('organis') || c.includes('event') || c.includes('planner'))) return 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1600';
+  if (cats.some(c => c.includes('develop') || c.includes('code') || c.includes('tech') || c.includes('software'))) return 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1600';
+  if (cats.some(c => c.includes('design') || c.includes('ui/ux'))) return 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=1600';
+  if (cats.some(c => c.includes('drone') || c.includes('pilot') || c.includes('aerial'))) return 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=1600';
+  if (cats.some(c => c.includes('edit') || c.includes('colorist'))) return 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?q=80&w=1600';
+  if (cats.some(c => c.includes('makeup') || c.includes('beauty'))) return 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=1600';
+  if (cats.some(c => c.includes('mehendi') || c.includes('henna') || c.includes('mehndi'))) return 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=1600';
+  if (cats.some(c => c.includes('video') || c.includes('cinema') || c.includes('film'))) return 'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=1600';
+  return 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=1600';
+};
+
 const mapPro = (row: any): ProfessionalProfile => {
   const user = row.users || {};
   const name = user.name || 'Creative Studio';
   const avatar = user.avatar || '';
-  const banner = row.banner_image || '';
+  const banner = row.banner_image || user.banner_image || getCategoryDefaultCover(row.categories);
 
   const isCaterer = (Array.isArray(row.categories) && row.categories.some((c: string) => c.toLowerCase().includes('cater')))
     || String(row.id).includes('1500842a')
@@ -392,11 +407,12 @@ export const professionalApi = {
 
     const { name, avatar, bannerImage, portfolio, ...proFields } = data;
 
-    if (name || avatar) {
-      await supabase.from('users').update({
-        name: name,
-        avatar: avatar,
-      }).eq('id', ownerId);
+    if (name || avatar || bannerImage) {
+      const userUpdate: any = {};
+      if (name) userUpdate.name = name;
+      if (avatar) userUpdate.avatar = avatar;
+      if (bannerImage) userUpdate.banner_image = bannerImage;
+      await supabase.from('users').update(userUpdate).eq('id', ownerId);
     }
 
     if (portfolio) {
@@ -412,6 +428,7 @@ export const professionalApi = {
     }
 
     const updatePayload: any = {};
+    if (bannerImage) updatePayload.banner_image = bannerImage;
     if (proFields.title) updatePayload.title = proFields.title;
     if (proFields.bio) updatePayload.bio = proFields.bio;
     if (proFields.experienceYears) updatePayload.experience_years = proFields.experienceYears;
