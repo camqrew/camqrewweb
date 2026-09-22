@@ -10515,23 +10515,157 @@
   border: 1px solid #cbd5e1 !important;
 }
 
-/* Customer Profile Public Dish Image */
-.public-dish-card-split {
+/* ── Customer Profile Public Dish Card (Camqrew Design System) ── */
+.customer-dish-card {
+  background: var(--bg-card, #12151a);
+  border: 1px solid var(--border-color, #232730);
+  border-radius: 16px;
+  padding: 18px 20px;
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
-.public-dish-img-thumbnail {
-  width: 76px;
-  height: 76px;
-  border-radius: 10px;
-  object-fit: cover;
+.customer-dish-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+
+.customer-dish-card.selected-dish {
+  border-color: var(--accent, #3fb668) !important;
+  background: rgba(63, 182, 104, 0.06) !important;
+  box-shadow: 0 4px 18px rgba(63, 182, 104, 0.15) !important;
+}
+
+[data-theme="light"] .customer-dish-card {
+  background: #ffffff;
+  border-color: #e5e7eb;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="light"] .customer-dish-card.selected-dish {
+  background: rgba(63, 182, 104, 0.05) !important;
+  border-color: var(--accent, #3fb668) !important;
+  box-shadow: 0 4px 16px rgba(63, 182, 104, 0.12) !important;
+}
+
+/* Visual Column with Swiggy-style Add/Stepper Overlap */
+.customer-dish-visual-wrap {
+  position: relative;
+  width: 120px;
   flex-shrink: 0;
-  border: 1px solid var(--border-color, #2a313d);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-[data-theme="light"] .public-dish-img-thumbnail {
-  border-color: #e5e7eb !important;
+.customer-dish-img-box {
+  width: 120px;
+  height: 104px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bg-elevated, #1c222b);
+  border: 1px solid var(--border-color, #2a313d);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.customer-dish-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.customer-dish-card:hover .customer-dish-img {
+  transform: scale(1.04);
+}
+
+[data-theme="light"] .customer-dish-img-box {
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.customer-dish-btn-anchor {
+  margin-top: -17px;
+  z-index: 2;
+}
+
+.swiggy-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 96px;
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #10b981;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  border: 1.5px solid #10b981;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+}
+
+.swiggy-add-btn:hover {
+  background: #10b981;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+}
+
+[data-theme="light"] .swiggy-add-btn {
+  background: #ffffff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.swiggy-stepper-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 96px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: #10b981;
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 800;
+  border: 1.5px solid #10b981;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+  transition: all 0.2s ease;
+}
+
+.swiggy-stepper-btn button {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+.swiggy-stepper-btn button:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.swiggy-stepper-val {
+  min-width: 20px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
 }

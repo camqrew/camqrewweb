@@ -348,108 +348,148 @@ export const CreatorProfilePage: React.FC = () => {
                 </div>
 
                 {/* Dish Cards Grid */}
-                <div className="catering-dishes-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14, marginBottom: 20 }}>
+                <div className="catering-dishes-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16, marginBottom: 24 }}>
                   {filteredDishes.map(dish => {
                     const qty = dishQuantities[dish.id] || 0;
                     const isGreen = dish.dietaryTags?.some(t => t === 'Veg' || t === 'Jain' || t === 'Vegan');
                     return (
                       <div 
                         key={dish.id} 
-                        className={`catering-dish-item-card ${qty > 0 ? 'selected-dish' : ''}`}
-                        style={{
-                          padding: '14px 16px',
-                          borderRadius: 12,
-                          background: qty > 0 ? 'rgba(63, 182, 104, 0.06)' : 'var(--surface-elevated, #161a1f)',
-                          border: qty > 0 ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border-color)',
-                          transition: 'all 0.2s ease',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'space-between'
-                        }}
+                        className={`customer-dish-card ${qty > 0 ? 'selected-dish' : ''}`}
                       >
-                        <div className={dish.imageUrl ? 'public-dish-card-split' : ''}>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                              <span 
-                                style={{ 
-                                  display: 'inline-block',
-                                  width: 9,
-                                  height: 9,
-                                  borderRadius: '50%',
-                                  backgroundColor: isGreen ? '#22c55e' : '#ef4444',
-                                  flexShrink: 0
-                                }} 
-                                title={isGreen ? 'Vegetarian' : 'Non-Vegetarian'}
-                              />
-                              <h4 style={{ margin: 0, fontSize: 14.5, fontWeight: 700, color: 'var(--text-primary)' }}>
-                                {dish.name}
-                              </h4>
+                        <div className="swiggy-dish-card-split" style={{ alignItems: 'flex-start', gap: 14 }}>
+                          {/* Main Info Column */}
+                          <div className="swiggy-dish-main-col">
+                            {/* FSSAI Icon + Dish Title */}
+                            <div className="swiggy-dish-header" style={{ marginBottom: 4 }}>
+                              <div className="swiggy-dish-title-group" style={{ alignItems: 'flex-start' }}>
+                                <div className={`swiggy-fssai-box ${isGreen ? 'veg' : 'nonveg'}`} style={{ marginTop: 3 }} title={isGreen ? 'Vegetarian' : 'Non-Vegetarian'}>
+                                  {isGreen ? (
+                                    <div className="swiggy-fssai-dot veg" />
+                                  ) : (
+                                    <div className="swiggy-fssai-triangle" />
+                                  )}
+                                </div>
+                                <h4 className="swiggy-dish-name" style={{ fontSize: 16, lineHeight: 1.3 }}>{dish.name}</h4>
+                              </div>
                             </div>
 
-                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '4px 0 6px' }}>
-                              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(63, 182, 104, 0.12)', color: 'var(--accent, #3fb668)' }}>
-                                {dish.category}
+                            {/* Price per plate */}
+                            <div className="swiggy-dish-price-box" style={{ margin: '4px 0 8px' }}>
+                              <span className="swiggy-dish-price-val" style={{ fontSize: 17, color: 'var(--accent, #3fb668)' }}>
+                                ₹{dish.pricePerPlate.toLocaleString('en-IN')}
                               </span>
-                              {dish.dietaryTags?.map(t => (
-                                <span key={t} style={{ 
-                                  fontSize: 10, 
-                                  fontWeight: 700, 
-                                  padding: '2px 6px', 
-                                  borderRadius: 4, 
-                                  background: (t === 'Veg' || t === 'Jain' || t === 'Vegan') ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)',
-                                  color: (t === 'Veg' || t === 'Jain' || t === 'Vegan') ? '#16a34a' : '#dc2626'
-                                }}>
-                                  {t}
-                                </span>
-                              ))}
+                              <span className="swiggy-dish-price-unit" style={{ fontSize: 12 }}>/ plate</span>
                             </div>
 
+                            {/* Category & Dietary Pills */}
+                            <div className="swiggy-tags-row" style={{ marginBottom: 8, gap: 6 }}>
+                              <span className="swiggy-tag-pill cat">{dish.category}</span>
+                              {dish.dietaryTags?.map((tag) => {
+                                const tagIsVeg = tag === 'Veg' || tag === 'Jain' || tag === 'Vegan';
+                                return (
+                                  <span key={tag} className={`swiggy-tag-pill ${tagIsVeg ? 'veg' : 'nonveg'}`}>
+                                    {tag}
+                                  </span>
+                                );
+                              })}
+                            </div>
+
+                            {/* Description */}
                             {dish.description && (
-                              <p style={{ margin: '4px 0 8px', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                              <p className="swiggy-dish-desc" style={{ marginBottom: 4, WebkitLineClamp: 3 }}>
                                 {dish.description}
                               </p>
                             )}
+
+                            {qty > 0 && (
+                              <div style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11.5, fontWeight: 700, color: 'var(--accent, #3fb668)', background: 'rgba(63, 182, 104, 0.12)', padding: '3px 8px', borderRadius: 6 }}>
+                                ✓ {qty} {qty === 1 ? 'plate' : 'plates'} selected (₹{(dish.pricePerPlate * qty).toLocaleString('en-IN')})
+                              </div>
+                            )}
                           </div>
 
+                          {/* Visual Column with Image & Anchored ADD / Stepper Button */}
                           {dish.imageUrl && (
-                            <img 
-                              src={dish.imageUrl} 
-                              alt={dish.name} 
-                              className="public-dish-img-thumbnail" 
-                            />
+                            <div className="customer-dish-visual-wrap">
+                              <div className="customer-dish-img-box">
+                                <img 
+                                  src={dish.imageUrl} 
+                                  alt={dish.name} 
+                                  className="customer-dish-img" 
+                                  loading="lazy"
+                                />
+                              </div>
+                              <div className="customer-dish-btn-anchor">
+                                {qty === 0 ? (
+                                  <button
+                                    type="button"
+                                    className="swiggy-add-btn"
+                                    onClick={() => handleUpdateDishQty(dish.id, 1)}
+                                    title="Add dish to quotation"
+                                  >
+                                    ADD <Plus size={13} />
+                                  </button>
+                                ) : (
+                                  <div className="swiggy-stepper-btn">
+                                    <button 
+                                      type="button" 
+                                      onClick={() => handleUpdateDishQty(dish.id, -1)}
+                                      title="Decrease plates"
+                                    >
+                                      <Minus size={13} />
+                                    </button>
+                                    <span className="swiggy-stepper-val">{qty}</span>
+                                    <button 
+                                      type="button" 
+                                      onClick={() => handleUpdateDishQty(dish.id, 1)}
+                                      title="Increase plates"
+                                    >
+                                      <Plus size={13} />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           )}
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                          <div>
-                            <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--accent, #3fb668)' }}>
-                              ₹{dish.pricePerPlate.toLocaleString('en-IN')}
+                        {/* Fallback Action Footer for dishes without photo */}
+                        {!dish.imageUrl && (
+                          <div className="swiggy-dish-footer" style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border-color, rgba(255,255,255,0.06))', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                              {qty > 0 ? `${qty} plates added` : 'Customize servings'}
                             </span>
-                            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 3 }}>/ plate</span>
+                            {qty === 0 ? (
+                              <button
+                                type="button"
+                                className="swiggy-add-btn"
+                                onClick={() => handleUpdateDishQty(dish.id, 1)}
+                                title="Add dish to quotation"
+                              >
+                                ADD <Plus size={13} />
+                              </button>
+                            ) : (
+                              <div className="swiggy-stepper-btn">
+                                <button 
+                                  type="button" 
+                                  onClick={() => handleUpdateDishQty(dish.id, -1)}
+                                  title="Decrease plates"
+                                >
+                                  <Minus size={13} />
+                                </button>
+                                <span className="swiggy-stepper-val">{qty}</span>
+                                <button 
+                                  type="button" 
+                                  onClick={() => handleUpdateDishQty(dish.id, 1)}
+                                  title="Increase plates"
+                                >
+                                  <Plus size={13} />
+                                </button>
+                              </div>
+                            )}
                           </div>
-
-                          {/* Stepper */}
-                          <div className="dish-qty-stepper" style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface-card, #111)', padding: '4px 8px', borderRadius: 20, border: '1px solid var(--border-color)' }}>
-                            <button
-                              type="button"
-                              onClick={() => handleUpdateDishQty(dish.id, -1)}
-                              disabled={qty <= 0}
-                              style={{ border: 'none', background: 'transparent', cursor: qty > 0 ? 'pointer' : 'default', opacity: qty > 0 ? 1 : 0.4, color: 'var(--text-primary)', display: 'flex', alignItems: 'center' }}
-                            >
-                              <Minus size={13} />
-                            </button>
-                            <span style={{ fontSize: 13, fontWeight: 700, minWidth: 16, textAlign: 'center', color: 'var(--text-primary)' }}>
-                              {qty}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleUpdateDishQty(dish.id, 1)}
-                              style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--accent, #3fb668)', display: 'flex', alignItems: 'center' }}
-                            >
-                              <Plus size={13} />
-                            </button>
-                          </div>
-                        </div>
+                        )}
                       </div>
                     );
                   })}
