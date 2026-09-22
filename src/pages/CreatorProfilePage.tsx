@@ -28,7 +28,8 @@ import {
   UtensilsCrossed,
   Minus,
   Users,
-  ArrowRight
+  ArrowRight,
+  Clock
 } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
 import { SocialShareModal } from '../components/SocialShareModal';
@@ -383,11 +384,28 @@ export const CreatorProfilePage: React.FC = () => {
                             </div>
 
                             {/* Category & Dietary Pills */}
-                            <div className="swiggy-tags-row" style={{ marginBottom: 8, gap: 6 }}>
+                            <div className="swiggy-tags-row" style={{ marginBottom: 8, gap: 6, flexWrap: 'wrap' }}>
                               <span className="swiggy-tag-pill cat">{dish.category}</span>
                               {dish.minQuantity && (
                                 <span className="swiggy-tag-pill" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.3)', fontWeight: 700 }}>
                                   Min: {dish.minQuantity}
+                                </span>
+                              )}
+                              {dish.prepTime && (
+                                <span 
+                                  className="swiggy-tag-pill prep" 
+                                  style={{ 
+                                    background: 'rgba(59, 130, 246, 0.12)', 
+                                    color: '#3b82f6', 
+                                    borderColor: 'rgba(59, 130, 246, 0.25)', 
+                                    fontWeight: 700, 
+                                    display: 'inline-flex', 
+                                    alignItems: 'center', 
+                                    gap: 4 
+                                  }}
+                                  title="Preparation / Lead Time"
+                                >
+                                  <Clock size={11} /> Prep: {dish.prepTime}
                                 </span>
                               )}
                               {dish.dietaryTags?.map((tag) => {

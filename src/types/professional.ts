@@ -9,6 +9,7 @@ export interface MenuDishItem {
   isAvailable: boolean;
   minQuantity?: string;
   unit?: string;
+  prepTime?: string;
 }
 
 export interface ServiceItem {

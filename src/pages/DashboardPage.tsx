@@ -176,6 +176,9 @@ export const DashboardPage: React.FC = () => {
   const [dishDietaryTags, setDishDietaryTags] = useState<MenuDishItem['dietaryTags']>(['Veg']);
   const [dishDescription, setDishDescription] = useState('');
   const [dishImageUrl, setDishImageUrl] = useState('');
+  const [dishMinQuantity, setDishMinQuantity] = useState('');
+  const [dishUnit, setDishUnit] = useState('');
+  const [dishPrepTime, setDishPrepTime] = useState('');
   const [uploadingDishImage, setUploadingDishImage] = useState(false);
   const [showImageUrlInput, setShowImageUrlInput] = useState(false);
   const [savingDish, setSavingDish] = useState(false);
@@ -495,15 +498,18 @@ export const DashboardPage: React.FC = () => {
     }
   };
 
-  // Catering Menu Dish Handlers
+  // Catering & Bakery Menu Dish Handlers
   const handleOpenAddDish = () => {
     setEditingDishId(null);
     setDishName('');
-    setDishCategory('Starter');
-    setDishPrice(250);
+    setDishCategory(isBaker ? 'Cakes' : 'Starter');
+    setDishPrice(isBaker ? 450 : 250);
     setDishDietaryTags(['Veg']);
     setDishDescription('');
     setDishImageUrl('');
+    setDishMinQuantity(isBaker ? '0.5 Kg' : '');
+    setDishUnit(isBaker ? 'Kg' : 'plate');
+    setDishPrepTime(isBaker ? '24 Hours Notice' : '');
     setShowImageUrlInput(false);
     setShowDishModal(true);
   };
@@ -516,6 +522,9 @@ export const DashboardPage: React.FC = () => {
     setDishDietaryTags(dish.dietaryTags || ['Veg']);
     setDishDescription(dish.description || '');
     setDishImageUrl(dish.imageUrl || '');
+    setDishMinQuantity(dish.minQuantity || '');
+    setDishUnit(dish.unit || (isBaker ? 'Kg' : 'plate'));
+    setDishPrepTime(dish.prepTime || '');
     setShowImageUrlInput(Boolean(dish.imageUrl && !dish.imageUrl.includes('supabase')));
     setShowDishModal(true);
   };
@@ -542,11 +551,11 @@ export const DashboardPage: React.FC = () => {
   const handleSaveDish = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!dishName.trim()) {
-      alert('Please enter a dish name.');
+      alert(isBaker ? 'Please enter an item name.' : 'Please enter a dish name.');
       return;
     }
     if (!dishPrice || Number(dishPrice) <= 0) {
-      alert('Please enter a valid price per plate.');
+      alert('Please enter a valid price.');
       return;
     }
 
@@ -566,6 +575,9 @@ export const DashboardPage: React.FC = () => {
                 dietaryTags: dishDietaryTags.length > 0 ? dishDietaryTags : ['Veg'],
                 description: dishDescription.trim() || undefined,
                 imageUrl: dishImageUrl.trim() || undefined,
+                minQuantity: dishMinQuantity.trim() || undefined,
+                unit: dishUnit.trim() || undefined,
+                prepTime: dishPrepTime.trim() || undefined,
               }
             : d
         );
@@ -578,6 +590,9 @@ export const DashboardPage: React.FC = () => {
           dietaryTags: dishDietaryTags.length > 0 ? dishDietaryTags : ['Veg'],
           description: dishDescription.trim() || undefined,
           imageUrl: dishImageUrl.trim() || undefined,
+          minQuantity: dishMinQuantity.trim() || undefined,
+          unit: dishUnit.trim() || undefined,
+          prepTime: dishPrepTime.trim() || undefined,
           isAvailable: true,
         };
         updatedDishes = [newDish, ...existingDishes];
@@ -585,7 +600,7 @@ export const DashboardPage: React.FC = () => {
 
       await professionalApi.updateProfile({ menuItems: updatedDishes });
       setProProfile((prev) => (prev ? { ...prev, menuItems: updatedDishes } : null));
-      showToast(editingDishId ? 'Dish updated successfully!' : '🎉 New dish added to your catering menu!');
+      showToast(editingDishId ? (isBaker ? 'Item updated successfully!' : 'Dish updated successfully!') : (isBaker ? '🎉 New bake item added to your menu!' : '🎉 New dish added to your catering menu!'));
       setShowDishModal(false);
       setEditingDishId(null);
       setDishName('');
@@ -593,6 +608,9 @@ export const DashboardPage: React.FC = () => {
       setDishDietaryTags(['Veg']);
       setDishDescription('');
       setDishImageUrl('');
+      setDishMinQuantity('');
+      setDishUnit('');
+      setDishPrepTime('');
       setShowImageUrlInput(false);
     } catch (err: any) {
       alert(err.message || 'Failed to save menu dish');
@@ -1530,6 +1548,16 @@ export const DashboardPage: React.FC = () => {
                                   <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(63, 182, 104, 0.15)', color: 'var(--accent, #3fb668)' }}>
                                     {dish.category}
                                   </span>
+                                  {dish.minQuantity && (
+                                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' }}>
+                                      Min: {dish.minQuantity}
+                                    </span>
+                                  )}
+                                  {dish.prepTime && (
+                                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(59, 130, 246, 0.12)', color: '#3b82f6', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                                      <Clock size={10} /> Prep: {dish.prepTime}
+                                    </span>
+                                  )}
                                   {dish.dietaryTags?.map(t => (
                                     <span key={t} style={{ 
                                       fontSize: 10, 
@@ -1552,7 +1580,9 @@ export const DashboardPage: React.FC = () => {
                                   <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--accent, #3fb668)' }}>
                                     ₹{dish.pricePerPlate.toLocaleString('en-IN')}
                                   </span>
-                                  <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 4 }}>/ plate</span>
+                                  <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 4 }}>
+                                    /{dish.unit || (isBaker ? 'kg' : 'plate')}
+                                  </span>
                                 </div>
                               </div>
 
@@ -3209,10 +3239,10 @@ export const DashboardPage: React.FC = () => {
                 </div>
                 <div>
                   <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>
-                    {editingDishId ? 'Edit Menu Dish' : 'Add Dish to Menu'}
+                    {editingDishId ? (isBaker ? 'Edit Bake Item' : 'Edit Menu Dish') : (isBaker ? 'Add Bake / Cake to Menu' : 'Add Dish to Menu')}
                   </h3>
                   <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
-                    Catering menu item for client quotation calculator
+                    {isBaker ? 'Artisan bakes and custom celebration foods' : 'Catering menu item for client quotation calculator'}
                   </p>
                 </div>
               </div>
@@ -3229,12 +3259,12 @@ export const DashboardPage: React.FC = () => {
             <form onSubmit={handleSaveDish} className="modal-form">
               <div className="form-group" style={{ marginBottom: 14 }}>
                 <label className="form-label" style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 13 }}>
-                  Dish / Menu Item Name *
+                  {isBaker ? 'Bake / Item Name *' : 'Dish / Menu Item Name *'}
                 </label>
                 <input 
                   type="text" 
                   className="input-field" 
-                  placeholder="e.g. Paneer Tikka Angara, Dal Makhani, Tiramisu" 
+                  placeholder={isBaker ? 'e.g. Belgian Dark Chocolate Truffle Cake, Floral Bento Box' : 'e.g. Paneer Tikka Angara, Dal Makhani, Tiramisu'} 
                   value={dishName}
                   onChange={(e) => setDishName(e.target.value)}
                   required 
@@ -3249,7 +3279,16 @@ export const DashboardPage: React.FC = () => {
                   <CustomSelect 
                     value={dishCategory}
                     onChange={(val) => setDishCategory(val as any)}
-                    options={[
+                    options={isBaker ? [
+                      { value: 'Cakes', label: 'Cakes' },
+                      { value: 'Pastries', label: 'Pastries & Cupcakes' },
+                      { value: 'Breads', label: 'Artisan Breads' },
+                      { value: 'Savory', label: 'Savory & Tarts' },
+                      { value: 'Dessert', label: 'Desserts & Jars' },
+                      { value: 'Live Counter', label: 'Live Counter' },
+                      { value: 'Starter', label: 'Starter' },
+                      { value: 'Other', label: 'Other' },
+                    ] : [
                       { value: 'Starter', label: 'Starter' },
                       { value: 'Main Course', label: 'Main Course' },
                       { value: 'Dessert', label: 'Dessert' },
@@ -3263,18 +3302,89 @@ export const DashboardPage: React.FC = () => {
 
                 <div className="form-group">
                   <label className="form-label" style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 13 }}>
-                    Price per Plate / Serving (₹) *
+                    {isBaker ? 'Price per Unit (₹) *' : 'Price per Plate / Serving (₹) *'}
                   </label>
                   <input 
                     type="number" 
                     className="input-field" 
-                    placeholder="250" 
+                    placeholder={isBaker ? '1200' : '250'} 
                     value={dishPrice || ''}
                     onChange={(e) => setDishPrice(Number(e.target.value))}
                     min="1"
                     required 
                   />
                 </div>
+              </div>
+
+              {/* Unit & Minimum Order Quantity */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+                <div className="form-group">
+                  <label className="form-label" style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 13 }}>
+                    Pricing Unit (e.g. Kg, Cake, Box)
+                  </label>
+                  <input 
+                    type="text" 
+                    className="input-field" 
+                    placeholder={isBaker ? 'Kg, Cake, Box, Piece' : 'plate'} 
+                    value={dishUnit}
+                    onChange={(e) => setDishUnit(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 13 }}>
+                    Minimum Order Qty (Optional)
+                  </label>
+                  <input 
+                    type="text" 
+                    className="input-field" 
+                    placeholder={isBaker ? 'e.g. 0.5 Kg, 1 Cake, 1 Box' : 'e.g. 10 plates'} 
+                    value={dishMinQuantity}
+                    onChange={(e) => setDishMinQuantity(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Preparation Time / Notice Required */}
+              <div className="form-group" style={{ marginBottom: 14 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <label className="form-label" style={{ margin: 0, fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Clock size={14} color="var(--accent, #3fb668)" />
+                    Preparation Time / Lead Notice {isBaker ? '*' : '(Optional)'}
+                  </label>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Advance baking notice</span>
+                </div>
+
+                {/* Quick Presets */}
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+                  {['Same Day (4 Hours)', '24 Hours Notice', '48 Hours Notice', '2 - 3 Days', '1 Week'].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setDishPrepTime(preset)}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: 14,
+                        fontSize: 11.5,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        border: dishPrepTime === preset ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border-color, #e5e7eb)',
+                        background: dishPrepTime === preset ? 'rgba(63, 182, 104, 0.15)' : 'var(--bg-elevated, #f3f4f6)',
+                        color: dishPrepTime === preset ? 'var(--accent, #3fb668)' : 'var(--text-secondary, #4b5563)',
+                      }}
+                    >
+                      {dishPrepTime === preset ? '✓ ' : ''}{preset}
+                    </button>
+                  ))}
+                </div>
+
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="e.g. 24 Hours Notice, 48 Hours, 2-3 Days" 
+                  value={dishPrepTime}
+                  onChange={(e) => setDishPrepTime(e.target.value)}
+                />
               </div>
 
               {/* Dish Photo / Image Upload */}
