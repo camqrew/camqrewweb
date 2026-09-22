@@ -304,20 +304,22 @@ export const CreatorProfilePage: React.FC = () => {
               <p className="bio-text">{pro.bio || 'No bio provided.'}</p>
             </div>
 
-            {/* ── CATERING MENU & DISHES WITH INSTANT QUOTATION (CATERERS ONLY) ── */}
-            {proArchetype.archetype === 'catering' && availableDishes.length > 0 && (
+            {/* ── CATERING & BAKERY MENU WITH INSTANT QUOTATION ── */}
+            {(proArchetype.archetype === 'catering' || proArchetype.archetype === 'home_baker') && availableDishes.length > 0 && (
               <div className="card profile-section-card catering-menu-section-card">
                 <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
                   <div>
                     <h3 className="section-heading" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
                       <UtensilsCrossed size={20} color="var(--accent, #3fb668)" />
-                      Menu & Dishes
+                      {proArchetype.archetype === 'home_baker' ? 'Cakes, Bakes & Food Menu' : 'Menu & Dishes'}
                       <span className="badge-sub" style={{ fontSize: 12, padding: '2px 8px' }}>
                         {availableDishes.length} available
                       </span>
                     </h3>
                     <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
-                      Select dishes below to calculate an instant quotation for your event guest count.
+                      {proArchetype.archetype === 'home_baker'
+                        ? 'Freshly baked from scratch with flexible low minimum quantities. Select items below for instant pricing.'
+                        : 'Select dishes below to calculate an instant quotation for your event guest count.'}
                     </p>
                   </div>
                 </div>
@@ -363,17 +365,24 @@ export const CreatorProfilePage: React.FC = () => {
                               </div>
                             </div>
 
-                            {/* Price per plate */}
+                            {/* Price per plate / unit */}
                             <div className="swiggy-dish-price-box" style={{ margin: '4px 0 8px' }}>
                               <span className="swiggy-dish-price-val" style={{ fontSize: 17, color: 'var(--accent, #3fb668)' }}>
                                 ₹{dish.pricePerPlate.toLocaleString('en-IN')}
                               </span>
-                              <span className="swiggy-dish-price-unit" style={{ fontSize: 12 }}>/ plate</span>
+                              <span className="swiggy-dish-price-unit" style={{ fontSize: 12 }}>
+                                {dish.unit ? `/ ${dish.unit}` : (proArchetype.archetype === 'home_baker' ? '/ kg' : '/ plate')}
+                              </span>
                             </div>
 
                             {/* Category & Dietary Pills */}
                             <div className="swiggy-tags-row" style={{ marginBottom: 8, gap: 6 }}>
                               <span className="swiggy-tag-pill cat">{dish.category}</span>
+                              {dish.minQuantity && (
+                                <span className="swiggy-tag-pill" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.3)', fontWeight: 700 }}>
+                                  Min: {dish.minQuantity}
+                                </span>
+                              )}
                               {dish.dietaryTags?.map((tag) => {
                                 const tagIsVeg = tag === 'Veg' || tag === 'Jain' || tag === 'Vegan';
                                 return (

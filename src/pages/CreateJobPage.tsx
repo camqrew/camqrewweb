@@ -37,6 +37,7 @@ export const CreateJobPage: React.FC = () => {
     'Videographers',
     'Photographers',
     'Models',
+    'Home Bakers',
     'Drone Pilots',
     'Cinematographers',
     'Caterers',

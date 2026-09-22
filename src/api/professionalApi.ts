@@ -174,6 +174,7 @@ export const DEFAULT_CATERER_DISHES: MenuDishItem[] = [
 export const getCategoryDefaultCover = (categories?: string[]): string => {
   const cats = (categories || []).map(c => (c || '').toLowerCase());
   if (cats.some(c => c.includes('model') || c.includes('runway'))) return 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1600';
+  if (cats.some(c => c.includes('baker') || c.includes('bake') || c.includes('cake') || c.includes('pastry'))) return 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=1600';
   if (cats.some(c => c.includes('cater') || c.includes('chef') || c.includes('food') || c.includes('culinary'))) return 'https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=1600';
   if (cats.some(c => c.includes('organis') || c.includes('event') || c.includes('planner'))) return 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1600';
   if (cats.some(c => c.includes('develop') || c.includes('code') || c.includes('tech') || c.includes('software'))) return 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1600';

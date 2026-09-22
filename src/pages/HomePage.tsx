@@ -24,7 +24,8 @@ import {
   Palette,
   Utensils,
   Calendar,
-  User
+  User,
+  Cake
 } from 'lucide-react';
 
 const POPULAR_HUBS = [
@@ -142,6 +143,7 @@ export const HomePage: React.FC = () => {
     { name: 'Photographers', icon: Camera, color: '#3fb668' },
     { name: 'Videographers', icon: Film, color: '#6366f1' },
     { name: 'Models', icon: User, color: '#ec4899' },
+    { name: 'Home Bakers', icon: Cake, color: '#f59e0b' },
     { name: 'Drone Pilots', icon: Plane, color: '#f59e0b' },
     { name: 'Caterers', icon: Utensils, color: '#f97316' },
     { name: 'Organisers', icon: Calendar, color: '#e11d48' },

@@ -1,4 +1,4 @@
-export type CategoryArchetype = 'media_crew' | 'catering' | 'event_management' | 'tech_digital' | 'beauty_bridal' | 'modeling_talent';
+export type CategoryArchetype = 'media_crew' | 'catering' | 'event_management' | 'tech_digital' | 'beauty_bridal' | 'modeling_talent' | 'home_baker';
 
 export interface CategoryMeta {
   id: string;
@@ -282,6 +282,48 @@ export const ARCHETYPE_CONFIGS: Record<CategoryArchetype, ArchetypeConfig> = {
     serviceDeliverablesPlaceholder: 'e.g. 8 Hours Shoot, up to 10 Garment Changes, Commercial Rights',
     bookingCtaPrefix: 'Book Model',
   },
+  home_baker: {
+    archetype: 'home_baker',
+    label: 'Home Bakers, Cakes & Confectionery',
+    roleNoun: 'Home Baker',
+    rateLabel: 'Starting from (₹)',
+    ratePlaceholder: '1200',
+    rateUnitDefault: 'Kg',
+    rateUnitOptions: ['Kg', 'Piece', 'Box', 'Order', 'Platter'],
+    equipmentSectionTitle: 'Baking Specialties, Flavors & Dietary Options',
+    equipmentInputLabel: 'Add Specialties, Flavors & Minimum Quantities',
+    equipmentInputPlaceholder: 'e.g. Designer Fondant Cakes, Bento Cakes, 100% Eggless, Min Qty: 0.5 Kg',
+    equipmentPresets: [
+      'Custom Designer & Theme Fondant Cakes',
+      'Korean Aesthetic Bento Cakes (Min: 250g / 1 Pc)',
+      'Tiered Wedding & Engagement Cakes (Min: 1.5 Kg)',
+      'Gourmet Cupcakes (Min: 6 Pcs)',
+      '100% Eggless & Vegan Options',
+      'Artisan Sourdough & Garlic Focaccia (Min: 1 Loaf)',
+      'French Macarons & Tea Cakes',
+      'Savory Mini Quiches & Puffs Platter',
+      'Gluten-Free & Refined Sugar-Free Options',
+      'Customized Dessert Table Grazing',
+      'FSSAI Registered Home Kitchen',
+      'Doorstep Delivery in Fragile Ice Boxes',
+    ],
+    skillsSectionTitle: 'Baking Certifications & Kitchen Standards',
+    skillsInputLabel: 'Add Pastry Diplomas, Certifications & FSSAI Licenses',
+    skillsInputPlaceholder: 'e.g. FSSAI Home Kitchen Certified, French Pastry Diploma, Cake Art Masterclass',
+    skillsPresets: [
+      'FSSAI Registered & Certified Home Kitchen',
+      'Diploma in French Pastry & Baking Arts',
+      'Certified Sugar Florist & Fondant Artist',
+      'Food Safety & Hygiene Certified',
+      'Master Pastry Chef Masterclass Alumni',
+    ],
+    travelCheckboxLabel: 'Available for doorstep delivery & celebration venue setup',
+    portfolioPromptTitle: 'Add Cake & Dessert Portfolio',
+    portfolioPromptSubtitle: 'Showcase custom birthday cakes, bento boxes, dessert tables, and artisan pastry creations.',
+    serviceTitlePlaceholder: 'e.g. Custom Designer Theme Cake (Min 1 Kg)',
+    serviceDeliverablesPlaceholder: 'e.g. 1 Kg Gourmet Cake, Custom Fondant Art, Greeting Tag, Candle & Eco-Knife Included',
+    bookingCtaPrefix: 'Order from Baker',
+  },
 };
 
 export function getArchetype(categoryOrList?: string | string[]): ArchetypeConfig {
@@ -295,6 +337,9 @@ export function getArchetype(categoryOrList?: string | string[]): ArchetypeConfi
 
   if (lowerCats.some(c => c.includes('model') || c.includes('runway') || c.includes('fashion model'))) {
     return ARCHETYPE_CONFIGS.modeling_talent;
+  }
+  if (lowerCats.some(c => c.includes('baker') || c.includes('bake') || c.includes('cake') || c.includes('pastry') || c.includes('confectionery'))) {
+    return ARCHETYPE_CONFIGS.home_baker;
   }
   if (lowerCats.some(c => c.includes('cater') || c.includes('chef') || c.includes('food') || c.includes('culinary'))) {
     return ARCHETYPE_CONFIGS.catering;
@@ -335,6 +380,14 @@ export const PROFESSIONAL_CATEGORIES: CategoryMeta[] = [
     icon: 'user',
     description: 'Fashion, Runway, Commercial & Editorial Models',
     bgGradient: ['#ec4899', '#8b5cf6'],
+  },
+  {
+    id: 'home_bakers',
+    name: 'Home Bakers',
+    archetype: 'home_baker',
+    icon: 'cake',
+    description: 'Custom Cakes, Bento Boxes, Pastries & Baked Foods with Low Minimum Quantities',
+    bgGradient: ['#f59e0b', '#ec4899'],
   },
   {
     id: 'caterers',
