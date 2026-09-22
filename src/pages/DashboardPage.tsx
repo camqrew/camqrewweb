@@ -1523,7 +1523,7 @@ export const DashboardPage: React.FC = () => {
                       </button>
                     </div>
                   ) : (
-                    <div className="pro-dashboard-dishes-grid">
+                    <div className="pro-dashboard-dishes-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
                       {proProfile.menuItems.map((dish) => {
                         const isGreen = dish.dietaryTags?.some(t => t === 'Veg' || t === 'Jain' || t === 'Vegan');
                         return (

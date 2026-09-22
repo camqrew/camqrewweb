@@ -4,8 +4,7 @@ import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { CursorBackgroundFollower } from './CursorBackgroundFollower';
 import { GlobalRealtimeAlerts } from './GlobalRealtimeAlerts';
-
-import { MobileBottomNav } from './MobileBottomNav';
+import { MobileTabBar } from './MobileTabBar';
 
 interface MainLayoutProps {
   theme: 'light' | 'dark';
@@ -22,7 +21,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ theme, toggleTheme }) =>
         <Outlet />
       </main>
       <Footer />
-      <MobileBottomNav />
+      <MobileTabBar />
     </div>
   );
 };

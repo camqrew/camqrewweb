@@ -347,7 +347,7 @@ export const CreatorProfilePage: React.FC = () => {
                 </div>
 
                 {/* Dish Cards Grid */}
-                <div className="catering-dishes-grid" style={{ marginBottom: 24 }}>
+                <div className="catering-dishes-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: 16, marginBottom: 24 }}>
                   {filteredDishes.map(dish => {
                     const qty = dishQuantities[dish.id] || 0;
                     const isGreen = dish.dietaryTags?.some(t => t === 'Veg' || t === 'Jain' || t === 'Vegan');
