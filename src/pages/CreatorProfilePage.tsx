@@ -323,24 +323,13 @@ export const CreatorProfilePage: React.FC = () => {
                 </div>
 
                 {/* Category Filter Pills */}
-                <div className="menu-cat-filter-pills" style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, marginBottom: 16 }}>
+                <div className="menu-cat-filter-pills">
                   {menuCategories.map(cat => (
                     <button
                       key={cat}
                       type="button"
                       onClick={() => setSelectedMenuCategory(cat)}
-                      className={`cat-pill clickable ${selectedMenuCategory === cat ? 'active' : ''}`}
-                      style={{
-                        padding: '6px 14px',
-                        borderRadius: 20,
-                        fontSize: 12.5,
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        border: selectedMenuCategory === cat ? '1px solid var(--accent, #3fb668)' : '1px solid var(--border-color)',
-                        background: selectedMenuCategory === cat ? 'rgba(63, 182, 104, 0.15)' : 'var(--surface-elevated, #1a1e24)',
-                        color: selectedMenuCategory === cat ? 'var(--accent, #3fb668)' : 'var(--text-secondary)',
-                        whiteSpace: 'nowrap'
-                      }}
+                      className={`menu-cat-pill ${selectedMenuCategory === cat ? 'active' : ''}`}
                     >
                       {cat}
                     </button>
@@ -496,38 +485,38 @@ export const CreatorProfilePage: React.FC = () => {
                 </div>
 
                 {/* Quotation Calculator Box */}
-                <div className="catering-quotation-summary-box card" style={{ padding: 18, background: 'var(--surface-card, #111418)', border: '1px solid rgba(63, 182, 104, 0.3)', borderRadius: 16 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 14 }}>
+                <div className="catering-quotation-summary-box">
+                  <div className="catering-quote-top-row">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 18, background: 'rgba(63, 182, 104, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent, #3fb668)' }}>
+                      <div className="catering-quote-icon-badge">
                         <Users size={18} />
                       </div>
                       <div>
-                        <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
+                        <h4 className="catering-quote-heading">
                           Event Guest Count
                         </h4>
-                        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Prices will multiply by guest count</span>
+                        <span className="catering-quote-sub">Prices will multiply by guest count</span>
                       </div>
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <button
                         type="button"
-                        className="btn btn-outline btn-sm"
+                        className="guest-stepper-btn"
                         onClick={() => setGuestCount(g => Math.max(10, g - 10))}
-                        style={{ width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        title="Decrease guests"
                       >
                         <Minus size={14} />
                       </button>
                       <div style={{ textAlign: 'center', minWidth: 70 }}>
-                        <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>{guestCount}</span>
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginTop: -2 }}>guests</span>
+                        <span className="guest-count-val">{guestCount}</span>
+                        <span className="guest-count-label">guests</span>
                       </div>
                       <button
                         type="button"
-                        className="btn btn-outline btn-sm"
+                        className="guest-stepper-btn"
                         onClick={() => setGuestCount(g => g + 10)}
-                        style={{ width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        title="Increase guests"
                       >
                         <Plus size={14} />
                       </button>
@@ -537,7 +526,7 @@ export const CreatorProfilePage: React.FC = () => {
                   {selectedDishesList.length > 0 ? (
                     <div>
                       {/* Breakdown table */}
-                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 12, marginBottom: 14 }}>
+                      <div className="catering-quote-divider" style={{ paddingTop: 12, marginBottom: 14 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8, letterSpacing: '0.5px' }}>
                           <span>Selected Dish ({totalDishesSelectedCount})</span>
                           <span>Rate × Guests</span>
@@ -546,7 +535,7 @@ export const CreatorProfilePage: React.FC = () => {
                           const q = dishQuantities[dish.id] || 0;
                           const lineTotal = dish.pricePerPlate * q * guestCount;
                           return (
-                            <div key={dish.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', fontSize: 13, borderBottom: '1px dashed rgba(255,255,255,0.06)' }}>
+                            <div key={dish.id} className="catering-quote-item-row">
                               <div>
                                 <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{dish.name}</span>
                                 <span style={{ color: 'var(--text-muted)', fontSize: 12, marginLeft: 6 }}>
@@ -584,14 +573,14 @@ export const CreatorProfilePage: React.FC = () => {
                       </div>
                     </div>
                   ) : (
-                    <div style={{ padding: '10px 0 4px', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                      <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)' }}>
+                    <div className="catering-quote-empty-hint">
+                      <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
                         👉 Click the <strong>+</strong> button on any dish above to calculate an instant quotation.
                       </p>
                     </div>
                   )}
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: 12, color: 'var(--text-muted)' }}>
+                  <div className="catering-quote-escrow-row">
                     <ShieldCheck size={14} color="var(--accent, #3fb668)" />
                     <span>Camqrew Escrow Protection: 30% Advance • 40% Wrap • 30% Final Wrap</span>
                   </div>
