@@ -10,8 +10,12 @@ export const MobileTabBar: React.FC = () => {
   const cartCount = useCartStore((s) => s.getTotalCount());
   const isPro = isAuthenticated && (user?.role === 'professional' || activeRole === 'professional');
 
-  // Do not render on admin routes or if in an embed mode
-  if (location.pathname.startsWith('/admin')) {
+  // Do not render on admin routes, booking checkout, or chat screens
+  if (
+    location.pathname.startsWith('/admin') ||
+    location.pathname.startsWith('/book') ||
+    location.pathname.startsWith('/chat')
+  ) {
     return null;
   }
 

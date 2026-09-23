@@ -10,9 +10,11 @@ interface ProCardProps {
 }
 
 export const ProCard: React.FC<ProCardProps> = ({ pro }) => {
+  const hasBanner = Boolean(pro.bannerImage);
+
   return (
-    <div className="pro-card">
-      {pro.bannerImage && (
+    <div className={`pro-card ${hasBanner ? 'has-banner' : ''}`}>
+      {hasBanner && (
         <div className="pro-card-cover-banner">
           <img src={pro.bannerImage} alt={pro.name} className="pro-card-cover-img" loading="lazy" />
         </div>
