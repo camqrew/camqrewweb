@@ -2159,9 +2159,9 @@ export const DashboardPage: React.FC = () => {
                         <Camera size={26} color="#ffffff" />
                       </div>
                       <div>
-                        <h3 className="banner-title">Sell or Rent Your Camera Gear</h3>
+                        <h3 className="banner-title">Rent Out Your Production Equipment</h3>
                         <p className="banner-subtitle">
-                          Publish cameras, cinema lenses, or drones to the Camqrew Store with insured shipping.
+                          Publish your cameras, cinema lenses, lighting, and gear for daily rental with insured escrow security deposits.
                         </p>
                       </div>
                     </div>
@@ -2169,7 +2169,7 @@ export const DashboardPage: React.FC = () => {
                       className="btn btn-primary list-now-btn"
                       onClick={() => setShowListGearModal(true)}
                     >
-                      + List Equipment Now
+                      + List Equipment for Rent
                     </button>
                   </div>
 
@@ -2182,7 +2182,7 @@ export const DashboardPage: React.FC = () => {
                     <div className="card empty-state-card">
                       <Package size={44} color="var(--text-muted)" style={{ margin: '0 auto 14px' }} />
                       <h4>No equipment listed yet</h4>
-                      <p>Click "List Equipment Now" above to add your first camera or rental package.</p>
+                      <p>Click "List Equipment for Rent" above to add your first camera or rental package.</p>
                     </div>
                   ) : (
                     <div className="products-grid">

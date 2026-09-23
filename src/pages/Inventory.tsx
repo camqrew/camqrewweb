@@ -187,10 +187,10 @@ export default function Inventory() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Inventory Management</h1>
-          <p className="page-subtitle">Manage official Camqrew Gear Store catalogue</p>
+          <p className="page-subtitle">Manage official Camqrew Gear Store catalogue (Products for Sale)</p>
         </div>
         <button className="btn btn-primary" onClick={openAddModal}>
-          <Plus size={18} /> Add New Product
+          <Plus size={18} /> Add Product for Sale
         </button>
       </div>
 
@@ -277,7 +277,7 @@ export default function Inventory() {
               <X size={20} />
             </button>
             <h2 style={{ marginBottom: 24, fontSize: 20 }}>
-              {editingId ? 'Edit Product' : 'Add Official Product'}
+              {editingId ? 'Edit Product for Sale' : 'Add Official Product for Sale'}
             </h2>
             
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
