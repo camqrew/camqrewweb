@@ -687,7 +687,7 @@ tr:last-child td {
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
-  box-shadow: 0 4px 12px rgba(63, 182, 104, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 .fab-main:hover {
   background-color: var(--accent-hover);
@@ -1509,7 +1509,7 @@ tr:last-child td {
 
 .stepper-bar-segment.active {
   background: var(--accent, #3fb668);
-  box-shadow: 0 0 12px rgba(63, 182, 104, 0.4);
+  box-shadow: none;
 }
 
 .stepper-bar-segment.completed {
@@ -2097,13 +2097,13 @@ tr:last-child td {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 4px 14px rgba(63, 182, 104, 0.35);
+  box-shadow: none;
   transition: all 0.2s ease;
 }
 
 .checkout-btn-next:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(63, 182, 104, 0.45);
+  box-shadow: none;
 }
 
 .checkout-btn-next:disabled {
@@ -2141,7 +2141,7 @@ tr:last-child td {
   background-color: var(--accent) !important;
   border-color: var(--accent) !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(63, 182, 104, 0.35);
+  box-shadow: none !important;
 }
 
 .dashboard-tabs .btn.btn-primary * {

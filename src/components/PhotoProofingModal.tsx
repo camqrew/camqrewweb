@@ -573,8 +573,8 @@ export const PhotoProofingModal: React.FC<PhotoProofingModalProps> = ({
                     background: 'var(--bg-elevated)',
                     border: file.isSelected ? '2px solid var(--accent)' : '1px solid var(--border-color)',
                     cursor: 'pointer',
-                    transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-                    boxShadow: file.isSelected ? '0 0 12px rgba(63, 182, 104, 0.3)' : 'none',
+                    transition: 'transform 0.15s ease',
+                    boxShadow: 'none',
                   }}
                 >
                   {/* Photo Container */}

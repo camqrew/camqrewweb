@@ -439,14 +439,14 @@
   border-radius: 20px;
   text-decoration: none;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 10px rgba(63, 182, 104, 0.28);
+  box-shadow: none;
   white-space: nowrap;
 }
 
 .nav-cta-post-job:hover {
   background: var(--accent-hover, #35a359);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(63, 182, 104, 0.4);
+  box-shadow: none;
 }
 
 .nav-cta-pro-studio {
@@ -1320,13 +1320,13 @@
   border: none !important;
   white-space: nowrap;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 14px rgba(63, 182, 104, 0.25);
+  transition: transform 0.15s ease;
+  box-shadow: none;
   flex-shrink: 0;
 }
 
 .hero-search-btn:hover {
-  box-shadow: 0 6px 20px rgba(63, 182, 104, 0.35);
+  box-shadow: none;
   transform: translateY(-1px);
 }
 
@@ -2113,14 +2113,14 @@
   font-size: 14px;
   font-weight: 900;
   text-decoration: none;
-  box-shadow: 0 4px 14px rgba(63, 182, 104, 0.35);
+  box-shadow: none;
   transition: all 0.2s ease;
   border: none;
 }
 
 .pro-card-btn-book:hover {
   background: #349c58;
-  box-shadow: 0 6px 18px rgba(63, 182, 104, 0.45);
+  box-shadow: none;
   transform: translateY(-1px);
 }
 
@@ -3275,7 +3275,7 @@
   background: var(--accent, #3fb668) !important;
   color: #0b0f12 !important;
   font-weight: 700 !important;
-  box-shadow: 0 4px 12px rgba(63, 182, 104, 0.35);
+  box-shadow: none;
 }
 
 .datepicker-day-cell.is-disabled {
@@ -3510,13 +3510,13 @@
   gap: 8px;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 4px 14px rgba(63, 182, 104, 0.3);
+  box-shadow: none;
   transition: all 0.2s ease;
 }
 
 .btn-explore-search:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(63, 182, 104, 0.45);
+  box-shadow: none;
 }
 
 .explore-location-row {
@@ -3589,7 +3589,7 @@
   background: linear-gradient(135deg, #3fb668 0%, #2ea058 100%);
   border: none;
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(63, 182, 104, 0.35);
+  box-shadow: none;
 }
 
 .active-filters-bar {
@@ -3730,7 +3730,7 @@
   background: linear-gradient(135deg, #3fb668 0%, #2ea058 100%);
   color: #ffffff;
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(63, 182, 104, 0.35);
+  box-shadow: none;
 }
 
 .marketplace-search-box {
@@ -3849,11 +3849,11 @@
 }
 
 .product-card .btn-primary {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .product-card:hover .btn-primary {
-  box-shadow: 0 4px 12px rgba(63, 182, 104, 0.35);
+  box-shadow: none;
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -4045,7 +4045,7 @@
   font-size: 13.5px !important;
   font-weight: 800 !important;
   text-decoration: none !important;
-  box-shadow: 0 4px 14px rgba(63, 182, 104, 0.35) !important;
+  box-shadow: none !important;
   transition: all 0.2s ease !important;
   border: none !important;
   cursor: pointer;
@@ -4053,7 +4053,7 @@
 
 .product-btn-add-cart:hover:not(:disabled) {
   background: #349c58 !important;
-  box-shadow: 0 6px 18px rgba(63, 182, 104, 0.45) !important;
+  box-shadow: none !important;
   transform: translateY(-1px);
 }
 
@@ -4315,7 +4315,7 @@
   background: linear-gradient(135deg, #3fb668 0%, #2ea058 100%);
   color: #ffffff;
   font-weight: 700;
-  box-shadow: 0 4px 12px rgba(63, 182, 104, 0.3);
+  box-shadow: none;
 }
 
 /* Method Switch (Email vs Phone) */
@@ -4633,13 +4633,13 @@
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(63, 182, 104, 0.35);
+  box-shadow: none;
   transition: all 0.2s ease;
 }
 
 .auth-cta-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(63, 182, 104, 0.5);
+  box-shadow: none;
 }
 
 .auth-cta-btn:disabled {
@@ -5076,13 +5076,13 @@
   justify-content: center;
   gap: 10px;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(63, 182, 104, 0.35);
+  box-shadow: none;
   transition: all 0.2s ease;
 }
 
 .btn-broadcast-submit:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 26px rgba(63, 182, 104, 0.5);
+  box-shadow: none;
 }
 
 .btn-broadcast-submit:disabled {
@@ -5661,7 +5661,7 @@
   color: #ffffff;
   border-color: #3fb668;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(63, 182, 104, 0.45);
+  box-shadow: none;
 }
 
 /* Thumbnail Gallery Strip */
@@ -5704,7 +5704,7 @@
 .product-thumb-btn:hover {
   opacity: 1;
   transform: translateY(-2px);
-  box-shadow: 0 0 0 2px var(--accent), 0 6px 16px rgba(63, 182, 104, 0.3);
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 /* Technical Specifications Card */
@@ -6087,7 +6087,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  box-shadow: 0 6px 20px rgba(63, 182, 104, 0.35);
+  box-shadow: none;
 }
 
 .product-cart-btn {
@@ -6469,7 +6469,7 @@
   background: var(--accent, #3fb668);
   border-color: var(--accent, #3fb668);
   color: #0b0f12;
-  box-shadow: 0 4px 14px rgba(63, 182, 104, 0.3);
+  box-shadow: none;
 }
 
 .pro-tab-item.client-tab {
@@ -8672,7 +8672,7 @@
   transform: translate(-50%, -50%) scale(1.12);
   opacity: 1;
   background: var(--accent, #3fb668);
-  box-shadow: 0 0 24px rgba(63, 182, 104, 0.6);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .reel-badge-top-row {
@@ -9361,7 +9361,7 @@
   background: var(--accent, #3fb668);
   border-color: var(--accent, #3fb668);
   color: #ffffff;
-  box-shadow: 0 0 16px rgba(63, 182, 104, 0.35);
+  box-shadow: none;
 }
 
 .reels-sound-toggle-btn {
@@ -12531,7 +12531,7 @@
   background: rgba(63, 182, 104, 0.2) !important;
   color: #4ade80 !important;
   font-weight: 700;
-  box-shadow: 0 2px 10px rgba(63, 182, 104, 0.25);
+  box-shadow: none !important;
 }
 
 .category-spec-pill .pill-check-icon {
@@ -12547,7 +12547,7 @@
 [data-theme="light"] .category-spec-pill {
   background: #f1f5f9;
   color: #475569;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: none !important;
 }
 
 [data-theme="light"] .category-spec-pill:hover {
@@ -12560,7 +12560,98 @@
   background: #dcfce7 !important;
   color: #15803d !important;
   font-weight: 700;
-  box-shadow: 0 2px 10px rgba(34, 197, 94, 0.18);
+  box-shadow: none !important;
 }
+
+/* ==========================================================================
+   UNIVERSAL BUTTON GLOW REMOVAL (ACROSS ALL SECTIONS)
+   Removes colored halos, neon blooms and glowing box-shadows on all buttons
+   ========================================================================== */
+button,
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-outline,
+.btn-ghost,
+.btn-success,
+.btn-danger,
+.btn-accent,
+.category-spec-pill,
+.category-spec-pill.active,
+.category-filter-chip,
+.category-filter-chip.active,
+.segmented-tab,
+.segmented-tab.active,
+.auth-segment-tab,
+.auth-segment-tab.active,
+.nav-cta-post-job,
+.hero-search-btn,
+.pro-card-btn-book,
+.btn-explore-search,
+.product-btn-add-cart,
+.checkout-btn-next,
+.auth-cta-btn,
+.btn-broadcast-submit,
+.product-cta-btn,
+.product-cart-btn,
+.pro-tab-item,
+.pro-tab-item.active,
+.reels-cat-pill-btn,
+.reels-cat-pill-btn.active,
+.dashboard-tabs .btn,
+.hero-zoom-trigger-btn,
+.booking-form button,
+.checkout-modal button,
+.modal-footer button,
+.cart-checkout-btn,
+.booking-btn-submit {
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+button:hover,
+button:active,
+button:focus,
+.btn:hover,
+.btn:active,
+.btn:focus,
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary:focus,
+.category-spec-pill:hover,
+.category-spec-pill.active:hover,
+.category-filter-chip:hover,
+.category-filter-chip.active:hover,
+.segmented-tab:hover,
+.segmented-tab.active:hover,
+.auth-segment-tab:hover,
+.auth-segment-tab.active:hover,
+.nav-cta-post-job:hover,
+.hero-search-btn:hover,
+.pro-card-btn-book:hover,
+.btn-explore-search:hover,
+.product-btn-add-cart:hover,
+.checkout-btn-next:hover,
+.auth-cta-btn:hover,
+.btn-broadcast-submit:hover,
+.product-cta-btn:hover,
+.product-cart-btn:hover,
+.pro-tab-item:hover,
+.pro-tab-item.active:hover,
+.reels-cat-pill-btn:hover,
+.reels-cat-pill-btn.active:hover,
+.dashboard-tabs .btn:hover,
+.hero-zoom-trigger-btn:hover,
+.booking-form button:hover,
+.checkout-modal button:hover,
+.modal-footer button:hover,
+.cart-checkout-btn:hover,
+.booking-btn-submit:hover {
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
 
 
