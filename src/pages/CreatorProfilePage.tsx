@@ -346,8 +346,8 @@ export const CreatorProfilePage: React.FC = () => {
                   ))}
                 </div>
 
-                {/* Dish Cards Grid */}
-                <div className="catering-dishes-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: 20, marginBottom: 24 }}>
+                {/* Dish Cards Grid (4 in a row) */}
+                <div className="catering-dishes-grid">
                   {filteredDishes.map(dish => {
                     const qty = dishQuantities[dish.id] || 0;
                     const isGreen = dish.dietaryTags?.some(t => t === 'Veg' || t === 'Jain' || t === 'Vegan');
@@ -430,7 +430,7 @@ export const CreatorProfilePage: React.FC = () => {
                           {/* Selected Indicator & Action Button Row */}
                           <div className="dish-card-actions-row">
                             {qty > 0 ? (
-                              <>
+                              <div className="dish-card-selected-group">
                                 <div className="dish-card-qty-indicator" title={`${qty} selected`}>
                                   <span className="dish-card-qty-check">✓</span>
                                   <span>{qty} {isBaker ? (dish.unit ? `${dish.unit}s` : 'units') : (qty === 1 ? 'plate' : 'plates')} (₹{(dish.pricePerPlate * qty).toLocaleString('en-IN')})</span>
@@ -452,7 +452,7 @@ export const CreatorProfilePage: React.FC = () => {
                                     <Plus size={13} />
                                   </button>
                                 </div>
-                              </>
+                              </div>
                             ) : (
                               <button
                                 type="button"
