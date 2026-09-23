@@ -18,6 +18,21 @@ import {
 import { isCustomAvatar } from '../utils/avatarUtils';
 import { getArchetype } from '../constants/categories';
 
+const SpecPillButton: React.FC<{
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}> = ({ label, active, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`category-spec-pill ${active ? 'active' : ''}`}
+  >
+    {active && <span className="pill-check-icon">✓</span>}
+    <span>{label}</span>
+  </button>
+);
+
 export const BookingPage: React.FC = () => {
   const { id: proId } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -563,53 +578,31 @@ export const BookingPage: React.FC = () => {
             <h3 className="form-section-title" style={{ marginTop: 24 }}>3. {categoryConfig.specialOptionsTitle}</h3>
 
             {archetype === 'home_baker' && (
-              <div className="category-spec-box" style={{ background: 'var(--bg-surface, rgba(0,0,0,0.02))', padding: '16px 18px', borderRadius: 14, marginBottom: 16, border: '1px solid var(--border-color, rgba(255,255,255,0.08))' }}>
+              <div className="category-spec-box">
                 <div className="form-group" style={{ marginBottom: 14 }}>
                   <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Dietary Preference & Prep</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                  <div className="category-spec-pills-row">
                     {['Eggless (100% Veg)', 'Contains Egg', 'Vegan', 'Gluten-Free', 'Keto / Sugar-Free'].map((d) => (
-                      <button
+                      <SpecPillButton
                         key={d}
-                        type="button"
+                        label={d}
+                        active={bakerDietary === d}
                         onClick={() => setBakerDietary(d)}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: 20,
-                          fontSize: 12.5,
-                          fontWeight: 600,
-                          border: bakerDietary === d ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border-color, #e2e8f0)',
-                          background: bakerDietary === d ? 'rgba(63, 182, 104, 0.12)' : 'var(--surface-elevated, #f8fafc)',
-                          color: bakerDietary === d ? 'var(--accent, #3fb668)' : 'var(--text-secondary, #64748b)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {bakerDietary === d && '✓ '}{d}
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>
 
                 <div className="form-group" style={{ marginBottom: 14 }}>
                   <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Preferred Delivery / Pickup Time Slot</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                  <div className="category-spec-pills-row">
                     {['Morning (10 AM - 1 PM)', 'Afternoon (1 PM - 5 PM)', 'Evening (5 PM - 8 PM)', 'Self-Pickup from Studio'].map((slot) => (
-                      <button
+                      <SpecPillButton
                         key={slot}
-                        type="button"
+                        label={slot}
+                        active={bakerTimeSlot === slot}
                         onClick={() => setBakerTimeSlot(slot)}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: 20,
-                          fontSize: 12.5,
-                          fontWeight: 600,
-                          border: bakerTimeSlot === slot ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border-color, #e2e8f0)',
-                          background: bakerTimeSlot === slot ? 'rgba(63, 182, 104, 0.12)' : 'var(--surface-elevated, #f8fafc)',
-                          color: bakerTimeSlot === slot ? 'var(--accent, #3fb668)' : 'var(--text-secondary, #64748b)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {bakerTimeSlot === slot && '✓ '}{slot}
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>
@@ -641,53 +634,31 @@ export const BookingPage: React.FC = () => {
             )}
 
             {archetype === 'catering' && (
-              <div className="category-spec-box" style={{ background: 'var(--bg-surface, rgba(0,0,0,0.02))', padding: '16px 18px', borderRadius: 14, marginBottom: 16, border: '1px solid var(--border-color, rgba(255,255,255,0.08))' }}>
+              <div className="category-spec-box">
                 <div className="form-group" style={{ marginBottom: 14 }}>
                   <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Catering Serving Style</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                  <div className="category-spec-pills-row">
                     {['Buffet Setup', 'Plated Table Service', 'Live Counters / Chaat', 'Packed Gourmet Boxes'].map((s) => (
-                      <button
+                      <SpecPillButton
                         key={s}
-                        type="button"
+                        label={s}
+                        active={catererServingStyle === s}
                         onClick={() => setCatererServingStyle(s)}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: 20,
-                          fontSize: 12.5,
-                          fontWeight: 600,
-                          border: catererServingStyle === s ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border-color, #e2e8f0)',
-                          background: catererServingStyle === s ? 'rgba(63, 182, 104, 0.12)' : 'var(--surface-elevated, #f8fafc)',
-                          color: catererServingStyle === s ? 'var(--accent, #3fb668)' : 'var(--text-secondary, #64748b)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {catererServingStyle === s && '✓ '}{s}
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>
 
                 <div className="form-group" style={{ marginBottom: 14 }}>
                   <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Dietary Classification</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                  <div className="category-spec-pills-row">
                     {['Pure Veg Buffet', 'Veg + Non-Veg', 'Pure Veg & Jain Counter', 'Halal Certified Preparation'].map((d) => (
-                      <button
+                      <SpecPillButton
                         key={d}
-                        type="button"
+                        label={d}
+                        active={catererDietary === d}
                         onClick={() => setCatererDietary(d)}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: 20,
-                          fontSize: 12.5,
-                          fontWeight: 600,
-                          border: catererDietary === d ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border-color, #e2e8f0)',
-                          background: catererDietary === d ? 'rgba(63, 182, 104, 0.12)' : 'var(--surface-elevated, #f8fafc)',
-                          color: catererDietary === d ? 'var(--accent, #3fb668)' : 'var(--text-secondary, #64748b)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {catererDietary === d && '✓ '}{d}
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>
@@ -718,28 +689,17 @@ export const BookingPage: React.FC = () => {
             )}
 
             {archetype === 'modeling_talent' && (
-              <div className="category-spec-box" style={{ background: 'var(--bg-surface, rgba(0,0,0,0.02))', padding: '16px 18px', borderRadius: 14, marginBottom: 16, border: '1px solid var(--border-color, rgba(255,255,255,0.08))' }}>
+              <div className="category-spec-box">
                 <div className="form-group" style={{ marginBottom: 14 }}>
                   <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Assignment / Shoot Type</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                  <div className="category-spec-pills-row">
                     {['High-Fashion Runway & Ramp', 'Bridal / Couture Lookbook', 'E-Commerce Catalog Fit', 'Commercial TVC / Video Ad', 'Editorial Magazine'].map((t) => (
-                      <button
+                      <SpecPillButton
                         key={t}
-                        type="button"
+                        label={t}
+                        active={modelAssignmentType === t}
                         onClick={() => setModelAssignmentType(t)}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: 20,
-                          fontSize: 12.5,
-                          fontWeight: 600,
-                          border: modelAssignmentType === t ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border-color, #e2e8f0)',
-                          background: modelAssignmentType === t ? 'rgba(63, 182, 104, 0.12)' : 'var(--surface-elevated, #f8fafc)',
-                          color: modelAssignmentType === t ? 'var(--accent, #3fb668)' : 'var(--text-secondary, #64748b)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {modelAssignmentType === t && '✓ '}{t}
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>
@@ -769,25 +729,14 @@ export const BookingPage: React.FC = () => {
 
                 <div className="form-group" style={{ marginTop: 8 }}>
                   <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Commercial Usage Rights Licensing</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                  <div className="category-spec-pills-row">
                     {['Digital & Social Media (1 Year)', 'E-Commerce Catalog (2 Years)', 'Print, Hoardings & Outdoor', 'Worldwide In Perpetuity'].map((u) => (
-                      <button
+                      <SpecPillButton
                         key={u}
-                        type="button"
+                        label={u}
+                        active={modelUsageRights === u}
                         onClick={() => setModelUsageRights(u)}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: 20,
-                          fontSize: 12.5,
-                          fontWeight: 600,
-                          border: modelUsageRights === u ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border-color, #e2e8f0)',
-                          background: modelUsageRights === u ? 'rgba(63, 182, 104, 0.12)' : 'var(--surface-elevated, #f8fafc)',
-                          color: modelUsageRights === u ? 'var(--accent, #3fb668)' : 'var(--text-secondary, #64748b)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {modelUsageRights === u && '✓ '}{u}
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>
@@ -795,53 +744,31 @@ export const BookingPage: React.FC = () => {
             )}
 
             {archetype === 'event_management' && (
-              <div className="category-spec-box" style={{ background: 'var(--bg-surface, rgba(0,0,0,0.02))', padding: '16px 18px', borderRadius: 14, marginBottom: 16, border: '1px solid var(--border-color, rgba(255,255,255,0.08))' }}>
+              <div className="category-spec-box">
                 <div className="form-group" style={{ marginBottom: 14 }}>
                   <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Event Execution Scope</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                  <div className="category-spec-pills-row">
                     {['Turnkey Planning & Decor', 'Stage & Light Fabrication', 'Concert Line Array Sound', 'Artist & DJ Management', 'Complete 360° Production'].map((s) => (
-                      <button
+                      <SpecPillButton
                         key={s}
-                        type="button"
+                        label={s}
+                        active={eventScope === s}
                         onClick={() => setEventScope(s)}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: 20,
-                          fontSize: 12.5,
-                          fontWeight: 600,
-                          border: eventScope === s ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border-color, #e2e8f0)',
-                          background: eventScope === s ? 'rgba(63, 182, 104, 0.12)' : 'var(--surface-elevated, #f8fafc)',
-                          color: eventScope === s ? 'var(--accent, #3fb668)' : 'var(--text-secondary, #64748b)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {eventScope === s && '✓ '}{s}
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>
 
                 <div className="form-group">
                   <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Expected Event Footfall / Scale</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                  <div className="category-spec-pills-row">
                     {['Intimate (< 100 Guests)', 'Medium (100 - 500 Guests)', 'Grand Gala (500 - 2000+ Guests)'].map((sc) => (
-                      <button
+                      <SpecPillButton
                         key={sc}
-                        type="button"
+                        label={sc}
+                        active={eventScale === sc}
                         onClick={() => setEventScale(sc)}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: 20,
-                          fontSize: 12.5,
-                          fontWeight: 600,
-                          border: eventScale === sc ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border-color, #e2e8f0)',
-                          background: eventScale === sc ? 'rgba(63, 182, 104, 0.12)' : 'var(--surface-elevated, #f8fafc)',
-                          color: eventScale === sc ? 'var(--accent, #3fb668)' : 'var(--text-secondary, #64748b)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {eventScale === sc && '✓ '}{sc}
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>
@@ -849,28 +776,17 @@ export const BookingPage: React.FC = () => {
             )}
 
             {archetype === 'tech_digital' && (
-              <div className="category-spec-box" style={{ background: 'var(--bg-surface, rgba(0,0,0,0.02))', padding: '16px 18px', borderRadius: 14, marginBottom: 16, border: '1px solid var(--border-color, rgba(255,255,255,0.08))' }}>
+              <div className="category-spec-box">
                 <div className="form-group" style={{ marginBottom: 14 }}>
                   <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Primary Deliverable Type</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                  <div className="category-spec-pills-row">
                     {['Full-Stack Web App', 'Mobile App (React Native)', 'UI/UX Design System (Figma)', 'Backend API & Database Architecture'].map((d) => (
-                      <button
+                      <SpecPillButton
                         key={d}
-                        type="button"
+                        label={d}
+                        active={techDeliverable === d}
                         onClick={() => setTechDeliverable(d)}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: 20,
-                          fontSize: 12.5,
-                          fontWeight: 600,
-                          border: techDeliverable === d ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border-color, #e2e8f0)',
-                          background: techDeliverable === d ? 'rgba(63, 182, 104, 0.12)' : 'var(--surface-elevated, #f8fafc)',
-                          color: techDeliverable === d ? 'var(--accent, #3fb668)' : 'var(--text-secondary, #64748b)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {techDeliverable === d && '✓ '}{d}
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>
@@ -889,53 +805,31 @@ export const BookingPage: React.FC = () => {
             )}
 
             {archetype === 'beauty_bridal' && (
-              <div className="category-spec-box" style={{ background: 'var(--bg-surface, rgba(0,0,0,0.02))', padding: '16px 18px', borderRadius: 14, marginBottom: 16, border: '1px solid var(--border-color, rgba(255,255,255,0.08))' }}>
+              <div className="category-spec-box">
                 <div className="form-group" style={{ marginBottom: 14 }}>
                   <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Artistry Style & Technique</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                  <div className="category-spec-pills-row">
                     {['HD Bridal Makeup & Hair Styling', 'Airbrush Makeup', 'Traditional Bridal Mehendi', 'Arabic & Indo-Western Henna'].map((b) => (
-                      <button
+                      <SpecPillButton
                         key={b}
-                        type="button"
+                        label={b}
+                        active={beautyStyle === b}
                         onClick={() => setBeautyStyle(b)}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: 20,
-                          fontSize: 12.5,
-                          fontWeight: 600,
-                          border: beautyStyle === b ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border-color, #e2e8f0)',
-                          background: beautyStyle === b ? 'rgba(63, 182, 104, 0.12)' : 'var(--surface-elevated, #f8fafc)',
-                          color: beautyStyle === b ? 'var(--accent, #3fb668)' : 'var(--text-secondary, #64748b)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {beautyStyle === b && '✓ '}{b}
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>
 
                 <div className="form-group">
                   <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Bridal Party Count</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                  <div className="category-spec-pills-row">
                     {['Bride Only', 'Bride + 2 Family Members', 'Bridal Party (5+ Persons)'].map((p) => (
-                      <button
+                      <SpecPillButton
                         key={p}
-                        type="button"
+                        label={p}
+                        active={beautyPartyCount === p}
                         onClick={() => setBeautyPartyCount(p)}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: 20,
-                          fontSize: 12.5,
-                          fontWeight: 600,
-                          border: beautyPartyCount === p ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border-color, #e2e8f0)',
-                          background: beautyPartyCount === p ? 'rgba(63, 182, 104, 0.12)' : 'var(--surface-elevated, #f8fafc)',
-                          color: beautyPartyCount === p ? 'var(--accent, #3fb668)' : 'var(--text-secondary, #64748b)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {beautyPartyCount === p && '✓ '}{p}
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>
@@ -943,53 +837,31 @@ export const BookingPage: React.FC = () => {
             )}
 
             {archetype === 'media_crew' && (
-              <div className="category-spec-box" style={{ background: 'var(--bg-surface, rgba(0,0,0,0.02))', padding: '16px 18px', borderRadius: 14, marginBottom: 16, border: '1px solid var(--border-color, rgba(255,255,255,0.08))' }}>
+              <div className="category-spec-box">
                 <div className="form-group" style={{ marginBottom: 14 }}>
                   <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Production Type</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                  <div className="category-spec-pills-row">
                     {['Wedding & Event Film', 'Commercial / TVC', 'Fashion & Lookbook', 'Music Video', 'Drone Aerial Shoot'].map((m) => (
-                      <button
+                      <SpecPillButton
                         key={m}
-                        type="button"
+                        label={m}
+                        active={mediaProductionType === m}
                         onClick={() => setMediaProductionType(m)}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: 20,
-                          fontSize: 12.5,
-                          fontWeight: 600,
-                          border: mediaProductionType === m ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border-color, #e2e8f0)',
-                          background: mediaProductionType === m ? 'rgba(63, 182, 104, 0.12)' : 'var(--surface-elevated, #f8fafc)',
-                          color: mediaProductionType === m ? 'var(--accent, #3fb668)' : 'var(--text-secondary, #64748b)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {mediaProductionType === m && '✓ '}{m}
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>
 
                 <div className="form-group">
                   <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Deliverable Package Format</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                  <div className="category-spec-pills-row">
                     {['Color Graded 4K Reels & Stills', 'Full Edited Film + Teaser', 'Complete RAW Footage Transfer'].map((df) => (
-                      <button
+                      <SpecPillButton
                         key={df}
-                        type="button"
+                        label={df}
+                        active={mediaDeliverableFormat === df}
                         onClick={() => setMediaDeliverableFormat(df)}
-                        style={{
-                          padding: '6px 14px',
-                          borderRadius: 20,
-                          fontSize: 12.5,
-                          fontWeight: 600,
-                          border: mediaDeliverableFormat === df ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border-color, #e2e8f0)',
-                          background: mediaDeliverableFormat === df ? 'rgba(63, 182, 104, 0.12)' : 'var(--surface-elevated, #f8fafc)',
-                          color: mediaDeliverableFormat === df ? 'var(--accent, #3fb668)' : 'var(--text-secondary, #64748b)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {mediaDeliverableFormat === df && '✓ '}{df}
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>
