@@ -11292,8 +11292,10 @@
 
 .dish-card-selected-group {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   width: 100%;
 }
 
@@ -11306,16 +11308,24 @@
   font-weight: 700;
   color: var(--accent, #3fb668);
   background: rgba(63, 182, 104, 0.12);
-  padding: 5px 8px;
-  border-radius: 10px;
-  width: 100%;
+  padding: 0 8px;
+  height: 36px;
+  border-radius: 12px;
+  flex: 1;
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+[data-theme="light"] .dish-card-qty-indicator {
+  background: rgba(63, 182, 104, 0.12);
+  color: #16a34a;
+}
+
 .dish-card-qty-check {
   font-weight: 900;
+  flex-shrink: 0;
 }
 
 .dish-stepper-btn {
@@ -11323,7 +11333,7 @@
   align-items: center;
   justify-content: space-between;
   height: 36px;
-  padding: 0 8px;
+  padding: 0 6px;
   border-radius: 12px;
   background: #3fb668;
   color: #ffffff;
@@ -11331,7 +11341,8 @@
   font-weight: 800;
   box-shadow: 0 4px 14px rgba(63, 182, 104, 0.35);
   transition: all 0.2s ease;
-  width: 100%;
+  width: 86px;
+  flex-shrink: 0;
 }
 
 .dish-stepper-btn button {

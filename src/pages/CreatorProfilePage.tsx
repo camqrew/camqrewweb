@@ -434,7 +434,7 @@ export const CreatorProfilePage: React.FC = () => {
                               <div className="dish-card-selected-group">
                                 <div className="dish-card-qty-indicator" title={`${qty} selected`}>
                                   <span className="dish-card-qty-check">✓</span>
-                                  <span>{qty} {isBaker ? (dish.unit ? `${dish.unit}s` : 'units') : (qty === 1 ? 'plate' : 'plates')} (₹{(dish.pricePerPlate * qty).toLocaleString('en-IN')})</span>
+                                  <span>{qty} {dish.unit ? (qty === 1 ? (dish.unit.endsWith('s') && dish.unit.length > 2 ? dish.unit.slice(0, -1) : dish.unit) : (dish.unit.endsWith('s') ? dish.unit : `${dish.unit}s`)) : (isBaker ? (qty === 1 ? 'item' : 'items') : (qty === 1 ? 'plate' : 'plates'))} (₹{(dish.pricePerPlate * qty).toLocaleString('en-IN')})</span>
                                 </div>
                                 <div className="dish-stepper-btn">
                                   <button 
