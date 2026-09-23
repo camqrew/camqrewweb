@@ -5,6 +5,7 @@ import type { Product } from '../types/product';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { CustomDatePicker } from '../components/CustomDatePicker';
+import { ProductCard } from '../components/ProductCard';
 import { 
   ArrowLeft, 
   Star, 
@@ -550,47 +551,14 @@ export const ProductDetailPage: React.FC = () => {
 
           <div className="pros-grid">
             {relatedProducts.map((rel) => (
-              <div key={rel.id} className="card product-card">
-                <Link to={`/marketplace/${rel.id}`} className="product-card-body-link" style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <div className="product-img-wrapper">
-                    <img src={rel.image} alt={rel.name} />
-                    <span 
-                      className="pro-tag"
-                      style={{
-                        position: 'absolute',
-                        top: 10,
-                        left: 10,
-                        background: rel.type === 'rental' ? '#7C3AED' : 'rgba(0,0,0,0.75)',
-                        color: '#fff',
-                        fontWeight: 700,
-                        fontSize: 11,
-                        backdropFilter: 'blur(8px)',
-                      }}
-                    >
-                      {rel.type === 'rental' ? 'FOR RENT' : 'FOR SALE'}
-                    </span>
-                  </div>
-
-                  <div style={{ padding: '16px 4px 4px' }}>
-                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{rel.category}</span>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, margin: '4px 0' }}>{rel.name}</h3>
-                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12 }}>
-                      {rel.description?.slice(0, 70)}...
-                    </p>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block' }}>
-                          {rel.type === 'rental' ? 'Daily Rate' : 'Price'}
-                        </span>
-                        <strong style={{ fontSize: 17, color: 'var(--accent)' }}>
-                          ₹{(rel.rentalPricePerDay || rel.price)?.toLocaleString('en-IN')}
-                        </strong>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </div>
+              <ProductCard 
+                key={rel.id} 
+                product={rel} 
+                onAddToCart={(p) => {
+                  addItem(p);
+                  navigate('/marketplace?tab=cart');
+                }}
+              />
             ))}
           </div>
         </div>

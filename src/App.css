@@ -3856,6 +3856,213 @@
   box-shadow: 0 4px 12px rgba(63, 182, 104, 0.35);
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   REDESIGNED PRODUCT CARD (SIGNATURE TOP BANNER + FLOATING BODY)
+   Matches ProCard and DishCard architecture from Creator Profile
+   ══════════════════════════════════════════════════════════════════ */
+.pro-card.product-card-mobile-match {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  cursor: pointer;
+  border: none !important;
+  outline: none !important;
+  border-radius: 24px;
+  background: var(--bg-card, #12151a);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+[data-theme="light"] .pro-card.product-card-mobile-match {
+  background: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.06) !important;
+}
+
+.pro-card.product-card-mobile-match:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="light"] .pro-card.product-card-mobile-match:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1) !important;
+}
+
+.product-banner-badges {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.product-type-badge {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.product-type-badge.badge-sale {
+  background: rgba(0, 0, 0, 0.75);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.product-type-badge.badge-rental {
+  background: rgba(124, 58, 237, 0.88);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);
+}
+
+.product-cat-pill {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.product-card-header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.product-brand-box {
+  flex-shrink: 0;
+}
+
+.product-brand-pill {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: rgba(63, 182, 104, 0.12);
+  color: var(--accent, #3fb668);
+  letter-spacing: 0.4px;
+}
+
+[data-theme="light"] .product-brand-pill {
+  background: rgba(63, 182, 104, 0.12);
+  color: #278345;
+}
+
+.product-stock-pill {
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.product-stock-pill.in-stock {
+  color: var(--accent, #3fb668);
+}
+
+.product-stock-pill.out-of-stock {
+  color: #ef4444;
+}
+
+.product-title {
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  color: var(--text-primary) !important;
+  margin: 4px 0 2px !important;
+  line-height: 1.35 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-subtitle {
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+  margin: 0 0 6px !important;
+}
+
+.product-desc-snippet {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 0 0 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 36px;
+  opacity: 0.88;
+}
+
+.product-price-line {
+  margin-bottom: 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.product-price-val {
+  font-size: 19px !important;
+  font-weight: 900 !important;
+  color: var(--accent, #3fb668) !important;
+}
+
+.product-card-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.product-btn-add-cart {
+  flex: 1.35 !important;
+  height: 42px !important;
+  border-radius: 14px !important;
+  background: #3fb668 !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  text-decoration: none !important;
+  box-shadow: 0 4px 14px rgba(63, 182, 104, 0.35) !important;
+  transition: all 0.2s ease !important;
+  border: none !important;
+  cursor: pointer;
+}
+
+.product-btn-add-cart:hover:not(:disabled) {
+  background: #349c58 !important;
+  box-shadow: 0 6px 18px rgba(63, 182, 104, 0.45) !important;
+  transform: translateY(-1px);
+}
+
+.product-btn-add-cart:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+
 /* --------------------------------------------------------------------------
    4. AUTH PAGE & FORMS (IMAGES 3, 4, 5 REDESIGN)
    -------------------------------------------------------------------------- */

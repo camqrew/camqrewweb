@@ -58,6 +58,7 @@ import { cloudStorageApi } from '../api/cloudStorageApi';
 import { ImageLightboxModal } from '../components/ImageLightboxModal';
 import { isCustomAvatar } from '../utils/avatarUtils';
 import { CustomSelect } from '../components/CustomSelect';
+import { ProductCard } from '../components/ProductCard';
 
 type ProTab = 'overview' | 'bookings' | 'sales_rentals' | 'listings' | 'jobboard' | 'availability' | 'earnings' | 'client';
 
@@ -2185,27 +2186,9 @@ export const DashboardPage: React.FC = () => {
                       <p>Click "List Equipment for Rent" above to add your first camera or rental package.</p>
                     </div>
                   ) : (
-                    <div className="products-grid">
+                    <div className="pros-grid">
                       {userProducts.map((p) => (
-                        <div key={p.id} className="card pro-gear-item-card">
-                          <div className="gear-image-wrap">
-                            <img src={p.image} alt={p.name} className="gear-img" />
-                            <span className={`gear-type-badge ${p.type === 'rental' ? 'rental' : 'sale'}`}>
-                              {p.type === 'rental' ? 'FOR RENT' : 'FOR SALE'}
-                            </span>
-                          </div>
-                          <div className="gear-card-body">
-                            <span className="gear-category">{p.category}</span>
-                            <h4 className="gear-title">{p.name}</h4>
-                            <p className="gear-condition">Condition: <strong>{p.condition}</strong></p>
-                            <div className="gear-price-row">
-                              <strong className="gear-price">
-                                ₹{p.price?.toLocaleString('en-IN')}{p.type === 'rental' ? '/day' : ''}
-                              </strong>
-                              <span className="gear-stock-pill in-stock">Listed</span>
-                            </div>
-                          </div>
-                        </div>
+                        <ProductCard key={p.id} product={p} />
                       ))}
                     </div>
                   )}

@@ -7,6 +7,7 @@ import { useCartStore, type CartTab } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { LocationSelector } from '../components/LocationSelector';
 import { CustomDatePicker } from '../components/CustomDatePicker';
+import { ProductCard } from '../components/ProductCard';
 import { 
   ShoppingBag, 
   Search, 
@@ -684,64 +685,11 @@ export const MarketplacePage: React.FC = () => {
           ) : (
             <div className="pros-grid">
               {products.map((p) => (
-                <div 
+                <ProductCard 
                   key={p.id} 
-                  className="card product-card cursor-pointer"
-                  onClick={() => navigate(`/marketplace/${p.id}`)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className="product-img-wrapper">
-                    <img 
-                      src={p.image} 
-                      alt={p.name} 
-                    />
-                    <span 
-                      className="pro-tag" 
-                      style={{ 
-                        position: 'absolute', 
-                        top: 10, 
-                        left: 10, 
-                        background: p.type === 'rental' ? '#7C3AED' : 'rgba(0,0,0,0.75)', 
-                        color: '#fff',
-                        fontWeight: 700,
-                        fontSize: 11,
-                        backdropFilter: 'blur(8px)',
-                      }}
-                    >
-                      {p.type === 'rental' ? 'FOR RENT' : 'FOR SALE'}
-                    </span>
-                  </div>
-
-                  <div style={{ padding: '16px 4px 4px' }}>
-                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{p.category}</span>
-                    <h3 style={{ fontSize: 16, fontWeight: 700, margin: '4px 0' }}>{p.name}</h3>
-                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12 }}>
-                      {p.description?.slice(0, 75)}...
-                    </p>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block' }}>
-                          {p.type === 'rental' ? 'Daily Rate' : 'Price'}
-                        </span>
-                        <strong style={{ fontSize: 18, color: 'var(--accent)' }}>
-                          ₹{(p.rentalPricePerDay || p.price)?.toLocaleString('en-IN')}
-                        </strong>
-                      </div>
-
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddToCart(p);
-                        }}
-                        className="btn btn-primary btn-sm"
-                        title="Add to Cart"
-                      >
-                        + Add to Cart
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  product={p} 
+                  onAddToCart={handleAddToCart} 
+                />
               ))}
             </div>
           )}
