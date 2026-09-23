@@ -183,6 +183,7 @@ export const getCategoryDefaultCover = (categories?: string[]): string => {
   if (cats.some(c => c.includes('edit') || c.includes('colorist'))) return 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?q=80&w=1600';
   if (cats.some(c => c.includes('makeup') || c.includes('beauty'))) return 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=1600';
   if (cats.some(c => c.includes('mehendi') || c.includes('henna') || c.includes('mehndi'))) return 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=1600';
+  if (cats.some(c => c.includes('travel') || c.includes('transport') || c.includes('fleet') || c.includes('van') || c.includes('car'))) return 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=1600';
   if (cats.some(c => c.includes('video') || c.includes('cinema') || c.includes('film'))) return 'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=1600';
   return 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=1600';
 };
