@@ -29,7 +29,8 @@ import {
   Minus,
   Users,
   ArrowRight,
-  Clock
+  Clock,
+  Sparkles
 } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
 import { SocialShareModal } from '../components/SocialShareModal';
@@ -471,133 +472,173 @@ export const CreatorProfilePage: React.FC = () => {
                   })}
                 </div>
 
-                {/* Quotation Calculator Box */}
+                {/* Modernized Quotation Calculator Box */}
                 <div className="catering-quotation-summary-box">
                   {!isBaker ? (
-                    <div className="catering-quote-top-row">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div className="catering-quote-icon-badge">
-                          <Users size={18} />
+                    <div className="quote-calculator-header-block">
+                      <div className="quote-calc-title-group">
+                        <div className="quote-calc-icon-box">
+                          <Users size={20} />
                         </div>
                         <div>
-                          <h4 className="catering-quote-heading">
-                            Event Guest Count
-                          </h4>
-                          <span className="catering-quote-sub">Prices will multiply by guest count</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                            <h4 className="quote-calc-title">Event Guest Calculator</h4>
+                            <span className="quote-calc-live-badge">Live Per-Head Pricing</span>
+                          </div>
+                          <p className="quote-calc-sub">Select your guest count below to automatically compute per-plate and total event costs.</p>
                         </div>
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <button
-                          type="button"
-                          className="guest-stepper-btn"
-                          onClick={() => setGuestCount(g => Math.max(10, g - 10))}
-                          title="Decrease guests"
-                        >
-                          <Minus size={14} />
-                        </button>
-                        <div style={{ textAlign: 'center', minWidth: 70 }}>
-                          <span className="guest-count-val">{guestCount}</span>
-                          <span className="guest-count-label">guests</span>
+                      {/* Stepper & Preset Chips Container */}
+                      <div className="quote-calc-stepper-container">
+                        <div className="guest-presets-row">
+                          {[25, 50, 100, 250, 500].map((preset) => (
+                            <button
+                              key={preset}
+                              type="button"
+                              className={`guest-preset-chip ${guestCount === preset ? 'active' : ''}`}
+                              onClick={() => setGuestCount(preset)}
+                            >
+                              {preset}
+                            </button>
+                          ))}
                         </div>
-                        <button
-                          type="button"
-                          className="guest-stepper-btn"
-                          onClick={() => setGuestCount(g => g + 10)}
-                          title="Increase guests"
-                        >
-                          <Plus size={14} />
-                        </button>
+
+                        <div className="guest-stepper-control">
+                          <button
+                            type="button"
+                            className="guest-stepper-btn"
+                            onClick={() => setGuestCount(g => Math.max(10, g - 10))}
+                            title="Decrease 10 guests"
+                          >
+                            <Minus size={14} />
+                          </button>
+                          <div className="guest-count-display">
+                            <span className="guest-count-val">{guestCount}</span>
+                            <span className="guest-count-label">Guests</span>
+                          </div>
+                          <button
+                            type="button"
+                            className="guest-stepper-btn"
+                            onClick={() => setGuestCount(g => g + 10)}
+                            title="Increase 10 guests"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="catering-quote-top-row">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div className="catering-quote-icon-badge" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' }}>
-                          <UtensilsCrossed size={18} />
+                    <div className="quote-calculator-header-block">
+                      <div className="quote-calc-title-group">
+                        <div className="quote-calc-icon-box baker">
+                          <UtensilsCrossed size={20} />
                         </div>
                         <div>
-                          <h4 className="catering-quote-heading">
-                            Bakery Order Summary
-                          </h4>
-                          <span className="catering-quote-sub">Direct order pricing based on item quantities (no per-head calculation)</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                            <h4 className="quote-calc-title">Bakery Order Summary</h4>
+                            <span className="quote-calc-live-badge baker">Item-Based Pricing</span>
+                          </div>
+                          <p className="quote-calc-sub">Custom baked orders are calculated directly from selected cake & pastry quantities.</p>
                         </div>
                       </div>
 
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--surface-elevated, #f8fafc)', padding: '6px 14px', borderRadius: 20, border: '1px solid var(--border-color, #e2e8f0)', fontSize: 13, fontWeight: 700, color: 'var(--accent, #3fb668)' }}>
+                      <div className="baker-order-pill-badge">
+                        <span className="baker-pill-dot" />
                         <span>{totalDishesSelectedCount} {totalDishesSelectedCount === 1 ? 'item' : 'items'} in order</span>
                       </div>
                     </div>
                   )}
 
                   {selectedDishesList.length > 0 ? (
-                    <div>
+                    <div className="quote-active-summary-body">
                       {/* Breakdown table */}
-                      <div className="catering-quote-divider" style={{ paddingTop: 12, marginBottom: 14 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8, letterSpacing: '0.5px' }}>
-                          <span>{isBaker ? 'Selected Bakes & Foods' : 'Selected Dish'} ({totalDishesSelectedCount})</span>
-                          <span>{isBaker ? 'Item Subtotal' : 'Rate × Guests'}</span>
+                      <div className="quote-breakdown-card">
+                        <div className="quote-breakdown-head">
+                          <span>{isBaker ? 'Selected Bakes & Confectionery' : 'Selected Dish'} ({totalDishesSelectedCount})</span>
+                          <span>{isBaker ? 'Item Subtotal' : `Rate × ${guestCount} Guests`}</span>
                         </div>
-                        {selectedDishesList.map(dish => {
-                          const q = dishQuantities[dish.id] || 0;
-                          const lineTotal = isBaker ? (dish.pricePerPlate * q) : (dish.pricePerPlate * q * guestCount);
-                          return (
-                            <div key={dish.id} className="catering-quote-item-row">
-                              <div>
-                                <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{dish.name}</span>
-                                <span style={{ color: 'var(--text-muted)', fontSize: 12, marginLeft: 6 }}>
-                                  ({q}x @ ₹{dish.pricePerPlate}{dish.unit ? `/${dish.unit}` : (isBaker ? '/kg' : '/plate')}{dish.prepTime ? ` • ⏱️ ${dish.prepTime}` : ''})
+                        <div className="quote-breakdown-items-list">
+                          {selectedDishesList.map(dish => {
+                            const q = dishQuantities[dish.id] || 0;
+                            const lineTotal = isBaker ? (dish.pricePerPlate * q) : (dish.pricePerPlate * q * guestCount);
+                            return (
+                              <div key={dish.id} className="quote-breakdown-item-row">
+                                <div className="quote-item-info">
+                                  <span className="quote-item-name">{dish.name}</span>
+                                  <span className="quote-item-details">
+                                    {q}x @ ₹{dish.pricePerPlate}{dish.unit ? `/${dish.unit}` : (isBaker ? '/kg' : '/plate')}
+                                    {dish.prepTime ? ` • ⏱️ ${dish.prepTime}` : ''}
+                                  </span>
+                                </div>
+                                <span className="quote-item-total">
+                                  ₹{lineTotal.toLocaleString('en-IN')}
                                 </span>
                               </div>
-                              <span style={{ fontWeight: 700, color: 'var(--accent, #3fb668)' }}>
-                                ₹{lineTotal.toLocaleString('en-IN')}
-                              </span>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
 
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14, paddingTop: 4 }}>
-                        <div>
+                      {/* Total & Action Row */}
+                      <div className="quote-total-action-bar">
+                        <div className="quote-total-info">
                           {!isBaker ? (
-                            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                              Per Guest Subtotal: <strong>₹{perPlateSubtotal.toLocaleString('en-IN')}</strong> × {guestCount} guests
+                            <span className="quote-per-guest-subtext">
+                              Per Guest: <strong>₹{perPlateSubtotal.toLocaleString('en-IN')}</strong> × {guestCount} guests
                             </span>
                           ) : (
-                            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                            <span className="quote-per-guest-subtext">
                               Total of {totalDishesSelectedCount} handcrafted {totalDishesSelectedCount === 1 ? 'item' : 'items'} • Freshly baked to order
                             </span>
                           )}
-                          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--accent, #3fb668)', letterSpacing: '-0.5px' }}>
-                            ₹{grandQuotationTotal.toLocaleString('en-IN')}
-                            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', marginLeft: 6 }}>
-                              {isBaker ? 'order total' : 'estimated quotation'}
+                          <div className="quote-grand-total-row">
+                            <span className="quote-grand-total-val">₹{grandQuotationTotal.toLocaleString('en-IN')}</span>
+                            <span className="quote-grand-total-tag">
+                              {isBaker ? 'Order Total' : 'Estimated Quotation'}
                             </span>
                           </div>
                         </div>
 
                         <button
                           type="button"
-                          className="btn btn-primary btn-md"
+                          className="quote-proceed-btn"
                           onClick={handleBookWithQuotation}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 24 }}
                         >
                           <span>{isBaker ? 'Proceed to Order Bakes' : 'Proceed to Book with Menu'}</span>
-                          <ArrowRight size={16} />
+                          <ArrowRight size={18} />
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div className="catering-quote-empty-hint">
-                      <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
-                        👉 Click the <strong>+</strong> button on any {isBaker ? 'bake or cake' : 'dish'} above to calculate an instant order total.
-                      </p>
+                    <div className="quote-empty-state-card">
+                      <div className="quote-empty-icon-wrap">
+                        <Sparkles size={22} />
+                      </div>
+                      <div className="quote-empty-text-wrap">
+                        <h5 className="quote-empty-title">
+                          No {isBaker ? 'items' : 'dishes'} added to quotation yet
+                        </h5>
+                        <p className="quote-empty-desc">
+                          Click the <strong>+ ADD</strong> button on any {isBaker ? 'cake or bake' : 'dish'} above. Your live per-guest breakdown and total will calculate here in real-time.
+                        </p>
+                      </div>
                     </div>
                   )}
 
-                  <div className="catering-quote-escrow-row">
-                    <ShieldCheck size={14} color="var(--accent, #3fb668)" />
-                    <span>Camqrew Escrow Protection: 30% Advance • 40% Wrap • 30% Final Wrap</span>
+                  {/* Escrow Protection Milestone Bar */}
+                  <div className="quote-escrow-milestone-footer">
+                    <div className="quote-escrow-label">
+                      <ShieldCheck size={16} />
+                      <span>Camqrew Escrow Protection:</span>
+                    </div>
+                    <div className="quote-escrow-chips">
+                      <span className="escrow-step-chip">30% Advance Escrow</span>
+                      <span className="escrow-step-arrow">→</span>
+                      <span className="escrow-step-chip">40% Shoot/Event Wrap</span>
+                      <span className="escrow-step-arrow">→</span>
+                      <span className="escrow-step-chip">30% Final Delivery</span>
+                    </div>
                   </div>
                 </div>
               </div>
