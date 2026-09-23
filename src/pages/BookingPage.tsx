@@ -95,6 +95,15 @@ export const BookingPage: React.FC = () => {
   const [mediaProductionType, setMediaProductionType] = useState<string>('Wedding & Event Film');
   const [mediaDeliverableFormat, setMediaDeliverableFormat] = useState<string>('Color Graded 4K Reels & Stills');
 
+  // Travels & Transport customization options
+  const [travelTripType, setTravelTripType] = useState<string>('Round Trip (Return to Origin)');
+  const [travelVehicleClass, setTravelVehicleClass] = useState<string>('Innova Crysta / Premium SUV');
+  const [travelPickupTime, setTravelPickupTime] = useState<string>('Morning (08:00 AM - 12:00 PM)');
+  const [travelPassengerCount, setTravelPassengerCount] = useState<string>('1 - 4 Passengers');
+  const [travelDestination, setTravelDestination] = useState<string>('');
+  const [travelIncludeTollFuel, setTravelIncludeTollFuel] = useState<boolean>(true);
+  const [travelIncludeLuggageRack, setTravelIncludeLuggageRack] = useState<boolean>(true);
+
   useEffect(() => {
     if (proId) {
       professionalApi.getProfileById(proId)
@@ -127,6 +136,9 @@ export const BookingPage: React.FC = () => {
                 break;
               case 'beauty_bridal':
                 setServiceTitle('Full Bridal HD Makeup & Sangeet Mehendi');
+                break;
+              case 'travels':
+                setServiceTitle('Outstation Production Fleet & Travel Chauffeur');
                 break;
               default:
                 setServiceTitle('Video Production & Photography');
@@ -196,6 +208,12 @@ export const BookingPage: React.FC = () => {
           { id: '1', title: 'Advance Escrow (30%)', desc: 'Vendor lock & material fabrication', percentage: 30, amount: advanceEscrow },
           { id: '2', title: 'Setup Wrap Escrow (40%)', desc: 'Stage, sound & venue handover', percentage: 40, amount: wrapEscrow },
           { id: '3', title: 'Event Wrap Escrow (30%)', desc: 'Event conclusion & vendor clearance', percentage: 30, amount: finalEscrow },
+        ];
+      case 'travels':
+        return [
+          { id: '1', title: 'Advance Escrow (30%)', desc: 'Held now; vehicle fleet lock & route reservation', percentage: 30, amount: advanceEscrow },
+          { id: '2', title: 'Trip Commencement Escrow (40%)', desc: 'Released when vehicle reports & trip begins', percentage: 40, amount: wrapEscrow },
+          { id: '3', title: 'Trip Completion Escrow (30%)', desc: 'Released upon safe completion of route & drop-off', percentage: 30, amount: finalEscrow },
         ];
       default:
         return [
@@ -329,6 +347,26 @@ export const BookingPage: React.FC = () => {
           submitButtonPrefix: 'Confirm & Hold Artist Escrow',
           durationUnitLabel: (count: number) => `${count} ${count === 1 ? 'Session Day' : 'Session Days'}`,
         };
+      case 'travels':
+        return {
+          pageTitle: 'Book Travel & Production Transport',
+          pageSubtitle: 'Configure outstation routes, vehicle fleet, pickup schedule, and secure with milestone escrow.',
+          serviceSectionTitle: 'Travel Itinerary & Transport Scope',
+          serviceTitleLabel: 'Journey / Vehicle Booking Title',
+          serviceTitlePlaceholder: 'e.g. 3-Day Outstation Production Fleet / Innova Crysta',
+          isSingleDate: false,
+          dateSectionTitle: 'Travel & Itinerary Dates',
+          startDateLabel: 'Pickup / Departure Date',
+          endDateLabel: 'Return / Drop-off Date',
+          locationSectionTitle: 'Pickup Point & Journey Routing',
+          locationAddressLabel: 'Exact Pickup Point / Landmark / Terminal *',
+          locationAddressPlaceholder: 'e.g. Terminal 2 Airport Departure, or Hotel Grand Hyatt Lobby, Mumbai',
+          specialOptionsTitle: 'Travel Itinerary, Vehicle Class & Route Preferences',
+          notesTitle: 'Itinerary Stops, Outstation Routes & Crew Notes',
+          notesPlaceholder: 'Mention route stops, outstation hill permits, expected return timing, extra passenger pickup points...',
+          submitButtonPrefix: 'Confirm & Hold Travel Escrow',
+          durationUnitLabel: (count: number) => count === 1 ? '1 Travel Day' : `${count} Travel Days`,
+        };
       default:
         return {
           pageTitle: 'Book Creative Production',
@@ -383,6 +421,8 @@ export const BookingPage: React.FC = () => {
         categoryDetailsSummary = `\n--- TECH SPECIFICATIONS ---\n• Deliverable: ${techDeliverable}\n• Specs/Docs Link: ${techSpecsLink || 'None provided'}`;
       } else if (archetype === 'beauty_bridal') {
         categoryDetailsSummary = `\n--- BEAUTY SPECIFICATIONS ---\n• Style: ${beautyStyle}\n• Party Count: ${beautyPartyCount}`;
+      } else if (archetype === 'travels') {
+        categoryDetailsSummary = `\n--- TRAVEL & TRANSPORT SPECIFICATIONS ---\n• Trip Type: ${travelTripType}\n• Vehicle Class: ${travelVehicleClass}\n• Pickup Slot: ${travelPickupTime}\n• Passengers: ${travelPassengerCount}\n• Destination/Route: ${travelDestination || 'Local / As per itinerary'}\n• Fuel & Toll Included: ${travelIncludeTollFuel ? 'Yes' : 'No'}\n• Luggage / Equipment Rack: ${travelIncludeLuggageRack ? 'Yes' : 'No'}`;
       } else {
         categoryDetailsSummary = `\n--- PRODUCTION SPECIFICATIONS ---\n• Type: ${mediaProductionType}\n• Deliverables: ${mediaDeliverableFormat}`;
       }
@@ -836,6 +876,105 @@ export const BookingPage: React.FC = () => {
               </div>
             )}
 
+            {archetype === 'travels' && (
+              <div className="category-spec-box">
+                <div className="form-group" style={{ marginBottom: 14 }}>
+                  <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Destination City / Journey Route *</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="e.g. Mumbai to Goa, or Delhi - Manali Circuit, or Local Film City"
+                    value={travelDestination}
+                    onChange={(e) => setTravelDestination(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 14 }}>
+                  <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Trip & Journey Type</label>
+                  <div className="category-spec-pills-row">
+                    {['Round Trip (Return to Origin)', 'One-Way Outstation Drop', 'Local City Rental (8h / 80km)', 'Multi-Day Shoot Tour'].map((t) => (
+                      <SpecPillButton
+                        key={t}
+                        label={t}
+                        active={travelTripType === t}
+                        onClick={() => setTravelTripType(t)}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 14 }}>
+                  <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Vehicle Class & Fleet Selection</label>
+                  <div className="category-spec-pills-row">
+                    {['Innova Crysta / Premium SUV', 'Force Tempo Traveller (12-17 Seater)', 'Force Urbania Luxury Van', 'Sedan (Dzire / Ciaz)', '4x4 Offroad (Thar / Fortuner)', 'Production Equipment Gear Van'].map((v) => (
+                      <SpecPillButton
+                        key={v}
+                        label={v}
+                        active={travelVehicleClass === v}
+                        onClick={() => setTravelVehicleClass(v)}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 14 }}>
+                  <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Scheduled Pickup Time Window</label>
+                  <div className="category-spec-pills-row">
+                    {['Early Morning (05:00 AM - 08:00 AM)', 'Morning (08:00 AM - 12:00 PM)', 'Afternoon (12:00 PM - 05:00 PM)', 'Evening / Late Night (07:00 PM onwards)'].map((slot) => (
+                      <SpecPillButton
+                        key={slot}
+                        label={slot}
+                        active={travelPickupTime === slot}
+                        onClick={() => setTravelPickupTime(slot)}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 14 }}>
+                  <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Passenger & Crew Capacity Scale</label>
+                  <div className="category-spec-pills-row">
+                    {['1 - 4 Passengers', '5 - 7 Passengers (Full SUV)', '8 - 16 Crew Members (Traveller)', '17+ Large Production Team'].map((p) => (
+                      <SpecPillButton
+                        key={p}
+                        label={p}
+                        active={travelPassengerCount === p}
+                        onClick={() => setTravelPassengerCount(p)}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <input
+                      type="checkbox"
+                      id="travelIncludeTollFuel"
+                      checked={travelIncludeTollFuel}
+                      onChange={(e) => setTravelIncludeTollFuel(e.target.checked)}
+                      style={{ width: 18, height: 18, accentColor: 'var(--accent)' }}
+                    />
+                    <label htmlFor="travelIncludeTollFuel" style={{ fontSize: 13.5, color: 'var(--text-primary)', cursor: 'pointer', fontWeight: 500 }}>
+                      All-Inclusive Package (Fuel, Driver Allowance, Tolls & State Taxes Included)
+                    </label>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <input
+                      type="checkbox"
+                      id="travelIncludeLuggageRack"
+                      checked={travelIncludeLuggageRack}
+                      onChange={(e) => setTravelIncludeLuggageRack(e.target.checked)}
+                      style={{ width: 18, height: 18, accentColor: 'var(--accent)' }}
+                    />
+                    <label htmlFor="travelIncludeLuggageRack" style={{ fontSize: 13.5, color: 'var(--text-primary)', cursor: 'pointer', fontWeight: 500 }}>
+                      Equipped with overhead roof luggage rack & dedicated production gear space
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {archetype === 'media_crew' && (
               <div className="category-spec-box">
                 <div className="form-group" style={{ marginBottom: 14 }}>
@@ -901,7 +1040,7 @@ export const BookingPage: React.FC = () => {
                 <h4 className="mini-name">{pro?.name}</h4>
                 <p className="mini-title">{pro?.title}</p>
                 <span className="mini-rate">
-                  ₹{pro?.ratePerDay?.toLocaleString('en-IN')} / {archetype === 'home_baker' ? 'kg' : proArchetype.rateUnitDefault.toLowerCase()}
+                  ₹{pro?.ratePerDay?.toLocaleString('en-IN')} / {archetype === 'home_baker' ? 'kg' : archetype === 'travels' ? 'day' : proArchetype.rateUnitDefault.toLowerCase()}
                 </span>
               </div>
             </div>
@@ -921,7 +1060,7 @@ export const BookingPage: React.FC = () => {
               ) : (
                 <div className="cost-row">
                   <span>
-                    {archetype === 'home_baker' ? 'Order Rate' : `${proArchetype.rateUnitDefault} Rate`} (₹{pro?.ratePerDay?.toLocaleString('en-IN')} × {daysCount})
+                    {archetype === 'home_baker' ? 'Order Rate' : archetype === 'travels' ? 'Travel Day Rate' : `${proArchetype.rateUnitDefault} Rate`} (₹{pro?.ratePerDay?.toLocaleString('en-IN')} × {daysCount})
                   </span>
                   <span>₹{totalAmount.toLocaleString('en-IN')}</span>
                 </div>

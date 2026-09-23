@@ -1,4 +1,4 @@
-export type CategoryArchetype = 'media_crew' | 'catering' | 'event_management' | 'tech_digital' | 'beauty_bridal' | 'modeling_talent' | 'home_baker';
+export type CategoryArchetype = 'media_crew' | 'catering' | 'event_management' | 'tech_digital' | 'beauty_bridal' | 'modeling_talent' | 'home_baker' | 'travels';
 
 export interface CategoryMeta {
   id: string;
@@ -324,6 +324,51 @@ export const ARCHETYPE_CONFIGS: Record<CategoryArchetype, ArchetypeConfig> = {
     serviceDeliverablesPlaceholder: 'e.g. 1 Kg Gourmet Cake, Custom Fondant Art, Greeting Tag, Candle & Eco-Knife Included',
     bookingCtaPrefix: 'Order from Baker',
   },
+  travels: {
+    archetype: 'travels',
+    label: 'Travels, Transport & Tour Fleets',
+    roleNoun: 'Travel Partner / Chauffeur',
+    rateLabel: 'Starting Rate (₹)',
+    ratePlaceholder: '3500',
+    rateUnitDefault: 'Day',
+    rateUnitOptions: ['Day', 'Km', 'Trip', 'Hour', 'Package'],
+    equipmentSectionTitle: 'Fleet Roster & Vehicle Types',
+    equipmentInputLabel: 'Add Vehicles & Fleet Capabilities',
+    equipmentInputPlaceholder: 'e.g. Innova Crysta, Tempo Traveller 17-Seater, Urbania, Luxury Sedan, 4x4 Thar',
+    equipmentPresets: [
+      'Innova Crysta (7-Seater)',
+      'Force Tempo Traveller (12/17-Seater)',
+      'Force Urbania Luxury Van',
+      'Toyota Fortuner 4x4',
+      'Mahindra Thar 4x4 (Offroad)',
+      'Maruti Ertiga (6-Seater)',
+      'Sedan (Dzire / Ciaz / City)',
+      'Mercedes E-Class / Luxury Fleet',
+      'Production Equipment Van (Closed Body)',
+      'AC Sleeper Bus / Coach',
+      'Luggage Carrier & Roof Rack Equipped',
+      'GPS Real-Time Tracking',
+      'All-India Commercial Permit (Yellow Board)',
+    ],
+    skillsSectionTitle: 'Permits, Safety & Driver Badges',
+    skillsInputLabel: 'Add Commercial Badges, Permits & Insurances',
+    skillsInputPlaceholder: 'e.g. All India Tourist Permit, Commercial Driving License, Zero Accidental Record',
+    skillsPresets: [
+      'All India Tourist Permit (AITP)',
+      'Commercial Heavy/Light Vehicle Badge',
+      'Comprehensive Commercial Insurance',
+      'Verified & Uniformed Chauffeurs',
+      'Hill & Mountain Terrain Specialist',
+      '24x7 Breakdown Roadside Assistance',
+      'Zero Accidental Driving Track Record',
+    ],
+    travelCheckboxLabel: 'Available for interstate outstation trips & destination shoots',
+    portfolioPromptTitle: 'Add Fleet Photos & Travel Highlights',
+    portfolioPromptSubtitle: 'Showcase clean vehicle interiors, fleet lineup, outstation routes, and client travel moments.',
+    serviceTitlePlaceholder: 'e.g. 3-Day Outstation Production Fleet / Innova Crysta',
+    serviceDeliverablesPlaceholder: 'e.g. AC Innova Crysta, Fuel & Toll Included, Uniformed Driver, 300 Km/Day Allowance',
+    bookingCtaPrefix: 'Book Travels',
+  },
 };
 
 export function getArchetype(categoryOrList?: string | string[]): ArchetypeConfig {
@@ -335,6 +380,9 @@ export function getArchetype(categoryOrList?: string | string[]): ArchetypeConfi
 
   const lowerCats = catArray.map(c => (c || '').toLowerCase().trim());
 
+  if (lowerCats.some(c => c.includes('travel') || c.includes('transport') || c.includes('cab') || c.includes('driver') || c.includes('car') || c.includes('fleet') || c.includes('tour') || c.includes('van') || c.includes('bus') || c.includes('taxi'))) {
+    return ARCHETYPE_CONFIGS.travels;
+  }
   if (lowerCats.some(c => c.includes('model') || c.includes('runway') || c.includes('fashion model'))) {
     return ARCHETYPE_CONFIGS.modeling_talent;
   }
@@ -437,6 +485,14 @@ export const PROFESSIONAL_CATEGORIES: CategoryMeta[] = [
     description: 'UI/UX, Brand Identity, Motion Graphics & 3D',
     bgGradient: ['#4776e6', '#8e54e9'],
   },
+  {
+    id: 'travels',
+    name: 'Travels & Transport',
+    archetype: 'travels',
+    icon: 'car',
+    description: 'Outstation Production Vans, Luxury Fleets, Location Scouts & Chauffeurs',
+    bgGradient: ['#06b6d4', '#3b82f6'],
+  },
 ];
 
 export const GEAR_CATEGORIES = [
@@ -452,6 +508,8 @@ export const GEAR_CATEGORIES = [
 
 export const PRICING_UNITS = [
   'per day',
+  'per km',
+  'per trip',
   'per plate',
   'per guest',
   'per event',
