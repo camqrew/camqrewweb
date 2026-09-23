@@ -49,22 +49,28 @@ const mapProSaleItem = (p: any): Product => ({
   codEnabled: Boolean(p.cod_enabled),
 });
 
-const mapRentalEquipment = (p: any): Product => ({
-  id: String(p.id),
-  name: p.name || 'Rental Equipment',
-  brand: 'Rental',
-  category: p.category || 'Lenses',
-  type: 'rental',
-  price: Number(p.daily_rate || 0),
-  rentalPricePerDay: Number(p.daily_rate || 0),
-  condition: 'Good',
-  image: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800',
-  gallery: Array.isArray(p.images) ? p.images : [],
-  description: p.description || '',
-  inStock: p.status !== 'rented',
-  rating: 4.9,
-  isRental: true,
-});
+const mapRentalEquipment = (p: any): Product => {
+  const knownBrands = ['Sony', 'Canon', 'ARRI', 'Cooke', 'RED', 'DJI', 'Aputure', 'Hasselblad', 'Profoto', 'Sennheiser', 'Tilta', 'Sound Devices', 'Blackmagic', 'Fujifilm', 'Nikon', 'Panasonic'];
+  const nameFirstWord = p.name ? p.name.split(' ')[0] : '';
+  const detectedBrand = p.brand || knownBrands.find(b => p.name?.toLowerCase().includes(b.toLowerCase())) || nameFirstWord || 'Pro Equipment';
+
+  return {
+    id: String(p.id),
+    name: p.name || 'Rental Equipment',
+    brand: detectedBrand,
+    category: p.category || 'Cameras',
+    type: 'rental',
+    price: Number(p.daily_rate || 0),
+    rentalPricePerDay: Number(p.daily_rate || 0),
+    condition: p.condition || 'Good',
+    image: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800',
+    gallery: Array.isArray(p.images) ? p.images : [],
+    description: p.description || '',
+    inStock: p.status !== 'rented',
+    rating: 4.9,
+    isRental: true,
+  };
+};
 
 export const productApi = {
   getUserProducts: async (): Promise<Product[]> => {

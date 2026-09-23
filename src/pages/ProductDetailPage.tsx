@@ -6,6 +6,7 @@ import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { CustomDatePicker } from '../components/CustomDatePicker';
 import { ProductCard } from '../components/ProductCard';
+import { ImageLightboxModal } from '../components/ImageLightboxModal';
 import { 
   ArrowLeft, 
   Star, 
@@ -21,7 +22,20 @@ import {
   ChevronRight,
   Layers,
   Plus,
-  Minus
+  Minus,
+  ZoomIn,
+  Camera,
+  Shield,
+  CheckCircle2,
+  CreditCard,
+  QrCode,
+  Tag,
+  Box,
+  Scale,
+  BatteryCharging,
+  Globe,
+  Sparkles,
+  AlertTriangle
 } from 'lucide-react';
 
 export const ProductDetailPage: React.FC = () => {
@@ -36,6 +50,7 @@ export const ProductDetailPage: React.FC = () => {
   const [activeImage, setActiveImage] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   // Rental date calculations
   const todayStr = new Date().toISOString().split('T')[0];
@@ -174,7 +189,16 @@ export const ProductDetailPage: React.FC = () => {
   const dailyRate = product.rentalPricePerDay || product.price;
   const estimatedRentalTotal = dailyRate * rentalDays;
 
-  let badgeLabel = 'OFFICIAL GEAR';
+  // Intelligently identify brand or creator name
+  const displayBrand = (() => {
+    if (product.brand && product.brand !== 'Rental' && product.brand !== 'Used Gear') return product.brand;
+    const knownBrands = ['Sony', 'Canon', 'ARRI', 'Cooke', 'RED', 'DJI', 'Aputure', 'Hasselblad', 'Profoto', 'Sennheiser', 'Tilta', 'Sound Devices', 'Blackmagic', 'Fujifilm', 'Nikon', 'Panasonic'];
+    const found = knownBrands.find(b => product.name?.toLowerCase().includes(b.toLowerCase()));
+    if (found) return found;
+    return isRental ? 'Camqrew Pro Creator' : (product.brand || 'Camqrew');
+  })();
+
+  let badgeLabel = 'OFFICIAL GEAR STORE';
   let badgeClass = 'badge-official';
   if (isRental) {
     badgeLabel = 'EQUIPMENT RENTAL';
@@ -223,21 +247,50 @@ export const ProductDetailPage: React.FC = () => {
         {/* Left Column: Media Showcase */}
         <div className="product-media-column">
           <div className="product-hero-image-card card">
+            {/* Floating Top Badges Strip */}
             <div className="product-hero-badge-strip">
               <span className={`detail-category-badge ${badgeClass}`}>
                 {badgeLabel}
               </span>
               <span className={`detail-stock-badge ${product.inStock ? 'in-stock' : 'out-of-stock'}`}>
-                {product.inStock ? 'In Stock • Ready' : 'Currently Unavailable'}
+                <span className="status-live-dot" />
+                <span>{product.inStock ? (isRental ? 'Available • Instant Escrow' : 'In Stock • Ready to Ship') : 'Currently Unavailable'}</span>
               </span>
             </div>
 
-            <div className="product-hero-img-viewport">
+            {/* Viewport with dark studio background and smooth zoom */}
+            <div 
+              className="product-hero-img-viewport cursor-pointer"
+              onClick={() => setIsLightboxOpen(true)}
+              title="Click to expand high-resolution photo"
+            >
               <img 
                 src={activeImage || product.image} 
                 alt={product.name} 
                 className="product-main-view-img"
               />
+
+              {/* Bottom Floating Overlay Bar */}
+              <div className="product-hero-overlay-bar">
+                {allImages.length > 1 && (
+                  <span className="hero-img-counter-pill">
+                    <Camera size={13} />
+                    <span>{allImages.indexOf(activeImage || product.image) + 1} / {allImages.length}</span>
+                  </span>
+                )}
+                <button
+                  type="button"
+                  className="hero-zoom-trigger-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsLightboxOpen(true);
+                  }}
+                  title="Expand Full Resolution"
+                >
+                  <ZoomIn size={15} />
+                  <span>Zoom</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -250,7 +303,7 @@ export const ProductDetailPage: React.FC = () => {
                   type="button"
                   className={`product-thumb-btn ${activeImage === imgUri ? 'active' : ''}`}
                   onClick={() => setActiveImage(imgUri)}
-                  title={`View image ${idx + 1}`}
+                  title={`View angle ${idx + 1}`}
                 >
                   <img src={imgUri} alt={`${product.name} angle ${idx + 1}`} />
                 </button>
@@ -258,85 +311,164 @@ export const ProductDetailPage: React.FC = () => {
             </div>
           )}
 
-          {/* Technical Specifications & Compliance Section */}
+          {/* Technical Specifications & Details Section */}
           <div className="card product-specs-card">
             <div className="detail-section-header">
-              <Layers size={18} color="var(--accent)" />
-              <h3>Technical Specifications & Details</h3>
+              <div className="specs-header-left">
+                <div className="specs-header-icon-box">
+                  <Layers size={18} color="var(--accent)" />
+                </div>
+                <div className="specs-header-text">
+                  <h3>Technical Specifications & Details</h3>
+                  <p>Verified hardware standards & platform inspection criteria</p>
+                </div>
+              </div>
+              <div className="specs-verified-pill">
+                <ShieldCheck size={14} color="#3fb668" />
+                <span>Verified Specs</span>
+              </div>
             </div>
 
-            <div className="specs-table-grid">
-              <div className="spec-item-row">
-                <span className="spec-label">Brand / Manufacturer</span>
-                <span className="spec-value">{product.brand || 'Official Camqrew Partner'}</span>
-              </div>
-              <div className="spec-item-row">
-                <span className="spec-label">Category</span>
-                <span className="spec-value">{product.category}</span>
-              </div>
-              <div className="spec-item-row">
-                <span className="spec-label">Equipment Condition</span>
-                <span className="spec-value highlight-pill">{product.condition || 'Inspected'}</span>
-              </div>
-              <div className="spec-item-row">
-                <span className="spec-label">Availability</span>
-                <span className="spec-value" style={{ color: product.inStock ? 'var(--accent)' : 'var(--danger)' }}>
-                  {product.inStock ? 'Ready for Dispatch / Pickup' : 'Out of Stock'}
-                </span>
+            {/* Responsive Specifications Tiles Grid */}
+            <div className="specs-tiles-grid">
+              <div className="spec-tile">
+                <div className="spec-tile-icon"><Shield size={18} /></div>
+                <div className="spec-tile-content">
+                  <span className="spec-tile-label">Brand / Maker</span>
+                  <strong className="spec-tile-value">{displayBrand}</strong>
+                </div>
               </div>
 
-              {/* Dynamic DB Specifications */}
+              <div className="spec-tile">
+                <div className="spec-tile-icon"><Package size={18} /></div>
+                <div className="spec-tile-content">
+                  <span className="spec-tile-label">Category</span>
+                  <strong className="spec-tile-value">{product.category}</strong>
+                </div>
+              </div>
+
+              <div className="spec-tile">
+                <div className="spec-tile-icon"><CheckCircle2 size={18} /></div>
+                <div className="spec-tile-content">
+                  <span className="spec-tile-label">Equipment Condition</span>
+                  <div className="spec-tile-value">
+                    <span className="spec-condition-badge">
+                      {product.condition || 'Inspected & Tested'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="spec-tile">
+                <div className="spec-tile-icon"><Truck size={18} /></div>
+                <div className="spec-tile-content">
+                  <span className="spec-tile-label">Availability</span>
+                  <strong className="spec-tile-value" style={{ color: product.inStock ? 'var(--accent)' : 'var(--danger)' }}>
+                    {product.inStock ? (isRental ? 'Ready for Dispatch / Pickup' : 'In Stock • Ready to Ship') : 'Currently Out of Stock'}
+                  </strong>
+                </div>
+              </div>
+
+              <div className="spec-tile">
+                <div className="spec-tile-icon"><Lock size={18} /></div>
+                <div className="spec-tile-content">
+                  <span className="spec-tile-label">Protection & Assurance</span>
+                  <strong className="spec-tile-value">
+                    {isRental ? '100% Refundable Escrow' : 'Camqrew Verified & Tested'}
+                  </strong>
+                </div>
+              </div>
+
+              <div className="spec-tile">
+                <div className="spec-tile-icon"><CreditCard size={18} /></div>
+                <div className="spec-tile-content">
+                  <span className="spec-tile-label">Payment Modes</span>
+                  <strong className="spec-tile-value">
+                    {product.codEnabled ? 'Cash on Delivery • UPI • Cards' : 'Secure Escrow UPI & Cards'}
+                  </strong>
+                </div>
+              </div>
+
+              {/* Dynamic DB Specs (SKU, GTIN, Dimensions, Weight, Battery, Country, Safety) */}
+              {product.sku && (
+                <div className="spec-tile">
+                  <div className="spec-tile-icon"><QrCode size={18} /></div>
+                  <div className="spec-tile-content">
+                    <span className="spec-tile-label">Item SKU</span>
+                    <strong className="spec-tile-value font-mono">{product.sku}</strong>
+                  </div>
+                </div>
+              )}
+
+              {product.gtin && (
+                <div className="spec-tile">
+                  <div className="spec-tile-icon"><Tag size={18} /></div>
+                  <div className="spec-tile-content">
+                    <span className="spec-tile-label">GTIN / Barcode</span>
+                    <strong className="spec-tile-value font-mono">{product.gtin}</strong>
+                  </div>
+                </div>
+              )}
+
+              {product.itemDimensions && (
+                <div className="spec-tile">
+                  <div className="spec-tile-icon"><Box size={18} /></div>
+                  <div className="spec-tile-content">
+                    <span className="spec-tile-label">Dimensions</span>
+                    <strong className="spec-tile-value">{product.itemDimensions}</strong>
+                  </div>
+                </div>
+              )}
+
+              {product.itemWeight && (
+                <div className="spec-tile">
+                  <div className="spec-tile-icon"><Scale size={18} /></div>
+                  <div className="spec-tile-content">
+                    <span className="spec-tile-label">Weight</span>
+                    <strong className="spec-tile-value">{product.itemWeight}</strong>
+                  </div>
+                </div>
+              )}
+
+              {product.batteryInfo && (
+                <div className="spec-tile">
+                  <div className="spec-tile-icon"><BatteryCharging size={18} /></div>
+                  <div className="spec-tile-content">
+                    <span className="spec-tile-label">Battery Configuration</span>
+                    <strong className="spec-tile-value">{product.batteryInfo}</strong>
+                  </div>
+                </div>
+              )}
+
+              {product.countryOfOrigin && (
+                <div className="spec-tile">
+                  <div className="spec-tile-icon"><Globe size={18} /></div>
+                  <div className="spec-tile-content">
+                    <span className="spec-tile-label">Country of Origin</span>
+                    <strong className="spec-tile-value">{product.countryOfOrigin}</strong>
+                  </div>
+                </div>
+              )}
+
               {product.specs && Object.keys(product.specs).length > 0 && Object.entries(product.specs).map(([k, v]) => (
-                <div key={k} className="spec-item-row">
-                  <span className="spec-label">{k}</span>
-                  <span className="spec-value">{String(v)}</span>
+                <div key={k} className="spec-tile">
+                  <div className="spec-tile-icon"><Sparkles size={18} /></div>
+                  <div className="spec-tile-content">
+                    <span className="spec-tile-label">{k}</span>
+                    <strong className="spec-tile-value">{String(v)}</strong>
+                  </div>
                 </div>
               ))}
-
-              {/* Advanced E-commerce Fields */}
-              {product.sku && (
-                <div className="spec-item-row">
-                  <span className="spec-label">Item SKU</span>
-                  <span className="spec-value font-mono">{product.sku}</span>
-                </div>
-              )}
-              {product.gtin && (
-                <div className="spec-item-row">
-                  <span className="spec-label">GTIN / Barcode</span>
-                  <span className="spec-value font-mono">{product.gtin}</span>
-                </div>
-              )}
-              {product.itemDimensions && (
-                <div className="spec-item-row">
-                  <span className="spec-label">Item Dimensions</span>
-                  <span className="spec-value">{product.itemDimensions}</span>
-                </div>
-              )}
-              {product.itemWeight && (
-                <div className="spec-item-row">
-                  <span className="spec-label">Weight</span>
-                  <span className="spec-value">{product.itemWeight}</span>
-                </div>
-              )}
-              {product.batteryInfo && (
-                <div className="spec-item-row">
-                  <span className="spec-label">Battery Configuration</span>
-                  <span className="spec-value">{product.batteryInfo}</span>
-                </div>
-              )}
-              {product.countryOfOrigin && (
-                <div className="spec-item-row">
-                  <span className="spec-label">Country of Origin</span>
-                  <span className="spec-value">{product.countryOfOrigin}</span>
-                </div>
-              )}
-              {product.safetyWarnings && (
-                <div className="spec-item-row warning-row">
-                  <span className="spec-label">Safety & Handling</span>
-                  <span className="spec-value" style={{ color: 'var(--warning, #f59e0b)' }}>{product.safetyWarnings}</span>
-                </div>
-              )}
             </div>
+
+            {product.safetyWarnings && (
+              <div className="spec-safety-alert-banner">
+                <AlertTriangle size={18} color="#f59e0b" style={{ flexShrink: 0 }} />
+                <div>
+                  <strong>Safety & Handling Advisory:</strong> {product.safetyWarnings}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -603,6 +735,15 @@ export const ProductDetailPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* ── HIGH RESOLUTION IMAGE LIGHTBOX ── */}
+      <ImageLightboxModal
+        isOpen={isLightboxOpen}
+        images={allImages}
+        initialIndex={allImages.indexOf(activeImage || product.image)}
+        onClose={() => setIsLightboxOpen(false)}
+        title={product.name}
+      />
     </div>
   );
 };
