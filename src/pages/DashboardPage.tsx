@@ -49,7 +49,6 @@ import {
   Edit3
 } from 'lucide-react';
 import type { VideoReelItem, MenuDishItem } from '../types/professional';
-import { parseVideoUrl } from '../api/professionalApi';
 import { authApi } from '../api/authApi';
 import { ShootContractModal } from '../components/ShootContractModal';
 import { PhotoProofingModal } from '../components/PhotoProofingModal';
@@ -156,16 +155,15 @@ export const DashboardPage: React.FC = () => {
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [payoutInProgress, setPayoutInProgress] = useState(false);
 
-  // Video Reel Modal state
+  // Video Reel Modal state (Direct File Upload Only - Instagram Reels style)
   const [showReelModal, setShowReelModal] = useState(false);
   const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
+  const [generatedThumbnailBlob, setGeneratedThumbnailBlob] = useState<Blob | null>(null);
   const [videoUploadProgress, setVideoUploadProgress] = useState<string | null>(null);
-  const [showUrlFallback, setShowUrlFallback] = useState(false);
-  const [newReelUrl, setNewReelUrl] = useState('');
   const [newReelTitle, setNewReelTitle] = useState('');
   const [newReelCategory, setNewReelCategory] = useState('Cinematography');
-  const [newReelIsShort, setNewReelIsShort] = useState(false);
+  const [newReelIsShort, setNewReelIsShort] = useState(true);
   const [savingReel, setSavingReel] = useState(false);
 
   // Catering Menu Dish Modal state
@@ -395,66 +393,85 @@ export const DashboardPage: React.FC = () => {
   };
 
   const handleSelectVideoFile = (file: File) => {
-    if (!file.type.startsWith('video/')) {
-      alert('Please select a valid video file (.mp4, .mov, .webm)');
+    const isVideo = file.type.startsWith('video/') || /\.(mp4|mov|webm|m4v|mkv|avi|3gp)$/i.test(file.name);
+    if (!isVideo) {
+      alert('Please select a valid video file (.mp4, .mov, .webm, .m4v)');
       return;
     }
-    if (file.size > 100 * 1024 * 1024) {
-      alert('Video file size exceeds the 100MB limit. Please compress or select a smaller clip.');
+    if (file.size > 300 * 1024 * 1024) {
+      alert('Video file size exceeds the 300MB limit. Please compress or select a smaller clip.');
       return;
     }
     setSelectedVideoFile(file);
     const objectUrl = URL.createObjectURL(file);
     setVideoPreviewUrl(objectUrl);
+    setGeneratedThumbnailBlob(null);
+
     if (!newReelTitle) {
       setNewReelTitle(file.name.replace(/\.[^/.]+$/, ''));
     }
 
+    // Capture first frame poster and check aspect ratio
     const tempVid = document.createElement('video');
+    tempVid.preload = 'metadata';
     tempVid.src = objectUrl;
+    tempVid.muted = true;
+    tempVid.playsInline = true;
+
     tempVid.onloadedmetadata = () => {
-      if (tempVid.videoHeight > tempVid.videoWidth) {
-        setNewReelIsShort(true);
-      } else {
-        setNewReelIsShort(false);
+      setNewReelIsShort(tempVid.videoHeight >= tempVid.videoWidth);
+      tempVid.currentTime = Math.min(1.0, (tempVid.duration || 2) / 3);
+    };
+
+    tempVid.onseeked = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = tempVid.videoWidth || 720;
+        canvas.height = tempVid.videoHeight || 1280;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(tempVid, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => {
+            if (blob) setGeneratedThumbnailBlob(blob);
+          }, 'image/jpeg', 0.85);
+        }
+      } catch (e) {
+        console.warn('Could not generate thumbnail frame:', e);
       }
     };
   };
 
   const handleAddVideoReel = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedVideoFile && !newReelUrl.trim()) {
-      alert('Please select a video file or enter a video URL.');
+    if (!selectedVideoFile) {
+      alert('Please choose a video file (.mp4, .mov, .webm) to upload.');
       return;
     }
 
     setSavingReel(true);
     try {
-      let finalUrl = '';
-      let finalType: 'direct' | 'youtube' | 'vimeo' = 'direct';
-      let finalEmbedUrl = '';
-      let finalThumb: string | undefined = undefined;
+      setVideoUploadProgress('Uploading video to Camqrew Reels...');
+      const uploadRes = await cloudStorageApi.uploadVideo(selectedVideoFile, 'reels');
 
-      if (selectedVideoFile) {
-        setVideoUploadProgress('Uploading video to Camqrew Reels...');
-        const res = await cloudStorageApi.uploadVideo(selectedVideoFile, 'reels');
-        finalUrl = res.url;
-        finalEmbedUrl = res.url;
-        finalType = 'direct';
-      } else if (newReelUrl.trim()) {
-        const parsed = parseVideoUrl(newReelUrl);
-        finalUrl = newReelUrl.trim();
-        finalType = parsed.type;
-        finalEmbedUrl = parsed.embedUrl;
-        finalThumb = parsed.thumbnailUrl;
+      let finalThumb: string | undefined = undefined;
+      if (generatedThumbnailBlob) {
+        try {
+          setVideoUploadProgress('Generating reel cover poster...');
+          const thumbFile = new File([generatedThumbnailBlob], `thumb_${Date.now()}.jpg`, { type: 'image/jpeg' });
+          const thumbRes = await cloudStorageApi.uploadImage(thumbFile, 'portfolio');
+          finalThumb = thumbRes.url;
+        } catch (thumbErr) {
+          console.warn('Thumbnail upload skipped:', thumbErr);
+        }
       }
 
+      setVideoUploadProgress('Publishing reel to creator profile...');
       const newReel: VideoReelItem = {
         id: 'reel_' + Date.now(),
-        title: newReelTitle.trim() || (selectedVideoFile ? selectedVideoFile.name.replace(/\.[^/.]+$/, '') : (newReelIsShort ? 'Vertical Reel' : 'Cinematic Showreel')),
-        url: finalUrl,
-        type: finalType,
-        embedUrl: finalEmbedUrl,
+        title: newReelTitle.trim() || selectedVideoFile.name.replace(/\.[^/.]+$/, ''),
+        url: uploadRes.url,
+        type: 'direct',
+        embedUrl: uploadRes.url,
         thumbnailUrl: finalThumb,
         category: newReelCategory || 'Cinematography',
         isShort: newReelIsShort,
@@ -465,7 +482,7 @@ export const DashboardPage: React.FC = () => {
 
       await professionalApi.updateProfile({ videoReels: updatedReels });
       setProProfile(prev => prev ? { ...prev, videoReels: updatedReels } : null);
-      showToast('🎉 Video reel successfully published to your creator profile!');
+      showToast('🎉 Reel successfully published to your creator profile!');
 
       // Reset state
       setSelectedVideoFile(null);
@@ -473,13 +490,12 @@ export const DashboardPage: React.FC = () => {
         URL.revokeObjectURL(videoPreviewUrl);
         setVideoPreviewUrl(null);
       }
+      setGeneratedThumbnailBlob(null);
       setVideoUploadProgress(null);
-      setShowUrlFallback(false);
       setShowReelModal(false);
-      setNewReelUrl('');
       setNewReelTitle('');
     } catch (err: any) {
-      alert(err.message || 'Failed to save video reel');
+      alert(err.message || 'Failed to upload video reel');
     } finally {
       setSavingReel(false);
       setVideoUploadProgress(null);
@@ -1370,7 +1386,7 @@ export const DashboardPage: React.FC = () => {
                       My Video Reels & Showreels
                     </h3>
                     <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
-                      Embed YouTube, 9:16 Shorts, and Vimeo videos to showcase your work directly on your public profile.
+                      Upload high-definition reels & vertical video clips (MP4, MOV, WebM) directly to your profile, exactly like Instagram Reels.
                     </p>
                   </div>
                   <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -1386,13 +1402,15 @@ export const DashboardPage: React.FC = () => {
                       type="button" 
                       className="btn btn-primary btn-sm"
                       onClick={() => {
-                        setNewReelUrl('');
+                        setSelectedVideoFile(null);
+                        setVideoPreviewUrl(null);
+                        setGeneratedThumbnailBlob(null);
                         setNewReelTitle('');
-                        setNewReelIsShort(false);
+                        setNewReelIsShort(true);
                         setShowReelModal(true);
                       }}
                     >
-                      <Plus size={14} /> + Add Video Reel
+                      <Plus size={14} /> + Upload Video Reel
                     </button>
                   </div>
                 </div>
@@ -2780,7 +2798,7 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* ── MODAL: ADD VIDEO REEL / SHOWREEL ── */}
+      {/* ── MODAL: ADD VIDEO REEL / SHOWREEL (INSTAGRAM REELS STYLE) ── */}
       {showReelModal && (
         <div className="dashboard-modal-backdrop" onClick={() => {
           if (savingReel) return;
@@ -2788,6 +2806,7 @@ export const DashboardPage: React.FC = () => {
           setSelectedVideoFile(null);
           if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
           setVideoPreviewUrl(null);
+          setGeneratedThumbnailBlob(null);
         }}>
           <div className="dashboard-modal-content card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 540 }}>
             <div className="modal-header">
@@ -2796,8 +2815,8 @@ export const DashboardPage: React.FC = () => {
                   <Film size={18} />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Add Video Reel or Showreel</h3>
-                  <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>Upload video files (.mp4, .mov, .webm) directly to your profile</p>
+                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Upload Video Reel</h3>
+                  <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>Upload video files (.mp4, .mov, .webm) directly to your profile, like Instagram Reels</p>
                 </div>
               </div>
               <button 
@@ -2808,6 +2827,7 @@ export const DashboardPage: React.FC = () => {
                   setSelectedVideoFile(null);
                   if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
                   setVideoPreviewUrl(null);
+                  setGeneratedThumbnailBlob(null);
                 }}
               >
                 <X size={18} />
@@ -2818,8 +2838,8 @@ export const DashboardPage: React.FC = () => {
               {/* Native Video Upload Dropzone */}
               <div className="form-group">
                 <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>Video Clip <span style={{ color: '#ef4444' }}>*</span></span>
-                  <span style={{ fontSize: 11.5, color: 'var(--text-faint)' }}>Max 100MB • MP4, MOV, WebM</span>
+                  <span>Video File <span style={{ color: '#ef4444' }}>*</span></span>
+                  <span style={{ fontSize: 11.5, color: 'var(--text-faint)' }}>Direct Upload • MP4, MOV, WebM, M4V (up to 300MB)</span>
                 </label>
 
                 {!selectedVideoFile ? (
@@ -2847,7 +2867,7 @@ export const DashboardPage: React.FC = () => {
                     <input 
                       id="reel-video-file-input"
                       type="file" 
-                      accept="video/*" 
+                      accept="video/mp4,video/quicktime,video/webm,video/x-m4v,video/*" 
                       style={{ display: 'none' }}
                       onChange={(e) => {
                         if (e.target.files && e.target.files[0]) {
@@ -2859,10 +2879,10 @@ export const DashboardPage: React.FC = () => {
                       <UploadCloud size={22} />
                     </div>
                     <p style={{ margin: '0 0 4px', fontWeight: 600, fontSize: 14 }}>
-                      Click to choose video or drag file here
+                      Choose Video File to Upload
                     </p>
                     <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>
-                      Vertical reels (9:16) or cinematic clips (16:9)
+                      9:16 Vertical Reel (recommended) or 16:9 Cinema Clip
                     </p>
                   </div>
                 ) : (
@@ -2882,6 +2902,11 @@ export const DashboardPage: React.FC = () => {
                         </p>
                         <span style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>
                           {(selectedVideoFile.size / (1024 * 1024)).toFixed(1)} MB • {newReelIsShort ? '9:16 Reel' : '16:9 Cinema'}
+                          {generatedThumbnailBlob && (
+                            <span style={{ color: 'var(--accent, #3fb668)', fontWeight: 600, marginLeft: 6 }}>
+                              • ✓ Cover frame captured
+                            </span>
+                          )}
                         </span>
                       </div>
                       <button 
@@ -2893,40 +2918,12 @@ export const DashboardPage: React.FC = () => {
                           setSelectedVideoFile(null);
                           if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
                           setVideoPreviewUrl(null);
+                          setGeneratedThumbnailBlob(null);
                         }}
                       >
                         <X size={14} /> Remove
                       </button>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {/* URL Fallback toggle */}
-              <div style={{ margin: '8px 0 14px' }}>
-                <button
-                  type="button"
-                  style={{ background: 'none', border: 'none', color: 'var(--accent, #3fb668)', fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, padding: 0 }}
-                  onClick={() => setShowUrlFallback(!showUrlFallback)}
-                >
-                  <LinkIcon size={12} /> {showUrlFallback ? 'Hide URL input' : 'Or paste a video link instead'}
-                </button>
-                {showUrlFallback && (
-                  <div style={{ marginTop: 8 }}>
-                    <input 
-                      type="url" 
-                      className="input-field" 
-                      placeholder="Direct video link (https://.../video.mp4) or YouTube/Vimeo URL" 
-                      value={newReelUrl}
-                      onChange={(e) => {
-                        const url = e.target.value;
-                        setNewReelUrl(url);
-                        const parsed = parseVideoUrl(url);
-                        if (parsed.isShort) {
-                          setNewReelIsShort(true);
-                        }
-                      }}
-                    />
                   </div>
                 )}
               </div>
@@ -2939,7 +2936,7 @@ export const DashboardPage: React.FC = () => {
                   placeholder="e.g. Wedding Cinematic Teaser 2026, Fashion Lookbook Reel" 
                   value={newReelTitle}
                   onChange={(e) => setNewReelTitle(e.target.value)}
-                  required={!selectedVideoFile} 
+                  required 
                 />
               </div>
 
@@ -2967,19 +2964,19 @@ export const DashboardPage: React.FC = () => {
                   <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                     <button 
                       type="button"
-                      className={`btn btn-sm ${!newReelIsShort ? 'btn-primary' : 'btn-outline'}`}
-                      style={{ flex: 1 }}
-                      onClick={() => setNewReelIsShort(false)}
-                    >
-                      <Tv size={13} /> 16:9 Cinema
-                    </button>
-                    <button 
-                      type="button"
                       className={`btn btn-sm ${newReelIsShort ? 'btn-primary' : 'btn-outline'}`}
                       style={{ flex: 1 }}
                       onClick={() => setNewReelIsShort(true)}
                     >
                       <Smartphone size={13} /> 9:16 Reel
+                    </button>
+                    <button 
+                      type="button"
+                      className={`btn btn-sm ${!newReelIsShort ? 'btn-primary' : 'btn-outline'}`}
+                      style={{ flex: 1 }}
+                      onClick={() => setNewReelIsShort(false)}
+                    >
+                      <Tv size={13} /> 16:9 Cinema
                     </button>
                   </div>
                 </div>
@@ -3002,6 +2999,7 @@ export const DashboardPage: React.FC = () => {
                     setSelectedVideoFile(null);
                     if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
                     setVideoPreviewUrl(null);
+                    setGeneratedThumbnailBlob(null);
                   }}
                 >
                   Cancel
@@ -3009,7 +3007,7 @@ export const DashboardPage: React.FC = () => {
                 <button 
                   type="submit" 
                   className="btn btn-primary"
-                  disabled={savingReel || (!selectedVideoFile && !newReelUrl.trim())}
+                  disabled={savingReel || !selectedVideoFile}
                 >
                   {savingReel ? (
                     <>

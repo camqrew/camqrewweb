@@ -694,7 +694,7 @@ export const CreatorProfilePage: React.FC = () => {
                         Showcase Your Video Reels & 9:16 Shorts
                       </h4>
                       <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
-                        Add YouTube videos, vertical Shorts, and Vimeo showreels to boost client booking conversions.
+                        Upload video showreels and 9:16 vertical reels (MP4, MOV, WebM) to boost client booking conversions.
                       </p>
                     </div>
                     <Link to="/dashboard?tab=overview" className="btn btn-sm btn-primary" style={{ whiteSpace: 'nowrap' }}>

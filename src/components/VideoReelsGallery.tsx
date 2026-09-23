@@ -96,7 +96,7 @@ export const VideoReelsGallery: React.FC<VideoReelsGalleryProps> = ({
               <div className="reel-card-thumbnail-wrap">
                 {reel.thumbnailUrl ? (
                   <img src={reel.thumbnailUrl} alt={reel.title} loading="lazy" className="reel-card-thumb-img" />
-                ) : (reel.type === 'direct' || reel.url?.includes('.mp4')) ? (
+                ) : (reel.type === 'direct' || !reel.embedUrl?.includes('youtube') && !reel.embedUrl?.includes('vimeo')) ? (
                   <video 
                     src={reel.url || reel.embedUrl}
                     preload="metadata"
@@ -159,7 +159,7 @@ export const VideoReelsGallery: React.FC<VideoReelsGalleryProps> = ({
 
             {/* Embed Player */}
             <div className={`theater-player-frame ${activeReel.isShort ? 'frame-vertical-short' : 'frame-widescreen'}`}>
-              {activeReel.type === 'direct' ? (
+              {(activeReel.type === 'direct' || (!activeReel.embedUrl?.includes('youtube') && !activeReel.embedUrl?.includes('vimeo'))) ? (
                 <video 
                   src={activeReel.embedUrl || activeReel.url} 
                   controls 

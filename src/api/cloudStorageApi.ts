@@ -100,13 +100,46 @@ export const cloudStorageApi = {
       const filename = `reel_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${cleanExt || 'mp4'}`;
       const filePath = filename;
 
-      // Upload directly to reels/target bucket
-      const uploadResult = await supabase.storage
+      let contentType = file.type;
+      if (!contentType || contentType === 'application/octet-stream') {
+        if (cleanExt === 'mov') contentType = 'video/quicktime';
+        else if (cleanExt === 'webm') contentType = 'video/webm';
+        else if (cleanExt === 'm4v') contentType = 'video/x-m4v';
+        else if (cleanExt === 'mkv') contentType = 'video/x-matroska';
+        else if (cleanExt === 'avi') contentType = 'video/x-msvideo';
+        else contentType = 'video/mp4';
+      }
+
+      // 1. Try target bucket first
+      let uploadResult = await supabase.storage
         .from(folder)
         .upload(filePath, file, {
-          upsert: true,
-          contentType: file.type || (cleanExt === 'mov' ? 'video/quicktime' : cleanExt === 'webm' ? 'video/webm' : cleanExt === 'mkv' ? 'video/x-matroska' : cleanExt === 'avi' ? 'video/x-msvideo' : cleanExt === 'wmv' ? 'video/x-ms-wmv' : cleanExt === 'flv' ? 'video/x-flv' : cleanExt === '3gp' ? 'video/3gpp' : `video/${cleanExt || 'mp4'}`),
+          upsert: false,
+          contentType,
         });
+
+      // 2. If bucket errors, retry with fallback 'camcrew-media'
+      if (uploadResult.error && folder !== 'camcrew-media') {
+        console.warn(`Primary bucket '${folder}' upload error: ${uploadResult.error.message}. Trying 'camcrew-media'...`);
+        const fallbackResult = await supabase.storage
+          .from('camcrew-media')
+          .upload(`reels/${filename}`, file, {
+            upsert: false,
+            contentType,
+          });
+
+        if (!fallbackResult.error && fallbackResult.data) {
+          const { data: pubData } = supabase.storage
+            .from('camcrew-media')
+            .getPublicUrl(fallbackResult.data.path);
+
+          return {
+            url: pubData.publicUrl,
+            publicId: fallbackResult.data.path,
+            success: true,
+          };
+        }
+      }
 
       if (uploadResult.error) {
         throw new Error(uploadResult.error.message);
