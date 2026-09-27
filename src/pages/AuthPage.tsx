@@ -400,7 +400,7 @@ export const AuthPage: React.FC = () => {
               <div className="creator-fields-block">
                 <div className="auth-field-group">
                   <label className="auth-field-label">Select Primary Category *</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6, marginBottom: 14 }}>
+                  <div className="auth-category-pills-wrap">
                     {PROFESSIONAL_CATEGORIES.map(cat => {
                       const isSel = selectedCategory === cat.name;
                       return (
@@ -408,17 +408,7 @@ export const AuthPage: React.FC = () => {
                           key={cat.id}
                           type="button"
                           onClick={() => setSelectedCategory(cat.name)}
-                          style={{
-                            padding: '6px 14px',
-                            borderRadius: 20,
-                            border: isSel ? '1.5px solid var(--accent, #3fb668)' : '1px solid var(--border, #333)',
-                            background: isSel ? 'var(--accent-alpha, rgba(63, 182, 104, 0.15))' : 'var(--surface-elevated, #1f2937)',
-                            color: isSel ? 'var(--accent, #3fb668)' : 'var(--text-primary, #fff)',
-                            fontSize: 13,
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            transition: 'all 0.15s ease',
-                          }}
+                          className={`auth-category-pill ${isSel ? 'selected' : ''}`}
                         >
                           {cat.name}
                         </button>

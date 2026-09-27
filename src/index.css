@@ -8,6 +8,7 @@
   --bg-surface: #13171A;
   --bg-card: #1C2025;
   --bg-elevated: #2A2F35;
+  --surface-elevated: #2A2F35;
   
   --text-primary: #ffffff;
   --text-secondary: #a1a9b3;
@@ -38,6 +39,7 @@
   --bg-surface: #ffffff;
   --bg-card: #ffffff;
   --bg-elevated: #f3f4f6;
+  --surface-elevated: #f3f4f6;
   
   --text-primary: #111827;
   --text-secondary: #4b5563;
