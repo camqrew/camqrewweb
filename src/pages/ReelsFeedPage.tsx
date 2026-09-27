@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { professionalApi } from '../api/professionalApi';
 import type { FeedReelItem } from '../types/professional';
 import { 
   Film, 
-  Heart, 
-  MessageSquare, 
   Share2, 
   CalendarCheck, 
   CheckCircle, 
@@ -14,12 +12,12 @@ import {
   ChevronUp, 
   ChevronDown, 
   MapPin, 
-  ArrowRight,
-  ExternalLink,
-  Loader2,
-  Check,
-  User,
-  Plus
+  ArrowRight, 
+  ExternalLink, 
+  Loader2, 
+  Check, 
+  User, 
+  Plus 
 } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
 import { isCustomAvatar } from '../utils/avatarUtils';
@@ -28,15 +26,12 @@ import { useAuthStore } from '../store/authStore';
 const CATEGORIES = ['All', 'Commercial', 'Wedding Film', 'Drone & Aerial', 'Fashion Reel', 'Cinematography'];
 
 export const ReelsFeedPage: React.FC = () => {
-  const navigate = useNavigate();
   const { user } = useAuthStore();
   const [reels, setReels] = useState<FeedReelItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
-  const [likedReels, setLikedReels] = useState<{ [id: string]: boolean }>({});
-  const [likeCounts, setLikeCounts] = useState<{ [id: string]: number }>({});
   const [copiedToast, setCopiedToast] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -58,11 +53,6 @@ export const ReelsFeedPage: React.FC = () => {
       setLoading(true);
       const data = await professionalApi.getAllReels();
       setReels(data);
-      const initialLikes: { [id: string]: number } = {};
-      data.forEach(r => {
-        initialLikes[r.id] = r.likesCount || 0;
-      });
-      setLikeCounts(initialLikes);
     } catch (e) {
       console.warn('Failed to load reels feed:', e);
     } finally {
@@ -122,14 +112,6 @@ export const ReelsFeedPage: React.FC = () => {
         wheelTimeoutRef.current = null;
       }, 500);
     }
-  };
-
-  const toggleLike = (reelId: string) => {
-    setLikedReels(prev => {
-      const isLiked = !!prev[reelId];
-      setLikeCounts(c => ({ ...c, [reelId]: (c[reelId] || 0) + (isLiked ? -1 : 1) }));
-      return { ...prev, [reelId]: !isLiked };
-    });
   };
 
   const handleShare = (reel: FeedReelItem) => {
@@ -372,38 +354,6 @@ export const ReelsFeedPage: React.FC = () => {
                   <Check size={10} color="#fff" />
                 </div>
               </Link>
-
-              {/* Like Button */}
-              <button 
-                type="button" 
-                className={`reel-action-btn ${likedReels[currentReel?.id || ''] ? 'liked' : ''}`}
-                onClick={() => currentReel && toggleLike(currentReel.id)}
-                title="Like reel"
-              >
-                <div className="action-circle">
-                  <Heart 
-                    size={22} 
-                    fill={likedReels[currentReel?.id || ''] ? '#ff3b5c' : 'none'} 
-                    color={likedReels[currentReel?.id || ''] ? '#ff3b5c' : 'currentColor'} 
-                  />
-                </div>
-                <span className="action-label">
-                  {(likeCounts[currentReel?.id || ''] || 150).toLocaleString()}
-                </span>
-              </button>
-
-              {/* Direct Message Button */}
-              <button 
-                type="button" 
-                className="reel-action-btn"
-                onClick={() => navigate(`/chat?userId=${currentReel?.creatorId}`)}
-                title="Message creator"
-              >
-                <div className="action-circle">
-                  <MessageSquare size={20} />
-                </div>
-                <span className="action-label">Chat</span>
-              </button>
 
               {/* Share Button */}
               <button 
