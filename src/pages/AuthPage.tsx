@@ -12,8 +12,10 @@ import {
   Phone,
   KeyRound,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  Briefcase
 } from 'lucide-react';
+import { CustomSelect } from '../components/CustomSelect';
 import { getArchetype, PROFESSIONAL_CATEGORIES } from '../constants/categories';
 
 export const AuthPage: React.FC = () => {
@@ -400,21 +402,16 @@ export const AuthPage: React.FC = () => {
               <div className="creator-fields-block">
                 <div className="auth-field-group">
                   <label className="auth-field-label">Select Primary Category *</label>
-                  <div className="auth-category-pills-wrap">
-                    {PROFESSIONAL_CATEGORIES.map(cat => {
-                      const isSel = selectedCategory === cat.name;
-                      return (
-                        <button
-                          key={cat.id}
-                          type="button"
-                          onClick={() => setSelectedCategory(cat.name)}
-                          className={`auth-category-pill ${isSel ? 'selected' : ''}`}
-                        >
-                          {cat.name}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <CustomSelect
+                    value={selectedCategory}
+                    onChange={(val) => setSelectedCategory(val)}
+                    options={PROFESSIONAL_CATEGORIES.map(cat => ({
+                      value: cat.name,
+                      label: cat.name,
+                    }))}
+                    placeholder="Select primary category"
+                    icon={<Briefcase size={16} />}
+                  />
                 </div>
 
                 <div className="auth-form-row-2">
