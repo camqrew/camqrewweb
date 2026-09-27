@@ -31,7 +31,8 @@ import {
   ArrowRight,
   Clock,
   Sparkles,
-  Gift
+  Gift,
+  ShoppingBag
 } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
 import { SocialShareModal } from '../components/SocialShareModal';
@@ -39,6 +40,10 @@ import { VideoReelsGallery } from '../components/VideoReelsGallery';
 import { isCustomAvatar } from '../utils/avatarUtils';
 import { ImageLightboxModal } from '../components/ImageLightboxModal';
 import { getArchetype } from '../constants/categories';
+import { ProductCard } from '../components/ProductCard';
+import { productApi } from '../api/productApi';
+import { useCartStore } from '../store/cartStore';
+import type { Product } from '../types/product';
 
 export const CreatorProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -46,9 +51,11 @@ export const CreatorProfilePage: React.FC = () => {
   const { user, isAuthenticated } = useAuthStore();
 
   const [pro, setPro] = useState<ProfessionalProfile | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { addItem: addToCart } = useCartStore();
 
   // Review Composer State
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -127,12 +134,38 @@ export const CreatorProfilePage: React.FC = () => {
     navigate(`/book/${pro?.id}?total=${grandQuotationTotal}&jobTitle=${encodeURIComponent(jobTitle)}&notes=${encodeURIComponent(notes)}`);
   };
 
+  const displayProducts = useMemo(() => {
+    if (products.length > 0) return products;
+    if (isCrafts && pro?.menuItems && pro.menuItems.length > 0) {
+      return pro.menuItems.filter(m => m.isAvailable).map(m => ({
+        id: m.id,
+        name: m.name,
+        brand: 'Handcrafted',
+        category: m.category || 'Crafts & Gifting',
+        type: 'sale' as const,
+        price: m.pricePerPlate,
+        condition: 'New' as const,
+        image: m.imageUrl || 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800',
+        gallery: m.imageUrl ? [m.imageUrl] : [],
+        description: m.description || '',
+        inStock: true,
+        rating: 4.9,
+        codEnabled: true,
+      }));
+    }
+    return [];
+  }, [products, isCrafts, pro?.menuItems]);
+
   useEffect(() => {
     if (id) {
       professionalApi.getProfileById(id)
         .then((profile) => {
           setPro(profile);
           setReviews(profile.reviews || []);
+          return productApi.getProductsByOwner(profile.userId || profile.id);
+        })
+        .then((prods) => {
+          if (prods) setProducts(prods);
         })
         .catch((err) => setError(err.message || 'Failed to load profile'))
         .finally(() => setLoading(false));
@@ -316,6 +349,45 @@ export const CreatorProfilePage: React.FC = () => {
               <p className="bio-text">{pro.bio || 'No bio provided.'}</p>
             </div>
 
+            {/* ── PRODUCT CARDS (CRAFTS, HAMPERS & GEAR FOR SALE) ── */}
+            {displayProducts && displayProducts.length > 0 && (
+              <div className="card profile-section-card products-section-card">
+                <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+                  <div>
+                    <h3 className="section-heading" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {isCrafts ? (
+                        <Gift size={20} color="var(--accent, #f43f5e)" />
+                      ) : (
+                        <ShoppingBag size={20} color="var(--accent, #3fb668)" />
+                      )}
+                      {isCrafts ? 'Handcrafted Products & Hampers' : (isBaker ? 'Artisanal Bakes & Products' : 'Gear & Products for Sale')}
+                      <span className="badge-sub" style={{ fontSize: 12, padding: '2px 8px' }}>
+                        {displayProducts.length} {displayProducts.length === 1 ? 'item' : 'items'}
+                      </span>
+                    </h3>
+                    <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
+                      {isCrafts
+                        ? 'Handcrafted hampers, bespoke gift wrapping, floral bouquets & personalized crafts available for direct order.'
+                        : 'Explore equipment, gear, and items listed directly by this creator.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pros-grid" style={{ marginTop: 14 }}>
+                  {displayProducts.map(prod => (
+                    <ProductCard
+                      key={prod.id}
+                      product={prod}
+                      onAddToCart={(p) => {
+                        addToCart(p);
+                        setReviewToast(`Added "${p.name}" to your cart! 🛍️`);
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* ── CATERING, BAKERY & CRAFTS MENU WITH INSTANT QUOTATION ── */}
             {(proArchetype.archetype === 'catering' || isItemDirectTotal) && availableDishes.length > 0 && (
               <div className="card profile-section-card catering-menu-section-card">
@@ -382,13 +454,15 @@ export const CreatorProfilePage: React.FC = () => {
                           />
                           <div className="dish-card-banner-badges">
                             {/* Veg / Non-Veg FSSAI Badge */}
-                            <div className={`swiggy-fssai-box ${isGreen ? 'veg' : 'nonveg'}`} title={isGreen ? 'Vegetarian' : 'Non-Vegetarian'}>
-                              {isGreen ? (
-                                <div className="swiggy-fssai-dot veg" />
-                              ) : (
-                                <div className="swiggy-fssai-triangle" />
-                              )}
-                            </div>
+                            {!isCrafts && (
+                              <div className={`swiggy-fssai-box ${isGreen ? 'veg' : 'nonveg'}`} title={isGreen ? 'Vegetarian' : 'Non-Vegetarian'}>
+                                {isGreen ? (
+                                  <div className="swiggy-fssai-dot veg" />
+                                ) : (
+                                  <div className="swiggy-fssai-triangle" />
+                                )}
+                              </div>
+                            )}
 
                             {/* Category Tag floating top-right */}
                             <span className="dish-banner-cat-pill">

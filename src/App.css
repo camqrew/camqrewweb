@@ -3926,7 +3926,12 @@
 .product-type-badge.badge-rental {
   background: rgba(124, 58, 237, 0.88);
   color: #ffffff;
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);
+}
+
+.product-type-badge.badge-craft {
+  background: #f43f5e;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .product-cat-pill {

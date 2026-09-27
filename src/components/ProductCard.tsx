@@ -14,9 +14,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
   const navigate = useNavigate();
 
   const isRental = product.type === 'rental';
+  const isCraft = product.category === 'Crafts & Gifting' || product.brand === 'Handcrafted';
   const priceValue = product.rentalPricePerDay || product.price || 0;
   
-  const fallbackImage = 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000';
+  const fallbackImage = isCraft
+    ? 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=1000'
+    : 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000';
   const displayImage = (!imgError && product.image) ? product.image : fallbackImage;
 
   const handleCardClick = () => {
@@ -51,14 +54,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
 
         {/* Floating Badges on Banner */}
         <div className="product-banner-badges">
-          {/* Listing Type: FOR SALE or FOR RENT */}
-          <span className={`product-type-badge ${isRental ? 'badge-rental' : 'badge-sale'}`}>
-            {isRental ? 'FOR RENT' : (product.isOfficial ? 'OFFICIAL STORE' : 'FOR SALE')}
+          {/* Listing Type: FOR SALE, FOR RENT or HANDCRAFTED */}
+          <span className={`product-type-badge ${isRental ? 'badge-rental' : (isCraft ? 'badge-craft' : 'badge-sale')}`}>
+            {isRental ? 'FOR RENT' : (isCraft ? 'HANDCRAFTED' : (product.isOfficial ? 'OFFICIAL STORE' : 'FOR SALE'))}
           </span>
 
           {/* Category Tag floating top-right */}
           <span className="product-cat-pill">
-            {product.category || 'Gear'}
+            {product.category || (isCraft ? 'Crafts & Gifting' : 'Gear')}
           </span>
         </div>
       </div>

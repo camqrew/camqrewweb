@@ -32,22 +32,25 @@ const mapOfficialProduct = (p: any): Product => ({
   safetyWarnings: p.safety_warnings || undefined,
 });
 
-const mapProSaleItem = (p: any): Product => ({
-  id: String(p.id),
-  name: p.title || 'Used Equipment',
-  brand: 'Used Gear',
-  category: p.category || 'Accessories',
-  type: 'sale',
-  price: Number(p.price || 0),
-  condition: p.condition || 'Good',
-  image: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800',
-  gallery: Array.isArray(p.images) ? p.images : [],
-  description: p.description || '',
-  inStock: p.status !== 'sold',
-  rating: 4.8,
-  isUsed: true,
-  codEnabled: Boolean(p.cod_enabled),
-});
+const mapProSaleItem = (p: any): Product => {
+  const isCraft = p.category === 'Crafts & Gifting' || p.category === 'Hampers' || p.category === 'Floral Design' || p.category === 'Gift Wrapping';
+  return {
+    id: String(p.id),
+    name: p.title || 'Product Item',
+    brand: p.brand || (isCraft ? 'Handcrafted' : (p.condition === 'New' ? 'Brand New' : 'Used Gear')),
+    category: p.category || (isCraft ? 'Crafts & Gifting' : 'Accessories'),
+    type: 'sale',
+    price: Number(p.price || 0),
+    condition: p.condition || 'New',
+    image: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800',
+    gallery: Array.isArray(p.images) ? p.images : [],
+    description: p.description || '',
+    inStock: p.status !== 'sold',
+    rating: 4.9,
+    isUsed: !isCraft && p.condition !== 'New',
+    codEnabled: Boolean(p.cod_enabled),
+  };
+};
 
 const mapRentalEquipment = (p: any): Product => {
   const knownBrands = ['Sony', 'Canon', 'ARRI', 'Cooke', 'RED', 'DJI', 'Aputure', 'Hasselblad', 'Profoto', 'Sennheiser', 'Tilta', 'Sound Devices', 'Blackmagic', 'Fujifilm', 'Nikon', 'Panasonic'];
