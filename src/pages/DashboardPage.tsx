@@ -46,7 +46,8 @@ import {
   User,
   UtensilsCrossed,
   Search,
-  Edit3
+  Edit3,
+  Gift
 } from 'lucide-react';
 import type { VideoReelItem, MenuDishItem } from '../types/professional';
 import { authApi } from '../api/authApi';
@@ -74,7 +75,7 @@ export const DashboardPage: React.FC = () => {
   const [proProfile, setProProfile] = useState<ProfessionalProfile | null>(null);
   const [isAvailable, setIsAvailable] = useState<boolean>(true);
 
-  // Caterer & Home Baker archetype detection
+  // Caterer, Home Baker & Crafts archetype detection
   const isBaker = Boolean(
     proProfile?.categories?.some(c =>
       c.toLowerCase().includes('baker') ||
@@ -84,8 +85,19 @@ export const DashboardPage: React.FC = () => {
     )
   );
 
+  const isCrafts = Boolean(
+    proProfile?.categories?.some(c =>
+      c.toLowerCase().includes('craft') ||
+      c.toLowerCase().includes('hamper') ||
+      c.toLowerCase().includes('gift') ||
+      c.toLowerCase().includes('flower') ||
+      c.toLowerCase().includes('wrap')
+    )
+  );
+
   const isCaterer = Boolean(
     isBaker ||
+    isCrafts ||
     proProfile?.categories?.some(c =>
       c.toLowerCase().includes('cater') ||
       c.toLowerCase().includes('chef') ||
@@ -985,7 +997,7 @@ export const DashboardPage: React.FC = () => {
           className={`pro-tab-item ${activeTab === 'sales_rentals' ? 'active' : ''}`}
           onClick={() => handleTabChange('sales_rentals')}
         >
-          <ShoppingBag size={15} /> {isCaterer ? (isBaker ? 'Bakery Orders' : 'Menu Orders') : 'Sales & Rentals'}
+          <ShoppingBag size={15} /> {isCaterer ? (isCrafts ? 'Gifting Orders' : (isBaker ? 'Bakery Orders' : 'Menu Orders')) : 'Sales & Rentals'}
         </button>
 
         <button
@@ -994,7 +1006,7 @@ export const DashboardPage: React.FC = () => {
         >
           {isCaterer ? (
             <>
-              <UtensilsCrossed size={15} /> {isBaker ? 'Bakes & Food Menu' : 'Food Menu & Prices'} ({proProfile?.menuItems?.length || 0})
+              {isCrafts ? <Gift size={15} /> : <UtensilsCrossed size={15} />} {isCrafts ? 'Hampers & Crafts Catalog' : (isBaker ? 'Bakes & Food Menu' : 'Food Menu & Prices')} ({proProfile?.menuItems?.length || 0})
             </>
           ) : (
             <>

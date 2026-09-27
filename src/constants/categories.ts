@@ -1,4 +1,4 @@
-export type CategoryArchetype = 'media_crew' | 'catering' | 'event_management' | 'tech_digital' | 'beauty_bridal' | 'modeling_talent' | 'home_baker' | 'travels';
+export type CategoryArchetype = 'media_crew' | 'catering' | 'event_management' | 'tech_digital' | 'beauty_bridal' | 'modeling_talent' | 'home_baker' | 'travels' | 'crafts_gifting';
 
 export interface CategoryMeta {
   id: string;
@@ -369,6 +369,46 @@ export const ARCHETYPE_CONFIGS: Record<CategoryArchetype, ArchetypeConfig> = {
     serviceDeliverablesPlaceholder: 'e.g. AC Innova Crysta, Fuel & Toll Included, Uniformed Driver, 300 Km/Day Allowance',
     bookingCtaPrefix: 'Book Travels',
   },
+  crafts_gifting: {
+    archetype: 'crafts_gifting',
+    label: 'Crafts, Hampers & Gifting',
+    roleNoun: 'Gifting Artisan / Crafter',
+    rateLabel: 'Starting Price (₹)',
+    ratePlaceholder: '750',
+    rateUnitDefault: 'Hamper',
+    rateUnitOptions: ['Hamper', 'Box', 'Piece', 'Set', 'Order', 'Package'],
+    equipmentSectionTitle: 'Gifting Specialties, Packaging & Roster',
+    equipmentInputLabel: 'Add Specialties & Packaging Items',
+    equipmentInputPlaceholder: 'e.g. Luxury Velvet Hampers, Preserved Flowers, Wax Seal Wrapping, Resin Art',
+    equipmentPresets: [
+      'Luxury Rigid & Velvet Hampers',
+      'Trousseau & Wedding Gift Packing',
+      'Fresh & Preserved Floral Arrangements',
+      'Bespoke Furoshiki & Fabric Wrapping',
+      'Handmade Resin Art & Keepsakes',
+      'Corporate Bulk Festive Hampers',
+      'Calligraphy Tags & Wax Seal Accents',
+      'Pine Wood & Acrylic Keepsake Boxes',
+      'Eco-Friendly & Sustainable Wrapping',
+      'Fragile Doorstep Express Delivery',
+    ],
+    skillsSectionTitle: 'Artisan Certifications & Craft Badges',
+    skillsInputLabel: 'Add Craft & Styling Badges',
+    skillsInputPlaceholder: 'e.g. Certified Floral Designer, Professional Gift Stylist, Trousseau Specialist',
+    skillsPresets: [
+      'Certified Floral Designer',
+      'Professional Gift Stylist & Trousseau Artist',
+      'Handmade Paper & Eco-Craft Specialist',
+      'Custom Calligraphy & Typography Artist',
+      'Corporate Bulk Gifting Logistics Verified',
+    ],
+    travelCheckboxLabel: 'Available for doorstep delivery, bulk shipping & event venue gifting setups',
+    portfolioPromptTitle: 'Add Craft & Hamper Portfolio',
+    portfolioPromptSubtitle: 'Showcase luxury hampers, trousseau packing, floral designs, and custom wrapped gifts.',
+    serviceTitlePlaceholder: 'e.g. Customized Festive / Wedding Luxury Hamper',
+    serviceDeliverablesPlaceholder: 'e.g. Handcrafted Pine Wood Box, Gourmet Treats, Satin Ribbon, Wax Seal Note',
+    bookingCtaPrefix: 'Order Gifting',
+  },
 };
 
 export function getArchetype(categoryOrList?: string | string[]): ArchetypeConfig {
@@ -400,6 +440,9 @@ export function getArchetype(categoryOrList?: string | string[]): ArchetypeConfi
   }
   if (lowerCats.some(c => c.includes('makeup') || c.includes('mehendi') || c.includes('mehndi') || c.includes('beauty') || c.includes('bridal') || c.includes('hair') || c.includes('henna'))) {
     return ARCHETYPE_CONFIGS.beauty_bridal;
+  }
+  if (lowerCats.some(c => c.includes('craft') || c.includes('hamper') || c.includes('gift') || c.includes('flower') || c.includes('wrap') || c.includes('trousseau') || c.includes('resin') || c.includes('kraft'))) {
+    return ARCHETYPE_CONFIGS.crafts_gifting;
   }
   return ARCHETYPE_CONFIGS.media_crew;
 }
@@ -492,6 +535,14 @@ export const PROFESSIONAL_CATEGORIES: CategoryMeta[] = [
     icon: 'car',
     description: 'Outstation Production Vans, Luxury Fleets, Location Scouts & Chauffeurs',
     bgGradient: ['#06b6d4', '#3b82f6'],
+  },
+  {
+    id: 'crafts_gifting',
+    name: 'Crafts & Gifting',
+    archetype: 'crafts_gifting',
+    icon: 'gift',
+    description: 'Handmade Hampers, Custom Gift Wrapping, Floral Arrangements & Personalized Crafts',
+    bgGradient: ['#ec4899', '#f43f5e'],
   },
 ];
 

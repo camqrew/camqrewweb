@@ -104,6 +104,13 @@ export const BookingPage: React.FC = () => {
   const [travelIncludeTollFuel, setTravelIncludeTollFuel] = useState<boolean>(true);
   const [travelIncludeLuggageRack, setTravelIncludeLuggageRack] = useState<boolean>(true);
 
+  // Crafts & Gifting customization options
+  const [craftsGiftingType, setCraftsGiftingType] = useState<string>('Luxury Gift Hamper');
+  const [craftsPackagingTheme, setCraftsPackagingTheme] = useState<string>('Royal Velvet & Gold Accents');
+  const [craftsCalligraphyNote, setCraftsCalligraphyNote] = useState<string>('');
+  const [craftsFragileCare, setCraftsFragileCare] = useState<boolean>(true);
+  const [craftsDeliverySlot, setCraftsDeliverySlot] = useState<string>('Afternoon (01:00 PM - 05:00 PM)');
+
   useEffect(() => {
     if (proId) {
       professionalApi.getProfileById(proId)
@@ -139,6 +146,9 @@ export const BookingPage: React.FC = () => {
                 break;
               case 'travels':
                 setServiceTitle('Outstation Production Fleet & Travel Chauffeur');
+                break;
+              case 'crafts_gifting':
+                setServiceTitle('Customized Luxury Hamper & Craft Gifting Order');
                 break;
               default:
                 setServiceTitle('Video Production & Photography');
@@ -178,6 +188,12 @@ export const BookingPage: React.FC = () => {
           { id: '1', title: 'Advance Escrow (30%)', desc: 'Order confirmation & ingredient sourcing', percentage: 30, amount: advanceEscrow },
           { id: '2', title: 'Bake Ready Escrow (40%)', desc: 'Fresh baking & photo proof shared', percentage: 40, amount: wrapEscrow },
           { id: '3', title: 'Delivery Wrap Escrow (30%)', desc: 'Safe delivery & client confirmation', percentage: 30, amount: finalEscrow },
+        ];
+      case 'crafts_gifting':
+        return [
+          { id: '1', title: 'Advance Escrow (30%)', desc: 'Order confirmation & craft material sourcing', percentage: 30, amount: advanceEscrow },
+          { id: '2', title: 'Crafting Ready Escrow (40%)', desc: 'Hamper packing, floral arrangement & photo proof shared', percentage: 40, amount: wrapEscrow },
+          { id: '3', title: 'Delivery Wrap Escrow (30%)', desc: 'Safe doorstep delivery & client confirmation', percentage: 30, amount: finalEscrow },
         ];
       case 'catering':
         return [
@@ -246,6 +262,26 @@ export const BookingPage: React.FC = () => {
           notesPlaceholder: 'Tell the baker about color palettes, custom fondant themes, inscriptions, or packaging...',
           submitButtonPrefix: 'Confirm & Hold Escrow for Bakes',
           durationUnitLabel: (count: number) => count === 1 ? '1 Custom Order' : `${count} Orders / Batches`,
+        };
+      case 'crafts_gifting':
+        return {
+          pageTitle: 'Order Handcrafted Hampers & Custom Gifts',
+          pageSubtitle: 'Configure delivery date, personalized tags, gift wrapping themes, and secure with escrow protection.',
+          serviceSectionTitle: 'Gifting & Craft Order Details',
+          serviceTitleLabel: 'Hamper / Gifting Order Title',
+          serviceTitlePlaceholder: 'e.g. Customized Royal Velvet Wedding Hamper',
+          isSingleDate: true,
+          dateSectionTitle: 'Delivery / Pickup Schedule',
+          startDateLabel: 'Delivery / Pickup Date',
+          endDateLabel: 'Event Date',
+          locationSectionTitle: 'Delivery / Pickup Location',
+          locationAddressLabel: 'Delivery Address, Landmark & Pincode *',
+          locationAddressPlaceholder: 'e.g. Flat 402, Sea Green Apts, Bandra West, Mumbai - 400050 (or Studio Pickup)',
+          specialOptionsTitle: 'Gifting Customization & Styling Options',
+          notesTitle: 'Custom Calligraphy Tag, Ribbon Themes & Special Notes',
+          notesPlaceholder: 'Specify recipient name, handwritten greeting message, color palette, and fragile handling instructions...',
+          submitButtonPrefix: 'Confirm & Hold Escrow for Gifting',
+          durationUnitLabel: (count: number) => count === 1 ? '1 Custom Order' : `${count} Orders / Hampers`,
         };
       case 'catering':
         return {
@@ -411,6 +447,8 @@ export const BookingPage: React.FC = () => {
       let categoryDetailsSummary = '';
       if (archetype === 'home_baker') {
         categoryDetailsSummary = `\n--- BAKERY SPECIFICATIONS ---\n• Dietary: ${bakerDietary}\n• Delivery Slot: ${bakerTimeSlot}\n• Message on Cake: ${bakerCakeMessage || 'None'}\n• Candle & Knife Kit: ${bakerCandlesKit ? 'Yes' : 'No'}`;
+      } else if (archetype === 'crafts_gifting') {
+        categoryDetailsSummary = `\n--- CRAFTS & GIFTING SPECIFICATIONS ---\n• Gifting Type: ${craftsGiftingType}\n• Packaging Theme: ${craftsPackagingTheme}\n• Delivery Slot: ${craftsDeliverySlot}\n• Personalized Calligraphy Tag: ${craftsCalligraphyNote || 'None'}\n• Fragile Express Delivery: ${craftsFragileCare ? 'Yes' : 'No'}`;
       } else if (archetype === 'catering') {
         categoryDetailsSummary = `\n--- CATERING SPECIFICATIONS ---\n• Serving Style: ${catererServingStyle}\n• Dietary Standard: ${catererDietary}\n• Expected Guests: ${catererGuestCount}\n• Meal Timing: ${catererMealSlot}`;
       } else if (archetype === 'modeling_talent') {
@@ -668,6 +706,76 @@ export const BookingPage: React.FC = () => {
                   />
                   <label htmlFor="bakerCandlesKit" style={{ fontSize: 13.5, color: 'var(--text-primary)', cursor: 'pointer', fontWeight: 500 }}>
                     Include complimentary birthday candle, matches & cake knife kit
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {archetype === 'crafts_gifting' && (
+              <div className="category-spec-box">
+                <div className="form-group" style={{ marginBottom: 14 }}>
+                  <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Gifting / Craft Type</label>
+                  <div className="category-spec-pills-row">
+                    {['Luxury Gift Hamper', 'Trousseau Sagan Packing', 'Fresh Floral Bouquet', 'Bespoke Fabric Gift Wrap', 'Handmade Resin Keepsake', 'Corporate Bulk Gifting'].map((g) => (
+                      <SpecPillButton
+                        key={g}
+                        label={g}
+                        active={craftsGiftingType === g}
+                        onClick={() => setCraftsGiftingType(g)}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 14 }}>
+                  <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Packaging Theme & Material</label>
+                  <div className="category-spec-pills-row">
+                    {['Royal Velvet & Gold Accents', 'Pine Wood & Satin Ribbon', 'Eco-Friendly Kraft & Dried Flowers', 'Minimalist Pastel Aesthetic', 'Japanese Furoshiki Fabric Wrap'].map((theme) => (
+                      <SpecPillButton
+                        key={theme}
+                        label={theme}
+                        active={craftsPackagingTheme === theme}
+                        onClick={() => setCraftsPackagingTheme(theme)}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 14 }}>
+                  <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Preferred Delivery / Pickup Time Slot</label>
+                  <div className="category-spec-pills-row">
+                    {['Morning (10 AM - 1 PM)', 'Afternoon (1 PM - 5 PM)', 'Evening (5 PM - 8 PM)', 'Self-Pickup from Studio'].map((slot) => (
+                      <SpecPillButton
+                        key={slot}
+                        label={slot}
+                        active={craftsDeliverySlot === slot}
+                        onClick={() => setCraftsDeliverySlot(slot)}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 14 }}>
+                  <label className="form-label" style={{ fontSize: 13, fontWeight: 600 }}>Personalized Handwritten Calligraphy Note (Optional)</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="e.g. Wishing you a lifetime of love and laughter! From Aarav & Riya 💐"
+                    value={craftsCalligraphyNote}
+                    onChange={(e) => setCraftsCalligraphyNote(e.target.value)}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
+                  <input
+                    type="checkbox"
+                    id="craftsFragileCare"
+                    checked={craftsFragileCare}
+                    onChange={(e) => setCraftsFragileCare(e.target.checked)}
+                    style={{ width: 18, height: 18, accentColor: 'var(--accent)' }}
+                  />
+                  <label htmlFor="craftsFragileCare" style={{ fontSize: 13.5, color: 'var(--text-primary)', cursor: 'pointer', fontWeight: 500 }}>
+                    Doorstep Express Delivery with Fragile Cushioning & Satin Wrap Care
                   </label>
                 </div>
               </div>
@@ -1040,7 +1148,7 @@ export const BookingPage: React.FC = () => {
                 <h4 className="mini-name">{pro?.name}</h4>
                 <p className="mini-title">{pro?.title}</p>
                 <span className="mini-rate">
-                  ₹{pro?.ratePerDay?.toLocaleString('en-IN')} / {archetype === 'home_baker' ? 'kg' : archetype === 'travels' ? 'day' : proArchetype.rateUnitDefault.toLowerCase()}
+                  ₹{pro?.ratePerDay?.toLocaleString('en-IN')} / {archetype === 'crafts_gifting' ? 'hamper' : (archetype === 'home_baker' ? 'kg' : archetype === 'travels' ? 'day' : proArchetype.rateUnitDefault.toLowerCase())}
                 </span>
               </div>
             </div>
@@ -1060,7 +1168,7 @@ export const BookingPage: React.FC = () => {
               ) : (
                 <div className="cost-row">
                   <span>
-                    {archetype === 'home_baker' ? 'Order Rate' : archetype === 'travels' ? 'Travel Day Rate' : `${proArchetype.rateUnitDefault} Rate`} (₹{pro?.ratePerDay?.toLocaleString('en-IN')} × {daysCount})
+                    {archetype === 'crafts_gifting' ? 'Gifting Order Rate' : (archetype === 'home_baker' ? 'Order Rate' : archetype === 'travels' ? 'Travel Day Rate' : `${proArchetype.rateUnitDefault} Rate`)} (₹{pro?.ratePerDay?.toLocaleString('en-IN')} × {daysCount})
                   </span>
                   <span>₹{totalAmount.toLocaleString('en-IN')}</span>
                 </div>

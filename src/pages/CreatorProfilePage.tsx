@@ -30,7 +30,8 @@ import {
   Users,
   ArrowRight,
   Clock,
-  Sparkles
+  Sparkles,
+  Gift
 } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
 import { SocialShareModal } from '../components/SocialShareModal';
@@ -63,6 +64,8 @@ export const CreatorProfilePage: React.FC = () => {
 
   const proArchetype = useMemo(() => getArchetype(pro?.categories), [pro?.categories]);
   const isBaker = proArchetype.archetype === 'home_baker';
+  const isCrafts = proArchetype.archetype === 'crafts_gifting';
+  const isItemDirectTotal = isBaker || isCrafts;
 
   // Catering & Bakery Menu State
   const [selectedMenuCategory, setSelectedMenuCategory] = useState<string>('All');
@@ -98,10 +101,10 @@ export const CreatorProfilePage: React.FC = () => {
     return selectedDishesList.reduce((acc, d) => acc + (d.pricePerPlate * (dishQuantities[d.id] || 0)), 0);
   }, [selectedDishesList, dishQuantities]);
 
-  // Home bakers do NOT use per-head / guest count multiplication; total is direct sum of items
+  // Home bakers and Crafts/Gifting creators do NOT use per-head / guest count multiplication; total is direct sum of items
   const grandQuotationTotal = useMemo(() => {
-    return isBaker ? perPlateSubtotal : (perPlateSubtotal * guestCount);
-  }, [isBaker, perPlateSubtotal, guestCount]);
+    return isItemDirectTotal ? perPlateSubtotal : (perPlateSubtotal * guestCount);
+  }, [isItemDirectTotal, perPlateSubtotal, guestCount]);
 
   const handleUpdateDishQty = (dishId: string, delta: number) => {
     setDishQuantities(prev => {
@@ -313,22 +316,28 @@ export const CreatorProfilePage: React.FC = () => {
               <p className="bio-text">{pro.bio || 'No bio provided.'}</p>
             </div>
 
-            {/* ── CATERING & BAKERY MENU WITH INSTANT QUOTATION ── */}
-            {(proArchetype.archetype === 'catering' || proArchetype.archetype === 'home_baker') && availableDishes.length > 0 && (
+            {/* ── CATERING, BAKERY & CRAFTS MENU WITH INSTANT QUOTATION ── */}
+            {(proArchetype.archetype === 'catering' || isItemDirectTotal) && availableDishes.length > 0 && (
               <div className="card profile-section-card catering-menu-section-card">
                 <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
                   <div>
                     <h3 className="section-heading" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <UtensilsCrossed size={20} color="var(--accent, #3fb668)" />
-                      {proArchetype.archetype === 'home_baker' ? 'Cakes, Bakes & Food Menu' : 'Menu & Dishes'}
+                      {isCrafts ? (
+                        <Gift size={20} color="var(--accent, #ec4899)" />
+                      ) : (
+                        <UtensilsCrossed size={20} color="var(--accent, #3fb668)" />
+                      )}
+                      {isCrafts ? 'Crafts, Hampers & Gift Catalog' : (isBaker ? 'Cakes, Bakes & Food Menu' : 'Menu & Dishes')}
                       <span className="badge-sub" style={{ fontSize: 12, padding: '2px 8px' }}>
                         {availableDishes.length} available
                       </span>
                     </h3>
                     <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
-                      {proArchetype.archetype === 'home_baker'
-                        ? 'Freshly baked from scratch with flexible low minimum quantities. Select items below for instant pricing.'
-                        : 'Select dishes below to calculate an instant quotation for your event guest count.'}
+                      {isCrafts
+                        ? 'Handcrafted hampers, bespoke gift wrapping, floral art & personalized gifts. Select items below for instant ordering.'
+                        : (isBaker
+                          ? 'Freshly baked from scratch with flexible low minimum quantities. Select items below for instant pricing.'
+                          : 'Select dishes below to calculate an instant quotation for your event guest count.')}
                     </p>
                   </div>
                 </div>
@@ -352,9 +361,11 @@ export const CreatorProfilePage: React.FC = () => {
                   {filteredDishes.map(dish => {
                     const qty = dishQuantities[dish.id] || 0;
                     const isGreen = dish.dietaryTags?.some(t => t === 'Veg' || t === 'Jain' || t === 'Vegan');
-                    const fallbackDishImage = isBaker 
-                      ? 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800'
-                      : 'https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=800';
+                    const fallbackDishImage = isCrafts
+                      ? 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800'
+                      : (isBaker 
+                        ? 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800'
+                        : 'https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=800');
 
                     return (
                       <div 
@@ -395,7 +406,7 @@ export const CreatorProfilePage: React.FC = () => {
                             </h4>
                             <div className="dish-card-price-box">
                               <span className="dish-card-price-val">₹{dish.pricePerPlate.toLocaleString('en-IN')}</span>
-                              <span className="dish-card-price-unit">{dish.unit ? `/ ${dish.unit}` : (isBaker ? '/ kg' : '/ plate')}</span>
+                              <span className="dish-card-price-unit">{dish.unit ? `/ ${dish.unit}` : (isCrafts ? '/ piece' : (isBaker ? '/ kg' : '/ plate'))}</span>
                             </div>
                           </div>
 
@@ -434,7 +445,7 @@ export const CreatorProfilePage: React.FC = () => {
                               <div className="dish-card-selected-group">
                                 <div className="dish-card-qty-indicator" title={`${qty} selected`}>
                                   <span className="dish-card-qty-check">✓</span>
-                                  <span>{qty} {isBaker ? (dish.unit ? `${dish.unit}s` : 'units') : (qty === 1 ? 'plate' : 'plates')} (₹{(dish.pricePerPlate * qty).toLocaleString('en-IN')})</span>
+                                  <span>{qty} {isItemDirectTotal ? (dish.unit ? `${dish.unit}s` : 'units') : (qty === 1 ? 'plate' : 'plates')} (₹{(dish.pricePerPlate * qty).toLocaleString('en-IN')})</span>
                                 </div>
                                 <div className="dish-stepper-btn">
                                   <button 
@@ -459,7 +470,7 @@ export const CreatorProfilePage: React.FC = () => {
                                 type="button"
                                 className="dish-btn-add-action"
                                 onClick={() => handleUpdateDishQty(dish.id, 1)}
-                                title={isBaker ? "Add item to order" : "Add dish to quotation"}
+                                title={isCrafts ? "Add item to gifting order" : (isBaker ? "Add item to order" : "Add dish to quotation")}
                               >
                                 <span>ADD</span>
                                 <Plus size={14} />
@@ -474,7 +485,7 @@ export const CreatorProfilePage: React.FC = () => {
 
                 {/* Modernized Quotation Calculator Box */}
                 <div className="catering-quotation-summary-box">
-                  {!isBaker ? (
+                  {!isItemDirectTotal ? (
                     <div className="quote-calculator-header-block">
                       <div className="quote-calc-title-group">
                         <div className="quote-calc-icon-box">
@@ -531,15 +542,21 @@ export const CreatorProfilePage: React.FC = () => {
                   ) : (
                     <div className="quote-calculator-header-block">
                       <div className="quote-calc-title-group">
-                        <div className="quote-calc-icon-box baker">
-                          <UtensilsCrossed size={20} />
+                        <div className={`quote-calc-icon-box ${isCrafts ? 'crafts' : 'baker'}`}>
+                          {isCrafts ? <Gift size={20} /> : <UtensilsCrossed size={20} />}
                         </div>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                            <h4 className="quote-calc-title">Bakery Order Summary</h4>
-                            <span className="quote-calc-live-badge baker">Item-Based Pricing</span>
+                            <h4 className="quote-calc-title">
+                              {isCrafts ? 'Handcrafted Gifting Order' : 'Bakery Order Summary'}
+                            </h4>
+                            <span className={`quote-calc-live-badge ${isCrafts ? 'crafts' : 'baker'}`}>Item-Based Pricing</span>
                           </div>
-                          <p className="quote-calc-sub">Custom baked orders are calculated directly from selected cake & pastry quantities.</p>
+                          <p className="quote-calc-sub">
+                            {isCrafts
+                              ? 'Handcrafted hampers, gift wraps & floral sets are calculated directly from selected quantities.'
+                              : 'Custom baked orders are calculated directly from selected cake & pastry quantities.'}
+                          </p>
                         </div>
                       </div>
 
@@ -555,19 +572,23 @@ export const CreatorProfilePage: React.FC = () => {
                       {/* Breakdown table */}
                       <div className="quote-breakdown-card">
                         <div className="quote-breakdown-head">
-                          <span>{isBaker ? 'Selected Bakes & Confectionery' : 'Selected Dish'} ({totalDishesSelectedCount})</span>
-                          <span>{isBaker ? 'Item Subtotal' : `Rate × ${guestCount} Guests`}</span>
+                          <span>
+                            {isCrafts
+                              ? 'Selected Hampers & Crafts'
+                              : (isBaker ? 'Selected Bakes & Confectionery' : 'Selected Dish')} ({totalDishesSelectedCount})
+                          </span>
+                          <span>{isItemDirectTotal ? 'Item Subtotal' : `Rate × ${guestCount} Guests`}</span>
                         </div>
                         <div className="quote-breakdown-items-list">
                           {selectedDishesList.map(dish => {
                             const q = dishQuantities[dish.id] || 0;
-                            const lineTotal = isBaker ? (dish.pricePerPlate * q) : (dish.pricePerPlate * q * guestCount);
+                            const lineTotal = isItemDirectTotal ? (dish.pricePerPlate * q) : (dish.pricePerPlate * q * guestCount);
                             return (
                               <div key={dish.id} className="quote-breakdown-item-row">
                                 <div className="quote-item-info">
                                   <span className="quote-item-name">{dish.name}</span>
                                   <span className="quote-item-details">
-                                    {q}x @ ₹{dish.pricePerPlate}{dish.unit ? `/${dish.unit}` : (isBaker ? '/kg' : '/plate')}
+                                    {q}x @ ₹{dish.pricePerPlate}{dish.unit ? `/${dish.unit}` : (isCrafts ? '/pc' : (isBaker ? '/kg' : '/plate'))}
                                     {dish.prepTime ? ` • ⏱️ ${dish.prepTime}` : ''}
                                   </span>
                                 </div>
@@ -583,19 +604,19 @@ export const CreatorProfilePage: React.FC = () => {
                       {/* Total & Action Row */}
                       <div className="quote-total-action-bar">
                         <div className="quote-total-info">
-                          {!isBaker ? (
+                          {!isItemDirectTotal ? (
                             <span className="quote-per-guest-subtext">
                               Per Guest: <strong>₹{perPlateSubtotal.toLocaleString('en-IN')}</strong> × {guestCount} guests
                             </span>
                           ) : (
                             <span className="quote-per-guest-subtext">
-                              Total of {totalDishesSelectedCount} handcrafted {totalDishesSelectedCount === 1 ? 'item' : 'items'} • Freshly baked to order
+                              Total of {totalDishesSelectedCount} handcrafted {totalDishesSelectedCount === 1 ? 'item' : 'items'} • Custom curated to order
                             </span>
                           )}
                           <div className="quote-grand-total-row">
                             <span className="quote-grand-total-val">₹{grandQuotationTotal.toLocaleString('en-IN')}</span>
                             <span className="quote-grand-total-tag">
-                              {isBaker ? 'Order Total' : 'Estimated Quotation'}
+                              {isItemDirectTotal ? 'Order Total' : 'Estimated Quotation'}
                             </span>
                           </div>
                         </div>
@@ -605,7 +626,7 @@ export const CreatorProfilePage: React.FC = () => {
                           className="quote-proceed-btn"
                           onClick={handleBookWithQuotation}
                         >
-                          <span>{isBaker ? 'Proceed to Order Bakes' : 'Proceed to Book with Menu'}</span>
+                          <span>{isCrafts ? 'Proceed to Order Gifting' : (isBaker ? 'Proceed to Order Bakes' : 'Proceed to Book with Menu')}</span>
                           <ArrowRight size={18} />
                         </button>
                       </div>
@@ -617,10 +638,10 @@ export const CreatorProfilePage: React.FC = () => {
                       </div>
                       <div className="quote-empty-text-wrap">
                         <h5 className="quote-empty-title">
-                          No {isBaker ? 'items' : 'dishes'} added to quotation yet
+                          No {isItemDirectTotal ? 'items' : 'dishes'} added to quotation yet
                         </h5>
                         <p className="quote-empty-desc">
-                          Click the <strong>+ ADD</strong> button on any {isBaker ? 'cake or bake' : 'dish'} above. Your live per-guest breakdown and total will calculate here in real-time.
+                          Click the <strong>+ ADD</strong> button on any {isCrafts ? 'craft or hamper' : (isBaker ? 'cake or bake' : 'dish')} above. Your live breakdown and total will calculate here in real-time.
                         </p>
                       </div>
                     </div>
