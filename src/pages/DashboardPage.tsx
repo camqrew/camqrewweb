@@ -480,7 +480,7 @@ export const DashboardPage: React.FC = () => {
       const existingReels = proProfile?.videoReels || [];
       const updatedReels = [newReel, ...existingReels];
 
-      await professionalApi.updateProfile({ videoReels: updatedReels });
+      await professionalApi.updateProfile({ videoReels: updatedReels }, user?.id);
       setProProfile(prev => prev ? { ...prev, videoReels: updatedReels } : null);
       showToast('🎉 Reel successfully published to your creator profile!');
 
@@ -507,7 +507,7 @@ export const DashboardPage: React.FC = () => {
     try {
       const existingReels = proProfile?.videoReels || [];
       const updatedReels = existingReels.filter(r => r.id !== reelId);
-      await professionalApi.updateProfile({ videoReels: updatedReels });
+      await professionalApi.updateProfile({ videoReels: updatedReels }, user?.id);
       setProProfile(prev => prev ? { ...prev, videoReels: updatedReels } : null);
       showToast('Video reel removed from profile.');
     } catch (err: any) {

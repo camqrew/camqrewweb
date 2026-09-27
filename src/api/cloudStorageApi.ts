@@ -118,11 +118,11 @@ export const cloudStorageApi = {
           contentType,
         });
 
-      // 2. If bucket errors, retry with fallback 'camcrew-media'
-      if (uploadResult.error && folder !== 'camcrew-media') {
-        console.warn(`Primary bucket '${folder}' upload error: ${uploadResult.error.message}. Trying 'camcrew-media'...`);
+      // 2. If bucket errors, retry with fallback 'portfolio'
+      if (uploadResult.error && folder !== 'portfolio') {
+        console.warn(`Primary bucket '${folder}' upload error: ${uploadResult.error.message}. Trying 'portfolio'...`);
         const fallbackResult = await supabase.storage
-          .from('camcrew-media')
+          .from('portfolio')
           .upload(`reels/${filename}`, file, {
             upsert: false,
             contentType,
@@ -130,7 +130,7 @@ export const cloudStorageApi = {
 
         if (!fallbackResult.error && fallbackResult.data) {
           const { data: pubData } = supabase.storage
-            .from('camcrew-media')
+            .from('portfolio')
             .getPublicUrl(fallbackResult.data.path);
 
           return {
