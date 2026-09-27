@@ -4615,11 +4615,11 @@
   flex-direction: column;
   gap: 14px;
   padding-top: 14px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  border-top: none;
 }
 
 [data-theme="light"] .creator-fields-block {
-  border-top: 1px dashed rgba(0, 0, 0, 0.08);
+  border-top: none;
 }
 
 /* Creator Registration Category Selection Pills */
@@ -4632,10 +4632,11 @@
 }
 
 .auth-category-pill {
-  padding: 6px 14px;
+  padding: 7px 15px;
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
+  border: none !important;
+  outline: none !important;
+  background: rgba(255, 255, 255, 0.06);
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 600;
@@ -4645,34 +4646,34 @@
 }
 
 .auth-category-pill:hover {
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.18);
+  border: none !important;
 }
 
 .auth-category-pill.selected {
-  border: 1.5px solid var(--accent, #3fb668);
-  background: rgba(63, 182, 104, 0.15);
+  border: none !important;
+  background: rgba(63, 182, 104, 0.18);
   color: var(--accent, #3fb668);
   font-weight: 700;
 }
 
 [data-theme="light"] .auth-category-pill {
   background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  color: #374151;
+  border: none !important;
+  color: #4b5563;
 }
 
 [data-theme="light"] .auth-category-pill:hover {
   background: #e5e7eb;
+  border: none !important;
   color: #111827;
-  border-color: #d1d5db;
 }
 
 [data-theme="light"] .auth-category-pill.selected {
-  background: rgba(63, 182, 104, 0.12);
-  border: 1.5px solid var(--accent, #3fb668);
-  color: #16a34a;
+  background: rgba(63, 182, 104, 0.15);
+  border: none !important;
+  color: #15803d;
   font-weight: 700;
 }
 
