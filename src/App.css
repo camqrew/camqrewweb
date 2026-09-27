@@ -4632,11 +4632,11 @@
 }
 
 .auth-category-pill {
-  padding: 7px 15px;
+  padding: 6px 14px;
   border-radius: 20px;
   border: none !important;
   outline: none !important;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 600;
@@ -4653,8 +4653,8 @@
 
 .auth-category-pill.selected {
   border: none !important;
-  background: rgba(63, 182, 104, 0.18);
-  color: var(--accent, #3fb668);
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
   font-weight: 700;
 }
 
@@ -4666,14 +4666,14 @@
 
 [data-theme="light"] .auth-category-pill:hover {
   background: #e5e7eb;
-  border: none !important;
   color: #111827;
+  border: none !important;
 }
 
 [data-theme="light"] .auth-category-pill.selected {
-  background: rgba(63, 182, 104, 0.15);
+  background: #d1d5db;
   border: none !important;
-  color: #15803d;
+  color: #111827;
   font-weight: 700;
 }
 
