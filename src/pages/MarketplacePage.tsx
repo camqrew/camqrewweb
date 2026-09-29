@@ -999,8 +999,8 @@ export const MarketplacePage: React.FC = () => {
                         <div className="option-radio-dot">
                           <div className="option-radio-inner" />
                         </div>
-                        <div className="option-icon-avatar" style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10b981' }}>
-                          <Store size={22} />
+                        <div className="option-icon-avatar hub">
+                          <Store size={20} />
                         </div>
                         <div className="option-content">
                           <div className="option-title-row">
@@ -1201,8 +1201,8 @@ export const MarketplacePage: React.FC = () => {
                     <div className="option-radio-dot">
                       <div className="option-radio-inner" />
                     </div>
-                    <div className="option-icon-avatar">
-                      <QrCode size={22} />
+                    <div className="option-icon-avatar upi">
+                      <QrCode size={20} />
                     </div>
                     <div className="option-content">
                       <div className="option-title-row">
@@ -1222,13 +1222,13 @@ export const MarketplacePage: React.FC = () => {
                     <div className="option-radio-dot">
                       <div className="option-radio-inner" />
                     </div>
-                    <div className="option-icon-avatar" style={{ background: 'rgba(99, 102, 241, 0.12)', color: '#6366f1' }}>
-                      <CreditCard size={22} />
+                    <div className="option-icon-avatar card">
+                      <CreditCard size={20} />
                     </div>
                     <div className="option-content">
                       <div className="option-title-row">
                         <span className="option-title">Credit / Debit Card</span>
-                        <span className="option-price-pill" style={{ color: '#6366f1', background: 'rgba(99, 102, 241, 0.12)' }}>256-Bit SSL</span>
+                        <span className="option-price-pill card">256-Bit SSL</span>
                       </div>
                       <p className="option-desc">
                         Visa, Mastercard, RuPay, and American Express cards supported.
@@ -1244,13 +1244,13 @@ export const MarketplacePage: React.FC = () => {
                       <div className="option-radio-dot">
                         <div className="option-radio-inner" />
                       </div>
-                      <div className="option-icon-avatar" style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b' }}>
-                        <Truck size={22} />
+                      <div className="option-icon-avatar cod">
+                        <Truck size={20} />
                       </div>
                       <div className="option-content">
                         <div className="option-title-row">
                           <span className="option-title">Cash on Delivery (COD)</span>
-                          <span className="option-price-pill" style={{ color: '#f59e0b', background: 'rgba(245, 158, 11, 0.12)' }}>Inspection First</span>
+                          <span className="option-price-pill cod">Inspection First</span>
                         </div>
                         <p className="option-desc">
                           Inspect the parcel at your doorstep before completing payment.
@@ -1262,7 +1262,7 @@ export const MarketplacePage: React.FC = () => {
 
                 {/* Escrow assurance note */}
                 <div className="checkout-escrow-banner">
-                  <ShieldCheck size={20} color="var(--accent)" style={{ flexShrink: 0 }} />
+                  <ShieldCheck size={18} color="var(--accent)" style={{ flexShrink: 0, marginTop: 1 }} />
                   <div>
                     <strong>100% Escrow Protection:</strong> Funds remain securely held in Camqrew Escrow until you receive and verify the gear.
                   </div>

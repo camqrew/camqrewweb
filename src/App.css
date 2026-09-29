@@ -12506,8 +12506,7 @@
 [data-theme="light"] .checkout-modal-card,
 [data-theme="light"] .checkout-review-card,
 [data-theme="light"] .checkout-items-card,
-[data-theme="light"] .checkout-payable-card,
-[data-theme="light"] .checkout-option-card,
+[data-theme="light"] .checkout-option-card:not(.selected),
 [data-theme="light"] .cart-summary-card-redesigned {
   background-color: #ffffff !important;
   border: 1px solid #e5e7eb !important;
