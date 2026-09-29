@@ -311,7 +311,7 @@ export const MarketplacePage: React.FC = () => {
                   Continue Shopping
                 </button>
                 <button 
-                  onClick={() => navigate('/dashboard?tab=bookings')} 
+                  onClick={() => navigate('/dashboard?tab=client')} 
                   className="btn btn-primary"
                 >
                   View My Orders →

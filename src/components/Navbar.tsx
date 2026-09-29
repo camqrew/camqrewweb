@@ -269,17 +269,17 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
                         className="pm-link"
                         onClick={() => setProfileDropdown(false)}
                       >
-                        <User size={16} /> My Client Bookings
+                        <User size={16} /> My Client Bookings & Orders
                       </Link>
                     </>
                   ) : (
                     <>
                       <Link 
-                        to="/dashboard?tab=bookings" 
+                        to="/dashboard?tab=client" 
                         className="pm-link"
                         onClick={() => setProfileDropdown(false)}
                       >
-                        <User size={16} /> My Bookings & Jobs
+                        <User size={16} /> My Bookings & Orders
                       </Link>
                       <Link 
                         to="/register?role=professional" 

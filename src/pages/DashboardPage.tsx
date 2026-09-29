@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { bookingApi } from '../api/bookingApi';
+import { orderApi } from '../api/orderApi';
 import { jobApi } from '../api/jobApi';
 import { productApi } from '../api/productApi';
 import { professionalApi } from '../api/professionalApi';
 import { payoutApi, type PayoutRecord, type CreatorPayoutDetails } from '../api/payoutApi';
 import type { Booking } from '../types/booking';
+import type { Order } from '../types/order';
 import type { JobRequest } from '../types/job';
 import type { Product } from '../types/product';
 import type { ProfessionalProfile } from '../types/professional';
@@ -22,6 +24,7 @@ import {
   Star,
   ShoppingBag,
   Package,
+  Truck,
   CreditCard,
   CheckCircle2,
   Clock,
@@ -146,6 +149,7 @@ export const DashboardPage: React.FC = () => {
 
   // Data states
   const [customerBookings, setCustomerBookings] = useState<Booking[]>([]);
+  const [customerOrders, setCustomerOrders] = useState<Order[]>([]);
   const [clientJobs, setClientJobs] = useState<JobRequest[]>([]);
   const [proJobBoard, setProJobBoard] = useState<JobRequest[]>([]);
   const [proBookings, setProBookings] = useState<Booking[]>([]);
@@ -275,13 +279,15 @@ export const DashboardPage: React.FC = () => {
     setLoading(true);
 
     try {
-      // 1. Fetch Client Bookings & Jobs
-      const [cBookings, cJobs] = await Promise.all([
+      // 1. Fetch Client Bookings, Orders & Jobs
+      const [cBookings, cJobs, cOrders] = await Promise.all([
         bookingApi.getCustomerBookings().catch(() => []),
         jobApi.getClientJobs(user.id).catch(() => []),
+        orderApi.getOrders().catch(() => []),
       ]);
       setCustomerBookings(cBookings);
       setClientJobs(cJobs);
+      setCustomerOrders(cOrders);
 
       // 2. If Professional, fetch pro profile, pro bookings, open leads, listings & payouts
       if (isProRole) {
@@ -1040,7 +1046,7 @@ export const DashboardPage: React.FC = () => {
           className={`pro-tab-item client-tab ${activeTab === 'client' ? 'active' : ''}`}
           onClick={() => handleTabChange('client')}
         >
-          ⇄ Client Bookings ({customerBookings.length})
+          ⇄ Client Bookings & Orders ({customerBookings.length + customerOrders.length})
         </button>
       </div>
 
@@ -1891,6 +1897,33 @@ export const DashboardPage: React.FC = () => {
                 )}
               </div>
 
+              {/* Quick switch banner for gear/products purchased as a buyer */}
+              <div style={{ 
+                background: 'rgba(63, 182, 104, 0.05)', 
+                border: '1px solid rgba(63, 182, 104, 0.2)', 
+                borderRadius: 12, 
+                padding: '12px 18px', 
+                marginBottom: 20,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: 12
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--text-secondary)' }}>
+                  <Package size={18} color="var(--accent)" style={{ flexShrink: 0 }} />
+                  <span>Looking for gear, camera equipment, or products you bought as a client?</span>
+                </div>
+                <button 
+                  type="button" 
+                  className="btn btn-outline btn-sm"
+                  onClick={() => handleTabChange('client')}
+                  style={{ fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                >
+                  View My Purchased Orders ({customerOrders.length}) →
+                </button>
+              </div>
+
               <div className="card empty-state-card">
                 {isCaterer ? (
                   <>
@@ -2475,12 +2508,15 @@ export const DashboardPage: React.FC = () => {
             <div className="tab-client-content">
               <div className="tab-section-header">
                 <div>
-                  <h2 className="section-title">Client Bookings & Broadcast Shoots</h2>
+                  <h2 className="section-title">Client Bookings & Equipment Orders</h2>
                   <p className="section-subtitle">
-                    Shoots you booked with other verified creators and broadcast jobs you posted.
+                    Gear purchases, rentals, shoots you booked with creators, and broadcast jobs you posted.
                   </p>
                 </div>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <Link to="/marketplace" className="btn btn-outline btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <Package size={14} /> Marketplace
+                  </Link>
                   <Link to="/jobs/create" className="btn btn-primary btn-sm">
                     + Post Broadcast Job
                   </Link>
@@ -2489,6 +2525,74 @@ export const DashboardPage: React.FC = () => {
                   </Link>
                 </div>
               </div>
+
+              {/* Customer gear & product orders */}
+              <h3 className="section-heading" style={{ marginTop: 24, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Package size={18} color="var(--accent)" /> Gear & Product Orders ({customerOrders.length})
+              </h3>
+
+              {customerOrders.length === 0 ? (
+                <div className="card empty-state-card" style={{ marginBottom: 28 }}>
+                  <Package size={40} color="var(--text-muted)" style={{ margin: '0 auto 12px' }} />
+                  <h4>No gear or product orders yet</h4>
+                  <p>Buy or rent cameras, lenses, lighting, accessories, or craft hampers with 100% Escrow Protection.</p>
+                  <Link to="/marketplace" className="btn btn-primary" style={{ marginTop: 14 }}>Browse Marketplace</Link>
+                </div>
+              ) : (
+                <div className="bookings-cards-list" style={{ marginBottom: 28 }}>
+                  {customerOrders.map((ord) => (
+                    <div key={ord.id} className="card pro-booking-card">
+                      <div className="booking-card-main">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+                          <span className={`status-pill status-${ord.status}`}>{ord.status.toUpperCase()}</span>
+                          <span className="review-chip" style={{ textTransform: 'capitalize' }}>
+                            {ord.orderType === 'rental' ? '🎥 Equipment Rental' : '📦 Gear Purchase'}
+                          </span>
+                        </div>
+                        <h3 className="booking-service-title">
+                          Order #{ord.id.slice(0, 8).toUpperCase()} • {ord.items.length} {ord.items.length === 1 ? 'Item' : 'Items'}
+                        </h3>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '8px 0' }}>
+                          {ord.items.map((item, idx) => (
+                            <span key={idx} style={{ 
+                              fontSize: 12, 
+                              background: 'rgba(255, 255, 255, 0.05)', 
+                              border: '1px solid rgba(255, 255, 255, 0.08)',
+                              padding: '3px 8px', 
+                              borderRadius: 6,
+                              color: 'var(--text-secondary)'
+                            }}>
+                              {item.product?.name || 'Product'} × {item.quantity}
+                            </span>
+                          ))}
+                        </div>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
+                          Placed on {new Date(ord.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {ord.shippingAddress?.city ? ` • Shipping to ${ord.shippingAddress.city}, ${ord.shippingAddress.state}` : ''}
+                        </p>
+                        {ord.awb_code && (
+                          <p style={{ color: 'var(--accent)', fontSize: 12, marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <Truck size={14} /> Tracking AWB: <strong>{ord.awb_code}</strong> ({ord.courier_name || 'Courier'})
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="booking-card-side">
+                        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Order Total</span>
+                        <strong className="payout-val">₹{ord.total.toLocaleString('en-IN')}</strong>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+                          <span style={{ fontSize: 11, color: 'var(--accent)', textAlign: 'center', fontWeight: 600 }}>
+                            🛡️ 100% Escrow Protected
+                          </span>
+                          <Link to="/marketplace" className="btn btn-outline btn-sm">
+                            Shop More Gear
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Customer bookings list */}
               <h3 className="section-heading" style={{ marginTop: 20, marginBottom: 12 }}>
