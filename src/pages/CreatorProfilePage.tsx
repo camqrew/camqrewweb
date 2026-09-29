@@ -260,7 +260,7 @@ export const CreatorProfilePage: React.FC = () => {
       <SEOHead 
         title={`${pro.name} - ${pro.title}`}
         description={`Book verified ${proArchetype.roleNoun.toLowerCase()} ${pro.name} (${pro.title}) in ${pro.city || pro.district}, ${pro.state}. Starting at ₹${pro.ratePerDay?.toLocaleString('en-IN')}/${proArchetype.rateUnitDefault.toLowerCase()} with milestone escrow protection.`}
-        image={pro.avatar || pro.bannerImage}
+        image={pro.bannerImage || pro.avatar}
       />
 
       {/* Toast Notification */}
@@ -275,13 +275,9 @@ export const CreatorProfilePage: React.FC = () => {
       )}
 
       <div className="container profile-content-container">
-        {/* Top Navigation & Action Bar */}
-        <div className="profile-top-bar">
-          <button 
-            type="button" 
-            onClick={() => navigate(-1)} 
-            className="detail-back-btn"
-          >
+        {/* Top Navigation & Action Strip */}
+        <div className="profile-top-nav-bar">
+          <button onClick={() => navigate(-1)} className="profile-top-back-btn" type="button">
             <ArrowLeft size={16} />
             <span>Back</span>
           </button>
@@ -289,7 +285,7 @@ export const CreatorProfilePage: React.FC = () => {
           <button 
             type="button" 
             onClick={() => setShareModalOpen(true)}
-            className="profile-share-btn"
+            className="profile-top-share-btn"
             title="Share profile card on WhatsApp & Instagram"
           >
             <Share2 size={15} />
