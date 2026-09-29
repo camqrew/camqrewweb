@@ -246,7 +246,7 @@ export const ProductDetailPage: React.FC = () => {
       <div className="product-detail-grid">
         {/* Left Column: Media Showcase */}
         <div className="product-media-column">
-          <div className="product-hero-image-card card">
+          <div className="product-hero-image-card">
             {/* Floating Top Badges Strip */}
             <div className="product-hero-badge-strip">
               <span className={`detail-category-badge ${badgeClass}`}>

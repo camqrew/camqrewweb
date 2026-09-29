@@ -5657,24 +5657,32 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: radial-gradient(circle at 50% 45%, rgba(32, 40, 50, 0.8) 0%, rgba(10, 13, 16, 0.98) 100%);
+  border-radius: 28px;
+  background: transparent;
   cursor: pointer;
+  padding: 0;
+  margin: 0;
 }
 
 [data-theme="light"] .product-hero-img-viewport {
-  background: radial-gradient(circle at 50% 45%, #ffffff 0%, #f1f5f9 100%);
+  background: transparent;
 }
 
 .product-main-view-img {
-  max-width: 86%;
-  max-height: 84%;
-  object-fit: contain;
-  filter: drop-shadow(0 20px 32px rgba(0, 0, 0, 0.6));
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  border-radius: 28px;
+  filter: none;
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .product-hero-img-viewport:hover .product-main-view-img {
-  transform: scale(1.05) translateY(-4px);
+  transform: scale(1.04);
 }
 
 .product-hero-overlay-bar {
