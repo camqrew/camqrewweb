@@ -260,7 +260,7 @@ export const CreatorProfilePage: React.FC = () => {
       <SEOHead 
         title={`${pro.name} - ${pro.title}`}
         description={`Book verified ${proArchetype.roleNoun.toLowerCase()} ${pro.name} (${pro.title}) in ${pro.city || pro.district}, ${pro.state}. Starting at ₹${pro.ratePerDay?.toLocaleString('en-IN')}/${proArchetype.rateUnitDefault.toLowerCase()} with milestone escrow protection.`}
-        image={pro.bannerImage || pro.avatar}
+        image={pro.avatar || pro.bannerImage}
       />
 
       {/* Toast Notification */}
@@ -274,27 +274,29 @@ export const CreatorProfilePage: React.FC = () => {
         </div>
       )}
 
-      {/* Hero Banner */}
-      <div className="profile-hero-banner" style={{ backgroundImage: `url(${pro.bannerImage})` }}>
-        <div className="banner-overlay">
-          <div className="container banner-nav-container">
-            <button onClick={() => navigate(-1)} className="btn btn-sm btn-ghost back-link">
-              <ArrowLeft size={16} /> Back
-            </button>
-
-            <button 
-              type="button" 
-              onClick={() => setShareModalOpen(true)}
-              className="btn btn-sm btn-glass hero-share-btn"
-              title="Share profile card on WhatsApp & Instagram"
-            >
-              <Share2 size={15} /> Share Profile
-            </button>
-          </div>
-        </div>
-      </div>
-
       <div className="container profile-content-container">
+        {/* Top Navigation & Action Bar */}
+        <div className="profile-top-bar">
+          <button 
+            type="button" 
+            onClick={() => navigate(-1)} 
+            className="detail-back-btn"
+          >
+            <ArrowLeft size={16} />
+            <span>Back</span>
+          </button>
+
+          <button 
+            type="button" 
+            onClick={() => setShareModalOpen(true)}
+            className="profile-share-btn"
+            title="Share profile card on WhatsApp & Instagram"
+          >
+            <Share2 size={15} />
+            <span>Share Profile</span>
+          </button>
+        </div>
+
         <div className="profile-layout-grid">
           {/* Main Column */}
           <div className="profile-main-col">
