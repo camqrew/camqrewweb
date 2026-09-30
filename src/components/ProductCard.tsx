@@ -139,8 +139,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
             disabled={!product.inStock}
             title={product.inStock ? 'Add to Cart' : 'Out of Stock'}
           >
-            <ShoppingBag size={15} style={{ marginRight: 6 }} />
-            <span>+ Add to Cart</span>
+            <ShoppingBag size={15} />
+            <span>{product.inStock ? 'Add to Cart' : 'Out of Stock'}</span>
           </button>
         </div>
       </div>
