@@ -1,14 +1,24 @@
 import { Logo } from '../components/Logo';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../api/supabaseClient';
 import { Loader2 } from 'lucide-react';
 import { SocialAuthButtons } from '../components/SocialAuthButtons';
 
 export const Login = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) {
+        navigate('/admin');
+      }
+    });
+  }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,13 +32,14 @@ export const Login = () => {
 
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim().toLowerCase(),
         password,
       });
 
       if (signInError) {
         throw signInError;
       }
+      navigate('/admin');
     } catch (err: any) {
       setError(err.message || 'Failed to login.');
     } finally {
@@ -39,8 +50,8 @@ export const Login = () => {
   return (
     <div className="login-container">
       <div className="login-card">
-        <div className="login-logo" style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-          <Logo height={40} />
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+          <Logo height={38} />
         </div>
         <h1 className="login-title">Admin Portal</h1>
         <p className="login-subtitle">Sign in to manage Camqrew</p>

@@ -25,6 +25,7 @@ import Inventory from './pages/Inventory';
 import Disputes from './pages/Disputes';
 import Subscriptions from './pages/Subscriptions';
 import Orders from './pages/Orders';
+import Login from './pages/Login';
 
 import { useAuthStore } from './store/authStore';
 import { supabase } from './api/supabaseClient';
@@ -83,6 +84,9 @@ function App() {
           <Route path="/terms" element={<LegalPage />} />
           <Route path="/privacy" element={<LegalPage />} />
         </Route>
+
+        {/* Admin Portal Auth */}
+        <Route path="/admin/login" element={<Login />} />
 
         {/* Admin Backoffice Portal Routes */}
         <Route path="/admin" element={<AdminLayout theme={theme} toggleTheme={toggleTheme} />}>

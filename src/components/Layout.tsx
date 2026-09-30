@@ -143,7 +143,7 @@ export const Layout = ({ theme, toggleTheme }: LayoutProps) => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate('/login');
+    navigate('/admin/login');
   };
 
   const totalNotifications = pendingVerifications + lowStockCount + activeDisputes;
