@@ -1,14 +1,35 @@
 import { useState, useEffect } from 'react';
-import { Package, XCircle, Edit, Plus, X, UploadCloud } from 'lucide-react';
-import { CustomSelect } from '../components/CustomSelect';
+import { 
+  Package, 
+  Trash2, 
+  Edit3, 
+  Plus, 
+  X, 
+  UploadCloud, 
+  Search, 
+  ExternalLink, 
+  RefreshCw, 
+  CheckCircle2
+} from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../api/supabaseClient';
 
 export default function Inventory() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   
+  // Search and Filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'out_of_stock'>('all');
+
+  // Modal State
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'basic' | 'pricing' | 'logistics' | 'seo'>('basic');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -28,36 +49,64 @@ export default function Inventory() {
     search_terms: '',
     browse_nodes: '',
     battery_info: '',
-    country_of_origin: '',
-    safety_warnings: ''
+    country_of_origin: 'India',
+    safety_warnings: '',
+    in_stock: true,
   });
+
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+
+  const categories = ['All', 'Cameras', 'Lenses', 'Lighting', 'Audio', 'Drones', 'Gimbals', 'Crafts & Gifting', 'Accessories'];
 
   useEffect(() => {
     fetchInventory();
   }, []);
 
-  async function fetchInventory() {
-    setLoading(true);
+  // Handle URL query action e.g. ?action=new
+  useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      openAddModal();
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams]);
+
+  // Toast timer
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
+
+  async function fetchInventory(isManual = false) {
+    if (isManual) setRefreshing(true);
+    else setLoading(true);
+
     try {
-      const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
       if (error) throw error;
       setItems(data || []);
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }
 
   function openAddModal() {
     setEditingId(null);
+    setActiveTab('basic');
     setFormData({ 
       name: '', brand: '', category: 'Cameras', price: '', description: '', cod_enabled: false,
       gtin: '', sku: '', bullet_points: '', sale_price: '', item_dimensions: '', package_dimensions: '',
-      item_weight: '', package_weight: '', search_terms: '', browse_nodes: '', battery_info: '', country_of_origin: '', safety_warnings: ''
+      item_weight: '', package_weight: '', search_terms: '', browse_nodes: '', battery_info: '', 
+      country_of_origin: 'India', safety_warnings: '', in_stock: true
     });
     setSelectedFiles([]);
     setExistingImages([]);
@@ -66,6 +115,7 @@ export default function Inventory() {
 
   function openEditModal(item: any) {
     setEditingId(item.id);
+    setActiveTab('basic');
     setFormData({
       name: item.name || '',
       brand: item.brand || '',
@@ -84,12 +134,36 @@ export default function Inventory() {
       search_terms: Array.isArray(item.search_terms) ? item.search_terms.join(', ') : (item.search_terms || ''),
       browse_nodes: Array.isArray(item.browse_nodes) ? item.browse_nodes.join(', ') : (item.browse_nodes || ''),
       battery_info: item.battery_info || '',
-      country_of_origin: item.country_of_origin || '',
-      safety_warnings: item.safety_warnings || ''
+      country_of_origin: item.country_of_origin || 'India',
+      safety_warnings: item.safety_warnings || '',
+      in_stock: item.in_stock !== false,
     });
     setExistingImages(item.images || []);
     setSelectedFiles([]);
     setShowModal(true);
+  }
+
+  // Quick 1-click toggle stock status directly on table
+  async function toggleStockStatus(item: any, e: React.MouseEvent) {
+    e.stopPropagation();
+    const newStatus = !item.in_stock;
+    
+    // Optimistic UI update
+    setItems(prev => prev.map(i => i.id === item.id ? { ...i, in_stock: newStatus } : i));
+
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({ in_stock: newStatus })
+        .eq('id', item.id);
+
+      if (error) throw error;
+      setToastMessage(`Product status updated to ${newStatus ? 'In Stock' : 'Out of Stock'}`);
+    } catch (err: any) {
+      // Revert if error
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, in_stock: !newStatus } : i));
+      setToastMessage(`Error toggling stock: ${err.message}`);
+    }
   }
 
   async function uploadImages(files: File[]) {
@@ -112,6 +186,15 @@ export default function Inventory() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!formData.name.trim()) {
+      alert('Product Name is required.');
+      return;
+    }
+    if (!formData.price || Number(formData.price) <= 0) {
+      alert('Please enter a valid price.');
+      return;
+    }
+
     setUploading(true);
     try {
       let uploadedUrls: string[] = [];
@@ -119,17 +202,16 @@ export default function Inventory() {
         uploadedUrls = await uploadImages(selectedFiles);
       }
       
-      // Combine existing images (if they weren't removed) with newly uploaded ones
       const finalImages = [...existingImages, ...uploadedUrls];
 
       const row = {
-        name: formData.name,
-        brand: formData.brand,
+        name: formData.name.trim(),
+        brand: formData.brand.trim() || 'Camqrew',
         category: formData.category,
         price: Number(formData.price),
         description: formData.description,
         images: finalImages,
-        in_stock: true,
+        in_stock: formData.in_stock,
         cod_enabled: formData.cod_enabled,
         gtin: formData.gtin,
         sku: formData.sku,
@@ -150,10 +232,12 @@ export default function Inventory() {
         const { data, error } = await supabase.from('products').update(row).eq('id', editingId).select().single();
         if (error) throw error;
         setItems(items.map(i => i.id === editingId ? data : i));
+        setToastMessage(`Updated "${formData.name}" successfully!`);
       } else {
         const { data, error } = await supabase.from('products').insert([row]).select().single();
         if (error) throw error;
         setItems([data, ...items]);
+        setToastMessage(`Created new listing "${formData.name}"!`);
       }
       
       setShowModal(false);
@@ -164,11 +248,12 @@ export default function Inventory() {
     }
   }
 
-  async function removeItem(id: string) {
-    if (!window.confirm('Are you sure you want to completely remove this official product from the platform?')) return;
+  async function removeItem(id: string, name: string) {
+    if (!window.confirm(`Are you sure you want to permanently delete "${name}" from the catalogue?`)) return;
     try {
       await supabase.from('products').delete().eq('id', id);
       setItems(items.filter(i => i.id !== id));
+      setToastMessage(`Removed "${name}" from catalogue.`);
     } catch (e) {
       console.error('Error deleting item', e);
     }
@@ -178,88 +263,253 @@ export default function Inventory() {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
   };
 
-  if (loading) {
-    return <div style={{ padding: 40, color: 'var(--text-secondary)' }}>Loading official inventory catalogue...</div>;
-  }
+  // Filter items by search, category, and stock
+  const filteredItems = items.filter(item => {
+    // Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const matchName = item.name?.toLowerCase().includes(q);
+      const matchBrand = item.brand?.toLowerCase().includes(q);
+      const matchSku = item.sku?.toLowerCase().includes(q);
+      if (!matchName && !matchBrand && !matchSku) return false;
+    }
+
+    // Category
+    if (selectedCategory !== 'All' && item.category !== selectedCategory) {
+      return false;
+    }
+
+    // Stock
+    if (stockFilter === 'in_stock' && !item.in_stock) return false;
+    if (stockFilter === 'out_of_stock' && item.in_stock) return false;
+
+    return true;
+  });
+
+  const inStockCount = items.filter(i => i.in_stock).length;
+  const outOfStockCount = items.filter(i => !i.in_stock).length;
 
   return (
-    <div>
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">Inventory Management</h1>
-          <p className="page-subtitle">Manage official Camqrew Gear Store catalogue (Products for Sale)</p>
+    <div className="admin-page-content">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="admin-floating-toast">
+          <CheckCircle2 size={18} color="var(--accent)" />
+          <span>{toastMessage}</span>
+          <button type="button" onClick={() => setToastMessage(null)} className="toast-close-btn">
+            <X size={14} />
+          </button>
         </div>
-        <button className="btn btn-primary" onClick={openAddModal}>
-          <Plus size={18} /> Add Product for Sale
-        </button>
+      )}
+
+      {/* Page Header */}
+      <div className="admin-page-header">
+        <div>
+          <h1 className="admin-page-title">Inventory & Catalogue</h1>
+          <p className="admin-page-subtitle">
+            Manage official gear, cinema kits, artisanal items & e-commerce listings
+          </p>
+        </div>
+
+        <div className="admin-header-controls">
+          <button 
+            type="button" 
+            className="admin-btn admin-btn-secondary"
+            onClick={() => fetchInventory(true)}
+            disabled={refreshing}
+            title="Refresh catalogue"
+          >
+            <RefreshCw size={15} className={refreshing ? 'admin-spin-icon' : ''} />
+            <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
+          </button>
+
+          <button 
+            type="button" 
+            className="admin-btn admin-btn-primary" 
+            onClick={openAddModal}
+          >
+            <Plus size={16} />
+            <span>Add Product</span>
+          </button>
+        </div>
       </div>
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div className="table-wrapper" style={{ border: 'none', borderRadius: 0 }}>
-          <table>
+      {/* Filter and Search Hub */}
+      <div className="admin-filter-hub">
+        <div className="admin-search-field">
+          <Search size={16} className="search-field-icon" />
+          <input 
+            type="text" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by gear name, brand, SKU..."
+            className="admin-input-clean"
+          />
+          {searchQuery && (
+            <button type="button" onClick={() => setSearchQuery('')} className="clear-search-btn">
+              <X size={14} />
+            </button>
+          )}
+        </div>
+
+        {/* Stock Filter Pills */}
+        <div className="admin-segmented-tabs">
+          <button 
+            type="button" 
+            className={`admin-tab-btn ${stockFilter === 'all' ? 'active' : ''}`}
+            onClick={() => setStockFilter('all')}
+          >
+            All ({items.length})
+          </button>
+          <button 
+            type="button" 
+            className={`admin-tab-btn ${stockFilter === 'in_stock' ? 'active' : ''}`}
+            onClick={() => setStockFilter('in_stock')}
+          >
+            In Stock ({inStockCount})
+          </button>
+          <button 
+            type="button" 
+            className={`admin-tab-btn ${stockFilter === 'out_of_stock' ? 'active' : ''}`}
+            onClick={() => setStockFilter('out_of_stock')}
+          >
+            Out of Stock ({outOfStockCount})
+          </button>
+        </div>
+      </div>
+
+      {/* Category Pills Strip */}
+      <div className="admin-cat-filter-strip">
+        {categories.map(cat => (
+          <button
+            key={cat}
+            type="button"
+            className={`admin-cat-pill ${selectedCategory === cat ? 'active' : ''}`}
+            onClick={() => setSelectedCategory(cat)}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Main Inventory Table Card */}
+      <div className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="admin-table-wrapper">
+          <table className="admin-table">
             <thead>
               <tr>
-                <th>Product Details</th>
+                <th style={{ width: '40%' }}>Product Details</th>
                 <th>Category</th>
                 <th>Brand</th>
                 <th>Price</th>
-                <th>Stock Status</th>
-                <th>Actions</th>
+                <th>Availability</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {items.map(item => (
-                <tr key={item.id}>
+              {filteredItems.map(item => (
+                <tr key={item.id} className="admin-row-hover">
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                      <div style={{ backgroundColor: "var(--bg-surface)", width: 64, height: 64, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                    <div className="admin-product-cell">
+                      <div className="admin-product-thumb">
                         {item.images && item.images.length > 0 ? (
-                          <img src={item.images[0]} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <img src={item.images[0]} alt={item.name} />
                         ) : (
-                          <Package size={28} color="var(--text-muted)" />
+                          <Package size={24} color="var(--text-muted)" />
                         )}
                       </div>
-                      <div>
-                        <div style={{ fontWeight: 600, fontSize: 15, color: 'var(--text-primary)' }}>{item.name}</div>
-                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4, maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {item.description || 'No description'}
+                      <div className="admin-product-meta">
+                        <div className="admin-product-name">{item.name}</div>
+                        <div className="admin-product-desc-line">
+                          {item.sku ? <span className="sku-tag">SKU: {item.sku}</span> : null}
+                          <span>{item.description || 'No description provided'}</span>
                         </div>
                       </div>
                     </div>
                   </td>
+
                   <td>
-                    <div style={{ fontWeight: 500 }}>{item.category}</div>
+                    <span className="admin-cat-tag">{item.category}</span>
                   </td>
+
                   <td>
-                    <span className="badge badge-accent">{item.brand || 'Camqrew'}</span>
+                    <span className="admin-brand-tag">{item.brand || 'Camqrew'}</span>
                   </td>
+
                   <td>
-                    <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--accent)' }}>
-                      {formatCurrency(item.price)}
+                    <div className="admin-price-cell">
+                      <span className="price-main">{formatCurrency(item.price)}</span>
+                      {item.sale_price && (
+                        <span className="price-strike">{formatCurrency(item.sale_price)}</span>
+                      )}
                     </div>
                   </td>
+
                   <td>
-                    {item.in_stock ? (
-                      <span className="badge badge-success">In Stock</span>
-                    ) : (
-                      <span className="badge badge-danger">Out of Stock</span>
-                    )}
+                    <button 
+                      type="button"
+                      className={`admin-stock-toggle-btn ${item.in_stock ? 'in-stock' : 'out-of-stock'}`}
+                      onClick={(e) => toggleStockStatus(item, e)}
+                      title="Click to toggle stock status"
+                    >
+                      <span className="stock-dot" />
+                      <span>{item.in_stock ? 'In Stock' : 'Out of Stock'}</span>
+                    </button>
                   </td>
+
                   <td>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button className="btn" onClick={() => openEditModal(item)}>
-                        <Edit size={16} /> Edit
+                    <div className="admin-actions-cell">
+                      <Link 
+                        to={`/marketplace/${item.id}`} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="admin-table-icon-btn" 
+                        title="View Live Listing"
+                      >
+                        <ExternalLink size={16} />
+                      </Link>
+
+                      <button 
+                        type="button" 
+                        className="admin-table-icon-btn" 
+                        onClick={() => openEditModal(item)}
+                        title="Edit Product"
+                      >
+                        <Edit3 size={16} />
                       </button>
-                      <button className="btn btn-danger" onClick={() => removeItem(item.id)}>
-                        <XCircle size={16} />
+
+                      <button 
+                        type="button" 
+                        className="admin-table-icon-btn danger" 
+                        onClick={() => removeItem(item.id, item.name)}
+                        title="Delete Product"
+                      >
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </td>
                 </tr>
               ))}
-              {items.length === 0 && (
+
+              {filteredItems.length === 0 && !loading && (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No official products found in the catalogue.</td>
+                  <td colSpan={6}>
+                    <div className="admin-table-empty">
+                      <Package size={36} color="var(--text-muted)" />
+                      <div className="empty-title">No products found</div>
+                      <div className="empty-sub">
+                        {searchQuery ? `No listings match your search "${searchQuery}"` : 'No items match selected filters.'}
+                      </div>
+                      <button 
+                        type="button" 
+                        className="admin-btn admin-btn-primary" 
+                        onClick={openAddModal}
+                        style={{ marginTop: 14 }}
+                      >
+                        <Plus size={16} /> Add First Product
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -267,216 +517,384 @@ export default function Inventory() {
         </div>
       </div>
 
+      {/* Add / Edit Product Modal */}
       {showModal && (
-        <div className="auth-gate-modal-backdrop" onClick={() => setShowModal(false)}>
-          <div className="card auth-gate-modal-card" style={{ maxWidth: 540, width: '100%', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <button 
-              className="modal-close-icon"
-              onClick={() => setShowModal(false)}
-            >
-              <X size={20} />
-            </button>
-            <h2 style={{ marginBottom: 24, fontSize: 20 }}>
-              {editingId ? 'Edit Product for Sale' : 'Add Official Product for Sale'}
-            </h2>
-            
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="admin-modal-backdrop" onClick={() => setShowModal(false)}>
+          <div className="admin-modal-card-lg" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="admin-modal-header">
               <div>
-                <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Product Name</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  value={formData.name} 
-                  onChange={e => setFormData({...formData, name: e.target.value})} 
-                  required
-                />
+                <h2 className="admin-modal-title">
+                  {editingId ? 'Edit Product Listing' : 'Add New Gear Listing'}
+                </h2>
+                <p className="admin-modal-sub">
+                  Official catalogue item published across Marketplace & Rental stores
+                </p>
               </div>
-              <div style={{ display: 'flex', gap: 16 }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Brand</label>
-                  <input 
-                    type="text" 
-                    className="input-field" 
-                    value={formData.brand} 
-                    onChange={e => setFormData({...formData, brand: e.target.value})} 
-                    required
-                  />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Category</label>
-                  <CustomSelect 
-                    value={formData.category}
-                    onChange={val => setFormData({...formData, category: val})}
-                    options={['Cameras', 'Lenses', 'Lighting', 'Audio', 'Accessories', 'Drones']}
-                    placeholder="Select Category"
-                  />
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 16 }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Price (₹)</label>
-                  <input 
-                    type="number" 
-                    className="input-field" 
-                    value={formData.price} 
-                    onChange={e => setFormData({...formData, price: e.target.value})} 
-                    required
-                  />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Sale Price (₹) - Optional</label>
-                  <input 
-                    type="number" 
-                    className="input-field" 
-                    value={formData.sale_price} 
-                    onChange={e => setFormData({...formData, sale_price: e.target.value})} 
-                  />
-                </div>
-              </div>
+              <button 
+                type="button" 
+                onClick={() => setShowModal(false)}
+                className="admin-modal-close-btn"
+              >
+                <X size={18} />
+              </button>
+            </div>
 
-              <div style={{ display: 'flex', gap: 16 }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>SKU (Stock Keeping Unit)</label>
-                  <input 
-                    type="text" 
-                    className="input-field" 
-                    value={formData.sku} 
-                    onChange={e => setFormData({...formData, sku: e.target.value})} 
-                  />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>GTIN (UPC/EAN/ISBN)</label>
-                  <input 
-                    type="text" 
-                    className="input-field" 
-                    value={formData.gtin} 
-                    onChange={e => setFormData({...formData, gtin: e.target.value})} 
-                  />
-                </div>
-              </div>
+            {/* Modal Tab Navigation */}
+            <div className="admin-modal-tabs">
+              <button 
+                type="button"
+                className={`admin-modal-tab-btn ${activeTab === 'basic' ? 'active' : ''}`}
+                onClick={() => setActiveTab('basic')}
+              >
+                General & Media
+              </button>
+              <button 
+                type="button"
+                className={`admin-modal-tab-btn ${activeTab === 'pricing' ? 'active' : ''}`}
+                onClick={() => setActiveTab('pricing')}
+              >
+                Pricing & Stock
+              </button>
+              <button 
+                type="button"
+                className={`admin-modal-tab-btn ${activeTab === 'logistics' ? 'active' : ''}`}
+                onClick={() => setActiveTab('logistics')}
+              >
+                Dimensions & Shipping
+              </button>
+              <button 
+                type="button"
+                className={`admin-modal-tab-btn ${activeTab === 'seo' ? 'active' : ''}`}
+                onClick={() => setActiveTab('seo')}
+              >
+                Identifiers & SEO
+              </button>
+            </div>
 
-              {/* IMAGES UPLOAD SECTION */}
-              <div>
-                <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Product Images</label>
-                
-                {/* Show Existing Images if Editing */}
-                {existingImages.length > 0 && (
-                  <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-                    {existingImages.map((img, i) => (
-                      <div key={i} style={{ position: 'relative', width: 60, height: 60 }}>
-                        <img src={img} alt="Existing" style={{ width: '100%', height: '100%', borderRadius: 8, objectFit: 'cover' }} />
-                        <button 
-                          type="button"
-                          onClick={() => setExistingImages(existingImages.filter((_, idx) => idx !== i))}
-                          style={{ position: 'absolute', top: -6, right: -6, backgroundColor: 'var(--danger)', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                        >
-                          <X size={12} />
-                        </button>
+            {/* Modal Form Body */}
+            <form onSubmit={handleSubmit} className="admin-modal-form">
+              <div className="admin-modal-scroll-area">
+                {/* TAB 1: General & Media */}
+                {activeTab === 'basic' && (
+                  <div className="modal-tab-content">
+                    <div className="form-group">
+                      <label className="admin-form-label">Product Title *</label>
+                      <input 
+                        type="text"
+                        className="admin-form-input"
+                        placeholder="e.g. Sony FX3 Cinema Line Full-Frame Camera Body"
+                        value={formData.name}
+                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div className="admin-form-row-2">
+                      <div className="form-group">
+                        <label className="admin-form-label">Brand / Manufacturer</label>
+                        <input 
+                          type="text"
+                          className="admin-form-input"
+                          placeholder="e.g. Sony, Canon, RED, Aputure"
+                          value={formData.brand}
+                          onChange={e => setFormData({ ...formData, brand: e.target.value })}
+                        />
                       </div>
-                    ))}
+
+                      <div className="form-group">
+                        <label className="admin-form-label">Category</label>
+                        <select 
+                          className="admin-form-input"
+                          value={formData.category}
+                          onChange={e => setFormData({ ...formData, category: e.target.value })}
+                        >
+                          {categories.filter(c => c !== 'All').map(c => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="admin-form-label">Description</label>
+                      <textarea 
+                        className="admin-form-textarea"
+                        rows={4}
+                        placeholder="Detailed technical specifications, condition notes, and what's included..."
+                        value={formData.description}
+                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                      />
+                    </div>
+
+                    {/* Image Upload Area */}
+                    <div className="form-group">
+                      <label className="admin-form-label">Product Showcase Images</label>
+                      <div className="admin-image-upload-zone">
+                        <UploadCloud size={28} color="var(--accent)" />
+                        <div style={{ fontWeight: 600, fontSize: 14, marginTop: 8 }}>
+                          Click to select photos or drag & drop
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                          PNG, JPG, or WEBP up to 10MB
+                        </div>
+                        <input 
+                          type="file" 
+                          multiple 
+                          accept="image/*"
+                          onChange={e => {
+                            if (e.target.files) {
+                              setSelectedFiles(Array.from(e.target.files));
+                            }
+                          }}
+                          className="upload-file-input"
+                        />
+                      </div>
+
+                      {/* Existing Images Thumbnails */}
+                      {existingImages.length > 0 && (
+                        <div className="image-previews-strip">
+                          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', width: '100%' }}>
+                            Current Images ({existingImages.length})
+                          </span>
+                          {existingImages.map((img, idx) => (
+                            <div key={idx} className="preview-thumb-box">
+                              <img src={img} alt="Current" />
+                              <button 
+                                type="button" 
+                                className="remove-img-btn"
+                                onClick={() => setExistingImages(existingImages.filter((_, i) => i !== idx))}
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* New Files Preview */}
+                      {selectedFiles.length > 0 && (
+                        <div className="new-files-badge-list">
+                          <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>
+                            {selectedFiles.length} new {selectedFiles.length === 1 ? 'file' : 'files'} selected for upload
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
-                
-                <div style={{ position: 'relative', border: 'none', borderRadius: 8, padding: '20px', textAlign: 'center', backgroundColor: 'var(--bg-surface)' }}>
-                  <input 
-                    type="file" 
-                    multiple 
-                    accept="image/*"
-                    onChange={e => {
-                      if (e.target.files) setSelectedFiles(Array.from(e.target.files));
-                    }}
-                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
-                  />
-                  <UploadCloud size={24} color="var(--text-muted)" style={{ margin: '0 auto 8px' }} />
-                  <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                    {selectedFiles.length > 0 ? `${selectedFiles.length} new file(s) selected` : 'Click or drag to upload images'}
+
+                {/* TAB 2: Pricing & Stock */}
+                {activeTab === 'pricing' && (
+                  <div className="modal-tab-content">
+                    <div className="admin-form-row-2">
+                      <div className="form-group">
+                        <label className="admin-form-label">Retail / Selling Price (₹) *</label>
+                        <input 
+                          type="number"
+                          className="admin-form-input"
+                          placeholder="e.g. 299900"
+                          value={formData.price}
+                          onChange={e => setFormData({ ...formData, price: e.target.value })}
+                          required
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="admin-form-label">Promotional Sale Price (Optional)</label>
+                        <input 
+                          type="number"
+                          className="admin-form-input"
+                          placeholder="e.g. 284900"
+                          value={formData.sale_price}
+                          onChange={e => setFormData({ ...formData, sale_price: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="admin-form-row-2" style={{ marginTop: 12 }}>
+                      <div className="form-group">
+                        <label className="admin-form-label">Stock Availability</label>
+                        <div className="admin-radio-toggle-group">
+                          <label className={`radio-pill-option ${formData.in_stock ? 'active' : ''}`}>
+                            <input 
+                              type="radio" 
+                              name="in_stock" 
+                              checked={formData.in_stock} 
+                              onChange={() => setFormData({ ...formData, in_stock: true })} 
+                            />
+                            <span>In Stock (Available for Order)</span>
+                          </label>
+                          <label className={`radio-pill-option ${!formData.in_stock ? 'active' : ''}`}>
+                            <input 
+                              type="radio" 
+                              name="in_stock" 
+                              checked={!formData.in_stock} 
+                              onChange={() => setFormData({ ...formData, in_stock: false })} 
+                            />
+                            <span>Out of Stock</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="form-group">
+                        <label className="admin-form-label">Payment Methods</label>
+                        <label className="admin-checkbox-label">
+                          <input 
+                            type="checkbox"
+                            checked={formData.cod_enabled}
+                            onChange={e => setFormData({ ...formData, cod_enabled: e.target.checked })}
+                          />
+                          <span>Allow Cash on Delivery (COD) for this item</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="form-group" style={{ marginTop: 16 }}>
+                      <label className="admin-form-label">Key Highlights / Bullet Points (One per line)</label>
+                      <textarea 
+                        className="admin-form-textarea"
+                        rows={4}
+                        placeholder={"Full-Frame 10.2MP BSI CMOS Sensor\nUHD 4K up to 120p, 10-Bit 4:2:2 XAVC S-I\n15+ Stops Dynamic Range\nFast Hybrid AF with Real-Time Eye AF"}
+                        value={formData.bullet_points}
+                        onChange={e => setFormData({ ...formData, bullet_points: e.target.value })}
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* TAB 3: Logistics & Dimensions */}
+                {activeTab === 'logistics' && (
+                  <div className="modal-tab-content">
+                    <div className="admin-form-row-2">
+                      <div className="form-group">
+                        <label className="admin-form-label">Item Weight (kg / g)</label>
+                        <input 
+                          type="text"
+                          className="admin-form-input"
+                          placeholder="e.g. 715g"
+                          value={formData.item_weight}
+                          onChange={e => setFormData({ ...formData, item_weight: e.target.value })}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="admin-form-label">Package Weight (Shiprocket)</label>
+                        <input 
+                          type="text"
+                          className="admin-form-input"
+                          placeholder="e.g. 1.4kg"
+                          value={formData.package_weight}
+                          onChange={e => setFormData({ ...formData, package_weight: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="admin-form-row-2" style={{ marginTop: 12 }}>
+                      <div className="form-group">
+                        <label className="admin-form-label">Item Dimensions (L × W × H)</label>
+                        <input 
+                          type="text"
+                          className="admin-form-input"
+                          placeholder="e.g. 129.7 x 77.8 x 84.5 mm"
+                          value={formData.item_dimensions}
+                          onChange={e => setFormData({ ...formData, item_dimensions: e.target.value })}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="admin-form-label">Package Dimensions for Courier</label>
+                        <input 
+                          type="text"
+                          className="admin-form-input"
+                          placeholder="e.g. 24 x 18 x 15 cm"
+                          value={formData.package_dimensions}
+                          onChange={e => setFormData({ ...formData, package_dimensions: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="admin-form-row-2" style={{ marginTop: 12 }}>
+                      <div className="form-group">
+                        <label className="admin-form-label">Country of Origin</label>
+                        <input 
+                          type="text"
+                          className="admin-form-input"
+                          value={formData.country_of_origin}
+                          onChange={e => setFormData({ ...formData, country_of_origin: e.target.value })}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="admin-form-label">Battery Information</label>
+                        <input 
+                          type="text"
+                          className="admin-form-input"
+                          placeholder="e.g. 1x NP-FZ100 Lithium-Ion included"
+                          value={formData.battery_info}
+                          onChange={e => setFormData({ ...formData, battery_info: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 4: Identifiers & SEO */}
+                {activeTab === 'seo' && (
+                  <div className="modal-tab-content">
+                    <div className="admin-form-row-2">
+                      <div className="form-group">
+                        <label className="admin-form-label">SKU (Stock Keeping Unit)</label>
+                        <input 
+                          type="text"
+                          className="admin-form-input"
+                          placeholder="e.g. SNY-FX3-BODY-01"
+                          value={formData.sku}
+                          onChange={e => setFormData({ ...formData, sku: e.target.value })}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="admin-form-label">GTIN / UPC / Barcode</label>
+                        <input 
+                          type="text"
+                          className="admin-form-input"
+                          placeholder="e.g. 027242922716"
+                          value={formData.gtin}
+                          onChange={e => setFormData({ ...formData, gtin: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-group" style={{ marginTop: 12 }}>
+                      <label className="admin-form-label">Search Keywords (Comma separated)</label>
+                      <input 
+                        type="text"
+                        className="admin-form-input"
+                        placeholder="cinema camera, 4k 120fps, sony fx3, wedding videography, vlogging"
+                        value={formData.search_terms}
+                        onChange={e => setFormData({ ...formData, search_terms: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Description</label>
-                <textarea 
-                  className="input-field" 
-                  style={{ minHeight: 80, resize: 'vertical' }}
-                  value={formData.description} 
-                  onChange={e => setFormData({...formData, description: e.target.value})} 
-                />
-              </div>
+              {/* Modal Actions Footer */}
+              <div className="admin-modal-footer">
+                <button 
+                  type="button" 
+                  className="admin-btn admin-btn-secondary"
+                  onClick={() => setShowModal(false)}
+                  disabled={uploading}
+                >
+                  Cancel
+                </button>
 
-              <div>
-                <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Bullet Points (One per line)</label>
-                <textarea 
-                  className="input-field" 
-                  style={{ minHeight: 80, resize: 'vertical' }}
-                  value={formData.bullet_points} 
-                  onChange={e => setFormData({...formData, bullet_points: e.target.value})} 
-                  placeholder="High quality material\nIncludes carrying case\n..."
-                />
+                <button 
+                  type="submit" 
+                  className="admin-btn admin-btn-primary"
+                  disabled={uploading}
+                >
+                  {uploading ? 'Uploading & Saving...' : (editingId ? 'Save Changes' : 'Publish Product')}
+                </button>
               </div>
-
-              <div style={{ display: 'flex', gap: 16 }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Item Dimensions (L x W x H)</label>
-                  <input type="text" className="input-field" value={formData.item_dimensions} onChange={e => setFormData({...formData, item_dimensions: e.target.value})} placeholder="10 x 5 x 2 cm" />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Package Dimensions</label>
-                  <input type="text" className="input-field" value={formData.package_dimensions} onChange={e => setFormData({...formData, package_dimensions: e.target.value})} placeholder="12 x 7 x 4 cm" />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: 16 }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Item Weight</label>
-                  <input type="text" className="input-field" value={formData.item_weight} onChange={e => setFormData({...formData, item_weight: e.target.value})} placeholder="200g" />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Package Weight</label>
-                  <input type="text" className="input-field" value={formData.package_weight} onChange={e => setFormData({...formData, package_weight: e.target.value})} placeholder="250g" />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: 16 }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Country of Origin</label>
-                  <input type="text" className="input-field" value={formData.country_of_origin} onChange={e => setFormData({...formData, country_of_origin: e.target.value})} placeholder="e.g. India" />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Battery Information</label>
-                  <input type="text" className="input-field" value={formData.battery_info} onChange={e => setFormData({...formData, battery_info: e.target.value})} placeholder="e.g. Lithium-ion included" />
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Safety Warnings</label>
-                <input type="text" className="input-field" value={formData.safety_warnings} onChange={e => setFormData({...formData, safety_warnings: e.target.value})} placeholder="e.g. Choking hazard - small parts" />
-              </div>
-
-              <div style={{ display: 'flex', gap: 16 }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Search Terms (comma separated)</label>
-                  <input type="text" className="input-field" value={formData.search_terms} onChange={e => setFormData({...formData, search_terms: e.target.value})} placeholder="dslr, camera, lens" />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>Browse Nodes (comma separated)</label>
-                  <input type="text" className="input-field" value={formData.browse_nodes} onChange={e => setFormData({...formData, browse_nodes: e.target.value})} placeholder="Electronics > Cameras" />
-                </div>
-              </div>
-
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer' }}>
-                <input 
-                  type="checkbox" 
-                  checked={formData.cod_enabled}
-                  onChange={e => setFormData({...formData, cod_enabled: e.target.checked})}
-                  style={{ width: 16, height: 16, cursor: 'pointer' }}
-                />
-                Enable Cash on Delivery (COD) for this product
-              </label>
-              
-              <button type="submit" className="btn btn-primary" style={{ marginTop: 8, padding: 12 }} disabled={uploading}>
-                {uploading ? 'Uploading & Saving...' : editingId ? 'Update Product' : 'List Product on Gear Store'}
-              </button>
             </form>
           </div>
         </div>
