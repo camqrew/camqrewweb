@@ -1,35 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import { Logo } from '../components/Logo';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../api/supabaseClient';
-import { Logo } from '../components/Logo';
+import { authApi } from '../api/authApi';
 import { GoogleIcon } from '../components/SocialAuthButtons';
-import {
-  Loader2,
-  Eye,
-  EyeOff,
-  ShieldCheck,
-  ArrowLeft,
-  CheckCircle2,
-  AlertCircle,
-  Lock,
-  Sparkles
+import { 
+  Loader2, 
+  Eye, 
+  EyeOff, 
+  ShieldCheck, 
+  AlertCircle, 
+  CheckCircle2, 
+  ArrowLeft, 
+  Camera, 
+  Lock, 
+  Sparkles 
 } from 'lucide-react';
 import './Login.css';
 
-export const Login: React.FC = () => {
+export const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<'google' | 'apple' | null>(null);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  
+  // Forgot password mode toggle
+  const [isResetMode, setIsResetMode] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
-  // Mode: 'signin' | 'forgot'
-  const [viewMode, setViewMode] = useState<'signin' | 'forgot'>('signin');
-
-  // Auto-redirect if already signed in as admin/authenticated user
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data?.user) {
@@ -41,7 +43,7 @@ export const Login: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setError('Please provide both your administrator email and password.');
+      setError('Please enter both your email and password.');
       return;
     }
 
@@ -50,7 +52,7 @@ export const Login: React.FC = () => {
     setSuccessMsg('');
 
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
       });
@@ -58,13 +60,9 @@ export const Login: React.FC = () => {
       if (signInError) {
         throw signInError;
       }
-
-      if (data?.user) {
-        navigate('/admin');
-      }
+      navigate('/admin');
     } catch (err: any) {
-      console.error('Admin login error:', err);
-      setError(err.message || 'Invalid credentials. Please verify your email and password.');
+      setError(err.message || 'Failed to authenticate. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -73,253 +71,146 @@ export const Login: React.FC = () => {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      setError('Please enter your email address to receive password reset instructions.');
+      setError('Please enter your email address to receive recovery instructions.');
       return;
     }
 
-    setLoading(true);
+    setResetLoading(true);
     setError('');
     setSuccessMsg('');
 
     try {
-      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
         email.trim().toLowerCase(),
         { redirectTo: `${window.location.origin}/admin/login` }
       );
 
-      if (resetErr) {
-        throw resetErr;
+      if (resetError) {
+        throw resetError;
       }
 
-      setSuccessMsg('Password reset link sent! Check your inbox to proceed.');
+      setSuccessMsg('Password reset instructions have been sent to your email.');
     } catch (err: any) {
-      console.error('Reset password error:', err);
-      setError(err.message || 'Failed to send reset link. Please check the email entered.');
+      setError(err.message || 'Could not send recovery instructions. Please try again.');
     } finally {
-      setLoading(false);
+      setResetLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
-    setGoogleLoading(true);
+    setSocialLoading('google');
     setError('');
     try {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/admin`,
-        },
-      });
-
-      if (oauthError) {
-        throw oauthError;
-      }
+      await authApi.signInWithOAuth('google', 'customer');
     } catch (err: any) {
-      console.error('Google OAuth error:', err);
-      setError(err.message || 'Google authentication could not be completed.');
-      setGoogleLoading(false);
+      const msg = err.message || '';
+      if (
+        msg.toLowerCase().includes('not enabled') ||
+        msg.toLowerCase().includes('unsupported') ||
+        msg.toLowerCase().includes('validation failed')
+      ) {
+        setError('Google OAuth provider is not yet activated in your Supabase Auth settings.');
+      } else {
+        setError(msg || 'Failed to authenticate with Google.');
+      }
+    } finally {
+      setSocialLoading(null);
     }
   };
 
   return (
-    <div className="admin-login-wrapper">
-      {/* Ambient background blur */}
-      <div className="admin-login-ambient-bg" aria-hidden="true" />
+    <div className="admin-login-viewport">
+      {/* Background with user's editorial photographer hero image */}
+      <div className="admin-login-backdrop" aria-hidden="true">
+        <img
+          src="/assets/admin-login-hero.png"
+          alt="Camqrew Production Studio"
+          className="admin-login-backdrop-img"
+        />
+        <div className="admin-login-overlay" />
+      </div>
 
-      {/* Main framed container */}
-      <main className="admin-login-canvas">
-        {/* Background photo & cinematic shadow gradient */}
-        <div className="admin-login-hero-bg" aria-hidden="true" />
-        <div className="admin-login-overlay" aria-hidden="true" />
-
-        {/* Content split grid */}
-        <div className="admin-login-content">
-          {/* Left Column: Brand & Editorial Statement */}
-          <section className="admin-login-hero-side">
-            <div className="admin-login-brand-row">
-              <Logo height={34} />
-              <div className="admin-login-badge">
-                <span className="admin-login-badge-dot" />
-                Admin Portal
-              </div>
+      {/* Main 2-Column Presentation */}
+      <div className="admin-login-content-wrapper">
+        {/* Left Column: Bold Typography & Brand Mission */}
+        <div className="admin-login-hero-pane">
+          <div className="admin-hero-brand-header">
+            <Logo height={40} />
+            <div className="admin-hero-badge">
+              <span className="admin-hero-badge-dot" />
+              <span>Admin Command</span>
             </div>
+          </div>
 
-            <div className="admin-login-hero-text">
-              <h1 className="admin-login-hero-title">
-                <span>CAPTURE</span>
-                <span>HORIZONS</span>
-              </h1>
-              <p className="admin-login-hero-desc">
-                Where India's Elite Visual Creators & Productions Unite.
-              </p>
-              <p className="admin-login-hero-subdesc">
-                Authorized command center for talent verifications, gear inventory, logistics fulfillment, escrow settlements, and platform intelligence.
-              </p>
+          <h1 className="admin-hero-title">
+            CAPTURE<br />THE VISION
+          </h1>
+
+          <p className="admin-hero-tagline">
+            Where Creator Ambition Becomes Reality.
+          </p>
+
+          <p className="admin-hero-description">
+            Centralized platform administration for studio production escrow, 
+            verified creator KYC, dispute mediation, and gear logistics.
+          </p>
+
+          <div className="admin-hero-features-list">
+            <div className="admin-hero-feature-chip">
+              <Camera size={14} />
+              <span>Gear Fleet Oversight</span>
             </div>
-
-            <div className="admin-login-hero-footer">
-              <div className="admin-login-hero-pill">
-                <ShieldCheck size={14} color="#10b981" />
-                <span>256-Bit SSL Encrypted</span>
-              </div>
-              <div className="admin-login-hero-pill">
-                <Sparkles size={14} color="#60a5fa" />
-                <span>Camqrew Backoffice v2.4</span>
-              </div>
+            <div className="admin-hero-feature-chip">
+              <ShieldCheck size={14} />
+              <span>Creator KYC Trust</span>
             </div>
-          </section>
+            <div className="admin-hero-feature-chip">
+              <Lock size={14} />
+              <span>Escrow Milestones</span>
+            </div>
+            <div className="admin-hero-feature-chip">
+              <Sparkles size={14} />
+              <span>Studio Analytics</span>
+            </div>
+          </div>
+        </div>
 
-          {/* Right Column: Frosted Glassmorphism Card */}
-          <section className="admin-login-card-side">
-            <div className="admin-glass-card">
-              <div className="admin-card-header">
-                <h2 className="admin-card-title">
-                  {viewMode === 'signin' ? 'Admin Portal' : 'Reset Password'}
-                </h2>
-                <p className="admin-card-subtitle">
-                  {viewMode === 'signin'
-                    ? 'Sign in to manage the Camqrew ecosystem'
-                    : 'Enter your email to receive recovery instructions'}
-                </p>
-              </div>
-
-              {/* Status / Error Alerts */}
-              {error && (
-                <div className="admin-login-alert error" role="alert">
-                  <AlertCircle size={18} style={{ flexShrink: 0, marginTop: 1 }} />
-                  <span>{error}</span>
+        {/* Right Column: Glassmorphic Frosted Card */}
+        <div className="admin-login-card-pane">
+          <div className="admin-frosted-card">
+            {!isResetMode ? (
+              <>
+                <div className="admin-card-header">
+                  <h2 className="admin-card-title">Admin Portal</h2>
+                  <p className="admin-card-subtitle">Sign in to manage Camqrew</p>
                 </div>
-              )}
 
-              {successMsg && (
-                <div className="admin-login-alert success" role="status">
-                  <CheckCircle2 size={18} style={{ flexShrink: 0, marginTop: 1 }} />
-                  <span>{successMsg}</span>
-                </div>
-              )}
+                {error && (
+                  <div className="admin-login-alert" role="alert">
+                    <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                    <span>{error}</span>
+                  </div>
+                )}
 
-              {viewMode === 'signin' ? (
-                /* Sign In Form */
-                <form onSubmit={handleLogin} noValidate>
+                {successMsg && (
+                  <div className="admin-login-alert admin-login-alert-success" role="status">
+                    <CheckCircle2 size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                    <span>{successMsg}</span>
+                  </div>
+                )}
+
+                <form className="admin-card-form" onSubmit={handleLogin}>
+                  {/* Email Input */}
                   <div className="admin-input-group">
                     <label className="admin-input-label" htmlFor="admin-email">
                       Email
                     </label>
-                    <div className="admin-input-wrapper">
+                    <div className="admin-input-control-box">
                       <input
                         id="admin-email"
                         type="email"
-                        className="admin-input-field"
+                        className="admin-text-input"
                         placeholder="Enter your email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        disabled={loading || googleLoading}
-                        autoComplete="email"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="admin-input-group">
-                    <label className="admin-input-label" htmlFor="admin-password">
-                      Password
-                    </label>
-                    <div className="admin-input-wrapper">
-                      <input
-                        id="admin-password"
-                        type={showPassword ? 'text' : 'password'}
-                        className="admin-input-field"
-                        placeholder="••••••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        disabled={loading || googleLoading}
-                        autoComplete="current-password"
-                        required
-                        style={{ paddingRight: '44px' }}
-                      />
-                      <button
-                        type="button"
-                        className="admin-password-toggle"
-                        onClick={() => setShowPassword(!showPassword)}
-                        tabIndex={-1}
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="admin-field-helper">
-                    <button
-                      type="button"
-                      className="admin-forgot-btn"
-                      onClick={() => {
-                        setViewMode('forgot');
-                        setError('');
-                        setSuccessMsg('');
-                      }}
-                    >
-                      Forgot password?
-                    </button>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="admin-submit-btn"
-                    disabled={loading || googleLoading}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 size={18} className="animate-spin" />
-                        <span>Signing In...</span>
-                      </>
-                    ) : (
-                      'SIGN IN'
-                    )}
-                  </button>
-
-                  <div className="admin-divider">
-                    <span className="admin-divider-line" />
-                    <span className="admin-divider-text">or</span>
-                    <span className="admin-divider-line" />
-                  </div>
-
-                  <button
-                    type="button"
-                    className="admin-google-btn"
-                    onClick={handleGoogleSignIn}
-                    disabled={loading || googleLoading}
-                  >
-                    {googleLoading ? (
-                      <Loader2 size={18} className="animate-spin" />
-                    ) : (
-                      <GoogleIcon size={18} />
-                    )}
-                    <span>Sign in with Google</span>
-                  </button>
-
-                  <div className="admin-card-footer">
-                    <Link to="/" className="admin-footer-link">
-                      <ArrowLeft size={14} /> Back to Camqrew Storefront
-                    </Link>
-                    <div className="admin-security-note">
-                      <Lock size={12} /> Authorized Personnel Only
-                    </div>
-                  </div>
-                </form>
-              ) : (
-                /* Forgot Password Form */
-                <form onSubmit={handleForgotPassword} noValidate>
-                  <div className="admin-input-group">
-                    <label className="admin-input-label" htmlFor="reset-email">
-                      Administrator Email
-                    </label>
-                    <div className="admin-input-wrapper">
-                      <input
-                        id="reset-email"
-                        type="email"
-                        className="admin-input-field"
-                        placeholder="Enter your registered email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         disabled={loading}
@@ -329,41 +220,182 @@ export const Login: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Password Input */}
+                  <div className="admin-input-group">
+                    <label className="admin-input-label" htmlFor="admin-password">
+                      Password
+                    </label>
+                    <div className="admin-input-control-box">
+                      <input
+                        id="admin-password"
+                        type={showPassword ? 'text' : 'password'}
+                        className="admin-text-input"
+                        placeholder="••••••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={loading}
+                        autoComplete="current-password"
+                        required
+                        style={{ paddingRight: '44px' }}
+                      />
+                      <button
+                        type="button"
+                        className="admin-pwd-toggle-btn"
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Forgot Password Link */}
+                  <div className="admin-forgot-row">
+                    <button
+                      type="button"
+                      className="admin-forgot-btn"
+                      onClick={() => {
+                        setIsResetMode(true);
+                        setError('');
+                        setSuccessMsg('');
+                      }}
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+
+                  {/* Submit Button */}
                   <button
                     type="submit"
-                    className="admin-submit-btn"
+                    className="admin-primary-btn"
                     disabled={loading}
                   >
                     {loading ? (
                       <>
                         <Loader2 size={18} className="animate-spin" />
-                        <span>Sending Instructions...</span>
+                        <span>Signing in...</span>
                       </>
                     ) : (
-                      'SEND RESET LINK'
+                      'Sign In'
                     )}
                   </button>
-
-                  <div className="admin-card-footer" style={{ marginTop: '20px' }}>
-                    <button
-                      type="button"
-                      className="admin-forgot-btn"
-                      style={{ fontSize: '13px' }}
-                      onClick={() => {
-                        setViewMode('signin');
-                        setError('');
-                        setSuccessMsg('');
-                      }}
-                    >
-                      ← Return to Sign In
-                    </button>
-                  </div>
                 </form>
-              )}
-            </div>
-          </section>
+
+                {/* Divider */}
+                <div className="admin-divider">
+                  <div className="admin-divider-line" />
+                  <span className="admin-divider-text">or</span>
+                  <div className="admin-divider-line" />
+                </div>
+
+                {/* Social Sign-in Button */}
+                <div className="admin-social-container">
+                  <button
+                    type="button"
+                    className="admin-social-btn"
+                    onClick={handleGoogleSignIn}
+                    disabled={socialLoading !== null || loading}
+                  >
+                    {socialLoading === 'google' ? (
+                      <Loader2 size={18} className="animate-spin" />
+                    ) : (
+                      <>
+                        <GoogleIcon size={18} />
+                        <span>Sign in with Google</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Card Footer */}
+                <div className="admin-card-footer">
+                  <Link to="/marketplace" className="admin-return-link">
+                    <ArrowLeft size={14} />
+                    <span>Return to Camqrew Storefront</span>
+                  </Link>
+
+                  <div className="admin-security-caption">
+                    <ShieldCheck size={13} />
+                    <span>Camqrew Enterprise Security • 256-bit SSL</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* Password Reset Screen */
+              <div className="admin-reset-screen">
+                <button
+                  type="button"
+                  className="admin-reset-back-btn"
+                  onClick={() => {
+                    setIsResetMode(false);
+                    setError('');
+                    setSuccessMsg('');
+                  }}
+                >
+                  <ArrowLeft size={14} />
+                  <span>Back to Sign In</span>
+                </button>
+
+                <div>
+                  <h2 className="admin-card-title">Reset Password</h2>
+                  <p className="admin-card-subtitle">
+                    Enter your email to receive recovery instructions.
+                  </p>
+                </div>
+
+                {error && (
+                  <div className="admin-login-alert" role="alert">
+                    <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                {successMsg && (
+                  <div className="admin-login-alert admin-login-alert-success" role="status">
+                    <CheckCircle2 size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                    <span>{successMsg}</span>
+                  </div>
+                )}
+
+                <form className="admin-card-form" onSubmit={handleForgotPassword}>
+                  <div className="admin-input-group">
+                    <label className="admin-input-label" htmlFor="reset-email">
+                      Admin Email
+                    </label>
+                    <input
+                      id="reset-email"
+                      type="email"
+                      className="admin-text-input"
+                      placeholder="admin@camqrew.in"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={resetLoading}
+                      autoComplete="email"
+                      required
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="admin-primary-btn"
+                    disabled={resetLoading}
+                  >
+                    {resetLoading ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin" />
+                        <span>Sending Link...</span>
+                      </>
+                    ) : (
+                      'Send Recovery Link'
+                    )}
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };
