@@ -40,7 +40,7 @@ export const Login = () => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-logo" style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-          <Logo height={40} showAdminBadge />
+          <Logo height={40} />
         </div>
         <h1 className="login-title">Admin Portal</h1>
         <p className="login-subtitle">Sign in to manage Camqrew</p>

@@ -181,7 +181,7 @@ export const Layout = ({ theme, toggleTheme }: LayoutProps) => {
       {/* Admin Sidebar Navigation */}
       <aside className={`admin-sidebar ${mobileSidebarOpen ? 'open' : ''}`}>
         <div className="admin-sidebar-header">
-          <Logo height={24} showAdminBadge linkTo="/admin" />
+          <Logo height={24} linkTo="/admin" />
           <button 
             type="button"
             className="admin-mobile-close-btn"

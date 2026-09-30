@@ -4,14 +4,12 @@ import { Link } from 'react-router-dom';
 interface LogoProps {
   height?: number | string;
   className?: string;
-  showAdminBadge?: boolean;
   linkTo?: string;
 }
 
 export const Logo: React.FC<LogoProps> = ({
   height = 32,
   className = '',
-  showAdminBadge = false,
   linkTo,
 }) => {
   const content = (
@@ -42,26 +40,6 @@ export const Logo: React.FC<LogoProps> = ({
           display: 'block',
         }}
       />
-      {showAdminBadge && (
-        <span
-          className="admin-badge-pill"
-          style={{
-            fontSize: '11px',
-            fontWeight: 800,
-            background: 'rgba(63, 182, 104, 0.15)',
-            color: 'var(--accent)',
-            padding: '2px 8px',
-            borderRadius: '12px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.6px',
-            border: 'none',
-            lineHeight: '1.4',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          Admin
-        </span>
-      )}
     </span>
   );
 
