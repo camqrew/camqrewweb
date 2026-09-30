@@ -6,8 +6,6 @@ import { authApi } from '../api/authApi';
 import { GoogleIcon } from '../components/SocialAuthButtons';
 import { 
   Loader2, 
-  Eye, 
-  EyeOff, 
   ShieldCheck, 
   AlertCircle, 
   CheckCircle2, 
@@ -245,7 +243,7 @@ export const Login = () => {
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
                         tabIndex={-1}
                       >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        {showPassword ? 'HIDE' : 'SHOW'}
                       </button>
                     </div>
                   </div>
@@ -261,7 +259,7 @@ export const Login = () => {
                         setSuccessMsg('');
                       }}
                     >
-                      Forgot password?
+                      Forgot Password?
                     </button>
                   </div>
 
