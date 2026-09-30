@@ -2,8 +2,6 @@ import { Logo } from '../components/Logo';
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../api/supabaseClient';
-import { authApi } from '../api/authApi';
-import { GoogleIcon } from '../components/SocialAuthButtons';
 import { 
   Loader2, 
   ShieldCheck, 
@@ -22,7 +20,6 @@ export const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<'google' | 'apple' | null>(null);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   
@@ -92,27 +89,6 @@ export const Login = () => {
       setError(err.message || 'Could not send recovery instructions. Please try again.');
     } finally {
       setResetLoading(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setSocialLoading('google');
-    setError('');
-    try {
-      await authApi.signInWithOAuth('google', 'customer');
-    } catch (err: any) {
-      const msg = err.message || '';
-      if (
-        msg.toLowerCase().includes('not enabled') ||
-        msg.toLowerCase().includes('unsupported') ||
-        msg.toLowerCase().includes('validation failed')
-      ) {
-        setError('Google OAuth provider is not yet activated in your Supabase Auth settings.');
-      } else {
-        setError(msg || 'Failed to authenticate with Google.');
-      }
-    } finally {
-      setSocialLoading(null);
     }
   };
 
@@ -279,32 +255,6 @@ export const Login = () => {
                     )}
                   </button>
                 </form>
-
-                {/* Divider */}
-                <div className="admin-divider">
-                  <div className="admin-divider-line" />
-                  <span className="admin-divider-text">or</span>
-                  <div className="admin-divider-line" />
-                </div>
-
-                {/* Social Sign-in Button */}
-                <div className="admin-social-container">
-                  <button
-                    type="button"
-                    className="admin-social-btn"
-                    onClick={handleGoogleSignIn}
-                    disabled={socialLoading !== null || loading}
-                  >
-                    {socialLoading === 'google' ? (
-                      <Loader2 size={18} className="animate-spin" />
-                    ) : (
-                      <>
-                        <GoogleIcon size={18} />
-                        <span>Sign in with Google</span>
-                      </>
-                    )}
-                  </button>
-                </div>
 
                 {/* Card Footer */}
                 <div className="admin-card-footer">
