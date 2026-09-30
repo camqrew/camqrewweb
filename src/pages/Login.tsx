@@ -2,6 +2,7 @@ import { Logo } from '../components/Logo';
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../api/supabaseClient';
+import { useAuthStore } from '../store/authStore';
 import { 
   Loader2, 
   ShieldCheck, 
@@ -28,11 +29,23 @@ export const Login = () => {
   const [resetLoading, setResetLoading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data?.user) {
-        navigate('/admin');
+    let isMounted = true;
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (isMounted && session?.user) {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+
+        if (isMounted && profile?.role === 'admin') {
+          navigate('/admin', { replace: true });
+        }
       }
     });
+    return () => {
+      isMounted = false;
+    };
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -47,7 +60,7 @@ export const Login = () => {
     setSuccessMsg('');
 
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
       });
@@ -55,7 +68,25 @@ export const Login = () => {
       if (signInError) {
         throw signInError;
       }
-      navigate('/admin');
+
+      if (!authData?.user || !authData.session) {
+        throw new Error('Authentication succeeded but session could not be established.');
+      }
+
+      // Verify the user possesses admin privileges
+      const { data: profile } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', authData.user.id)
+        .single();
+
+      if (!profile || profile.role !== 'admin') {
+        await supabase.auth.signOut();
+        throw new Error('Access denied. This account does not possess administrator privileges.');
+      }
+
+      await useAuthStore.getState().login(profile, authData.session.access_token);
+      navigate('/admin', { replace: true });
     } catch (err: any) {
       setError(err.message || 'Failed to authenticate. Please check your credentials.');
     } finally {

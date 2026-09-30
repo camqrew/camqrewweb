@@ -21,7 +21,8 @@ import {
   ShieldCheck,
   AlertTriangle,
   CheckCircle2,
-  Truck
+  Truck,
+  Loader2
 } from 'lucide-react';
 import { supabase } from '../api/supabaseClient';
 import { useAuthStore } from '../store/authStore';
@@ -38,6 +39,68 @@ export const Layout = ({ theme, toggleTheme }: LayoutProps) => {
 
   // Mobile sidebar state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Authentication guard state
+  const [authChecking, setAuthChecking] = useState(true);
+
+  // Enforce Admin Authentication Guard
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkAdminAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          if (isMounted) {
+            navigate('/admin/login', { replace: true });
+          }
+          return;
+        }
+
+        // Fetch user profile from database to confirm admin role
+        const { data: profile } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+
+        if (!profile || profile.role !== 'admin') {
+          // If not an admin, sign out and redirect to admin login
+          await useAuthStore.getState().logout();
+          await supabase.auth.signOut();
+          if (isMounted) {
+            navigate('/admin/login', { replace: true });
+          }
+          return;
+        }
+
+        if (isMounted) {
+          setAuthChecking(false);
+        }
+      } catch (err) {
+        console.error('Error verifying admin authorization:', err);
+        if (isMounted) {
+          navigate('/admin/login', { replace: true });
+        }
+      }
+    };
+
+    checkAdminAuth();
+
+    // Listen to real-time auth changes (e.g. sign out triggered anywhere)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        if (isMounted) {
+          navigate('/admin/login', { replace: true });
+        }
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   // Command palette state
   const [searchOpen, setSearchOpen] = useState(false);
@@ -142,8 +205,15 @@ export const Layout = ({ theme, toggleTheme }: LayoutProps) => {
   }, [location.pathname]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/admin/login');
+    try {
+      await useAuthStore.getState().logout();
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      // Replace history state so browser Back cannot re-enter /admin
+      navigate('/admin/login', { replace: true });
+    }
   };
 
   const totalNotifications = pendingVerifications + lowStockCount + activeDisputes;
@@ -167,6 +237,28 @@ export const Layout = ({ theme, toggleTheme }: LayoutProps) => {
     const q = searchQuery.toLowerCase();
     return item.title.toLowerCase().includes(q) || item.desc.toLowerCase().includes(q) || item.category.toLowerCase().includes(q);
   });
+
+  if (authChecking) {
+    return (
+      <div 
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#06080A',
+          color: '#ffffff',
+          gap: 16
+        }}
+      >
+        <Loader2 size={36} className="animate-spin" style={{ color: '#3fb668' }} />
+        <p style={{ color: '#a1a9b3', fontSize: 14, fontWeight: 500 }}>
+          Verifying administrator session...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-app-layout">
