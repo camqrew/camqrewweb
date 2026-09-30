@@ -329,9 +329,11 @@ export const Layout = ({ theme, toggleTheme }: LayoutProps) => {
               type="button" 
               className="admin-search-trigger"
               onClick={() => setSearchOpen(true)}
-              title="Quick Search or Jump to Section"
+              title="Quick Search or Jump to Section (Ctrl+K)"
             >
-              <Search size={16} className="admin-search-icon" />
+              <div className="search-field-icon-wrap">
+                <Search size={14} />
+              </div>
               <span className="admin-search-text">Search commands, pages, or gear...</span>
               <kbd className="admin-search-kbd">
                 <Command size={11} /> K
@@ -530,7 +532,9 @@ export const Layout = ({ theme, toggleTheme }: LayoutProps) => {
         <div className="admin-palette-backdrop" onClick={() => setSearchOpen(false)}>
           <div className="admin-palette-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="admin-palette-input-box">
-              <Search size={18} className="palette-input-icon" />
+              <div className="search-field-icon-wrap palette">
+                <Search size={16} />
+              </div>
               <input 
                 ref={searchInputRef}
                 type="text" 

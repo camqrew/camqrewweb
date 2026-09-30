@@ -204,7 +204,9 @@ export default function Subscriptions() {
       {/* Filter and Search Hub */}
       <div className="admin-filter-hub">
         <div className="admin-search-field">
-          <Search size={16} className="search-field-icon" />
+          <div className="search-field-icon-wrap">
+            <Search size={15} />
+          </div>
           <input 
             type="text" 
             value={searchQuery}
@@ -213,8 +215,8 @@ export default function Subscriptions() {
             className="admin-input-clean"
           />
           {searchQuery && (
-            <button type="button" onClick={() => setSearchQuery('')} className="clear-search-btn">
-              <X size={14} />
+            <button type="button" onClick={() => setSearchQuery('')} className="clear-search-btn" title="Clear Search">
+              <X size={13} />
             </button>
           )}
         </div>

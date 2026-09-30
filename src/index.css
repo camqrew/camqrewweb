@@ -388,7 +388,7 @@ a.btn *,
 }
 
 /* Universal Form Input Baseline — Distinct background separation without strokes */
-input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="range"]):not([type="file"]):not(.hero-search-input):not(.hero-location-input-ghost),
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="range"]):not([type="file"]):not(.hero-search-input):not(.hero-location-input-ghost):not(.admin-input-clean):not(.admin-palette-input):not(.admin-search-input):not(.custom-select-search-input),
 textarea,
 select {
   background-color: var(--input-bg);
@@ -400,7 +400,7 @@ select {
   box-sizing: border-box;
 }
 
-input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="range"]):not([type="file"]):not(.hero-search-input):not(.hero-location-input-ghost):focus,
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="range"]):not([type="file"]):not(.hero-search-input):not(.hero-location-input-ghost):not(.admin-input-clean):not(.admin-palette-input):not(.admin-search-input):not(.custom-select-search-input):focus,
 textarea:focus,
 select:focus {
   background-color: var(--input-bg-focus) !important;
@@ -412,14 +412,14 @@ textarea::placeholder {
   color: var(--input-placeholder);
 }
 
-[data-theme="light"] input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="range"]):not([type="file"]):not(.hero-search-input):not(.hero-location-input-ghost),
+[data-theme="light"] input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="range"]):not([type="file"]):not(.hero-search-input):not(.hero-location-input-ghost):not(.admin-input-clean):not(.admin-palette-input):not(.admin-search-input):not(.custom-select-search-input),
 [data-theme="light"] textarea,
 [data-theme="light"] select {
   background-color: #f3f4f6;
   color: #111827;
 }
 
-[data-theme="light"] input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="range"]):not([type="file"]):not(.hero-search-input):not(.hero-location-input-ghost):focus,
+[data-theme="light"] input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="range"]):not([type="file"]):not(.hero-search-input):not(.hero-location-input-ghost):not(.admin-input-clean):not(.admin-palette-input):not(.admin-search-input):not(.custom-select-search-input):focus,
 [data-theme="light"] textarea:focus,
 [data-theme="light"] select:focus {
   background-color: #ffffff !important;
