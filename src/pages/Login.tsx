@@ -24,6 +24,12 @@ export const Login = () => {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   
+  // Auth Step: credentials vs otp
+  const [authStep, setAuthStep] = useState<'credentials' | 'otp'>('credentials');
+  const [otp, setOtp] = useState('');
+  const [otpTimer, setOtpTimer] = useState(0);
+  const [pendingAdmin, setPendingAdmin] = useState<{ profile: any; token: string; phone: string } | null>(null);
+
   // Forgot password mode toggle
   const [isResetMode, setIsResetMode] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
@@ -47,6 +53,14 @@ export const Login = () => {
       isMounted = false;
     };
   }, [navigate]);
+
+  // Resend OTP Countdown
+  useEffect(() => {
+    if (otpTimer > 0) {
+      const timer = setTimeout(() => setOtpTimer(prev => prev - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [otpTimer]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,13 +99,58 @@ export const Login = () => {
         throw new Error('Access denied. This account does not possess administrator privileges.');
       }
 
-      await useAuthStore.getState().login(profile, authData.session.access_token);
-      navigate('/admin', { replace: true });
+      // Transition to SMS OTP Step
+      setPendingAdmin({
+        profile,
+        token: authData.session.access_token,
+        phone: profile.phone || '9999999999',
+      });
+      setAuthStep('otp');
+      setOtp('');
+      setOtpTimer(30);
+      setSuccessMsg('SMS verification code sent. (Use dummy OTP: 123456)');
     } catch (err: any) {
       setError(err.message || 'Failed to authenticate. Please check your credentials.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanOtp = otp.trim();
+    if (!cleanOtp) {
+      setError('Please enter the 6-digit OTP code.');
+      return;
+    }
+
+    if (cleanOtp !== '123456') {
+      setError('Invalid OTP code. Please enter 123456.');
+      return;
+    }
+
+    if (!pendingAdmin) {
+      setError('Session expired. Please sign in again.');
+      setAuthStep('credentials');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    try {
+      await useAuthStore.getState().login(pendingAdmin.profile, pendingAdmin.token);
+      navigate('/admin', { replace: true });
+    } catch (err: any) {
+      setError(err.message || 'Failed to complete admin sign in.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = () => {
+    setOtpTimer(30);
+    setSuccessMsg('New SMS verification code sent. (Use dummy OTP: 123456)');
+    setError('');
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -183,7 +242,179 @@ export const Login = () => {
         {/* Right Column: Glassmorphic Frosted Card */}
         <div className="admin-login-card-pane">
           <div className="admin-frosted-card">
-            {!isResetMode ? (
+            {isResetMode ? (
+              /* Password Reset Screen */
+              <div className="admin-reset-screen">
+                <button
+                  type="button"
+                  className="admin-reset-back-btn"
+                  onClick={() => {
+                    setIsResetMode(false);
+                    setError('');
+                    setSuccessMsg('');
+                  }}
+                >
+                  <ArrowLeft size={14} />
+                  <span>Back to Sign In</span>
+                </button>
+
+                <div>
+                  <h2 className="admin-card-title">Reset Password</h2>
+                  <p className="admin-card-subtitle">
+                    Enter your email to receive recovery instructions.
+                  </p>
+                </div>
+
+                {error && (
+                  <div className="admin-login-alert" role="alert">
+                    <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                {successMsg && (
+                  <div className="admin-login-alert admin-login-alert-success" role="status">
+                    <CheckCircle2 size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                    <span>{successMsg}</span>
+                  </div>
+                )}
+
+                <form className="admin-card-form" onSubmit={handleForgotPassword}>
+                  <div className="admin-input-group">
+                    <label className="admin-input-label" htmlFor="reset-email">
+                      Admin Email
+                    </label>
+                    <input
+                      id="reset-email"
+                      type="email"
+                      className="admin-text-input"
+                      placeholder="admin@camcrew.in"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={resetLoading}
+                      autoComplete="email"
+                      required
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="admin-primary-btn"
+                    disabled={resetLoading}
+                  >
+                    {resetLoading ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin" />
+                        <span>Sending Link...</span>
+                      </>
+                    ) : (
+                      'Send Recovery Link'
+                    )}
+                  </button>
+                </form>
+              </div>
+            ) : authStep === 'otp' ? (
+              /* SMS OTP Verification Screen */
+              <div className="admin-reset-screen">
+                <button
+                  type="button"
+                  className="admin-reset-back-btn"
+                  onClick={() => {
+                    setAuthStep('credentials');
+                    setError('');
+                    setSuccessMsg('');
+                  }}
+                >
+                  <ArrowLeft size={14} />
+                  <span>Back to Credentials</span>
+                </button>
+
+                <div>
+                  <h2 className="admin-card-title">SMS OTP Verification</h2>
+                  <p className="admin-card-subtitle">
+                    Security code sent to admin phone ({pendingAdmin?.phone ? `+91 ${pendingAdmin.phone.slice(-10, -4)}••••` : '+91 99999 •••••'}).
+                  </p>
+                </div>
+
+                <div style={{
+                  background: 'rgba(63, 182, 104, 0.12)',
+                  border: '1px solid rgba(63, 182, 104, 0.35)',
+                  borderRadius: '12px',
+                  padding: '10px 14px',
+                  color: '#3fb668',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  textAlign: 'left'
+                }}>
+                  Dummy SMS OTP for testing: <strong style={{ letterSpacing: '2px', fontSize: '15px' }}>123456</strong>
+                </div>
+
+                {error && (
+                  <div className="admin-login-alert" role="alert">
+                    <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                {successMsg && (
+                  <div className="admin-login-alert admin-login-alert-success" role="status">
+                    <CheckCircle2 size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                    <span>{successMsg}</span>
+                  </div>
+                )}
+
+                <form className="admin-card-form" onSubmit={handleVerifyOtp}>
+                  <div className="admin-input-group">
+                    <label className="admin-input-label" htmlFor="admin-otp-input">
+                      6-Digit SMS Verification Code
+                    </label>
+                    <input
+                      id="admin-otp-input"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      maxLength={6}
+                      className="admin-text-input"
+                      placeholder="123456"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                      disabled={loading}
+                      required
+                      style={{ letterSpacing: '4px', fontSize: '18px', textAlign: 'center', fontWeight: '700' }}
+                      autoFocus
+                    />
+                  </div>
+
+                  <div className="admin-forgot-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      className="admin-forgot-btn"
+                      disabled={otpTimer > 0}
+                      onClick={handleResendOtp}
+                      style={{ color: otpTimer > 0 ? '#6c747d' : '#3fb668', cursor: otpTimer > 0 ? 'not-allowed' : 'pointer' }}
+                    >
+                      {otpTimer > 0 ? `Resend OTP in ${otpTimer}s` : 'Resend Code'}
+                    </button>
+                    <span style={{ fontSize: '12px', color: '#6c747d' }}>Default: 123456</span>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="admin-primary-btn"
+                    disabled={loading || otp.length < 6}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin" />
+                        <span>Verifying OTP...</span>
+                      </>
+                    ) : (
+                      'Verify & Enter Portal'
+                    )}
+                  </button>
+                </form>
+              </div>
+            ) : (
               <>
                 <div className="admin-card-header">
                   <h2 className="admin-card-title">Admin Portal</h2>
@@ -300,77 +531,6 @@ export const Login = () => {
                   </div>
                 </div>
               </>
-            ) : (
-              /* Password Reset Screen */
-              <div className="admin-reset-screen">
-                <button
-                  type="button"
-                  className="admin-reset-back-btn"
-                  onClick={() => {
-                    setIsResetMode(false);
-                    setError('');
-                    setSuccessMsg('');
-                  }}
-                >
-                  <ArrowLeft size={14} />
-                  <span>Back to Sign In</span>
-                </button>
-
-                <div>
-                  <h2 className="admin-card-title">Reset Password</h2>
-                  <p className="admin-card-subtitle">
-                    Enter your email to receive recovery instructions.
-                  </p>
-                </div>
-
-                {error && (
-                  <div className="admin-login-alert" role="alert">
-                    <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
-                    <span>{error}</span>
-                  </div>
-                )}
-
-                {successMsg && (
-                  <div className="admin-login-alert admin-login-alert-success" role="status">
-                    <CheckCircle2 size={16} style={{ flexShrink: 0, marginTop: 2 }} />
-                    <span>{successMsg}</span>
-                  </div>
-                )}
-
-                <form className="admin-card-form" onSubmit={handleForgotPassword}>
-                  <div className="admin-input-group">
-                    <label className="admin-input-label" htmlFor="reset-email">
-                      Admin Email
-                    </label>
-                    <input
-                      id="reset-email"
-                      type="email"
-                      className="admin-text-input"
-                      placeholder="admin@camqrew.in"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      disabled={resetLoading}
-                      autoComplete="email"
-                      required
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="admin-primary-btn"
-                    disabled={resetLoading}
-                  >
-                    {resetLoading ? (
-                      <>
-                        <Loader2 size={18} className="animate-spin" />
-                        <span>Sending Link...</span>
-                      </>
-                    ) : (
-                      'Send Recovery Link'
-                    )}
-                  </button>
-                </form>
-              </div>
             )}
           </div>
         </div>

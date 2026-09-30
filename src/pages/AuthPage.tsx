@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { supabase } from '../api/supabaseClient';
 import { authApi } from '../api/authApi';
 import { useAuthStore } from '../store/authStore';
 import { LocationSelector } from '../components/LocationSelector';
@@ -12,8 +13,10 @@ import {
   Phone,
   KeyRound,
   ArrowRight,
+  ArrowLeft,
   CheckCircle2,
-  Briefcase
+  Briefcase,
+  ShieldCheck
 } from 'lucide-react';
 import { CustomSelect } from '../components/CustomSelect';
 import { getArchetype, PROFESSIONAL_CATEGORIES } from '../constants/categories';
@@ -37,6 +40,13 @@ export const AuthPage: React.FC = () => {
 
   const [isSignUp, setIsSignUp] = useState(isRegisterParam);
   const [role, setRole] = useState<'customer' | 'professional'>(roleParam);
+
+  // OTP Verification Step State
+  const [authFlowStep, setAuthFlowStep] = useState<'form' | 'otp'>('form');
+  const [pendingAuthAction, setPendingAuthAction] = useState<'login' | 'register'>('login');
+  const [pendingAuthPayload, setPendingAuthPayload] = useState<any>(null);
+  const [otpTargetPhone, setOtpTargetPhone] = useState('');
+  const [otpTimer, setOtpTimer] = useState(0);
 
   const [signInMode, setSignInMode] = useState<'email' | 'phone'>('email');
   const [email, setEmail] = useState('');
@@ -63,28 +73,46 @@ export const AuthPage: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successNotice, setSuccessNotice] = useState('');
+
+  // Resend OTP Countdown timer
+  useEffect(() => {
+    if (otpTimer > 0) {
+      const t = setTimeout(() => setOtpTimer(prev => prev - 1), 1000);
+      return () => clearTimeout(t);
+    }
+  }, [otpTimer]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessNotice('');
     setLoading(true);
 
     try {
       if (signInMode === 'email') {
         const res = await authApi.login(email, password);
-        await login(res.user, res.token);
+        // Enforce SMS OTP verification before completing login
+        setPendingAuthAction('login');
+        setPendingAuthPayload(res);
+        setOtpTargetPhone(res.user.phone || '');
+        setAuthFlowStep('otp');
+        setOtp('');
+        setOtpTimer(30);
+        setSuccessNotice('SMS verification code dispatched. (Testing dummy OTP: 123456)');
       } else {
         if (!otpSent) {
           await authApi.sendOTP(phoneNumber);
           setOtpSent(true);
+          setSuccessNotice(`OTP sent to +91 ${phoneNumber}. (Use dummy OTP: 123456)`);
           setLoading(false);
           return;
         } else {
           const res = await authApi.verifyOTP(phoneNumber, otp);
           await login(res.user, res.token);
+          navigate(redirectUrl);
         }
       }
-      navigate(redirectUrl);
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -95,39 +123,113 @@ export const AuthPage: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessNotice('');
     setLoading(true);
 
     try {
-      if (role === 'customer') {
-        const res = await authApi.registerCustomer({
-          name,
-          email: regEmail,
-          phone: regPhone,
-          password: regPassword,
-        });
-        await login(res.user, res.token);
-      } else {
-        const res = await authApi.registerProfessional({
-          name,
-          email: regEmail,
-          phone: regPhone,
-          password: regPassword,
-          title: proTitle,
-          bio,
-          ratePerDay: Number(ratePerDay),
-          state: location.state,
-          district: location.district,
-          city: location.city,
-          categories: [selectedCategory],
-        });
-        await login(res.user, res.token);
+      if (!name.trim()) throw new Error('Please enter your full name.');
+      if (!regEmail.trim()) throw new Error('Please enter your email address.');
+      const cleanPhone = regPhone.replace(/\D/g, '').slice(-10);
+      if (cleanPhone.length < 10) throw new Error('Please enter a valid 10-digit mobile number.');
+      if (regPassword.length < 6) throw new Error('Password must be at least 6 characters.');
+
+      // Check phone uniqueness before OTP
+      const { data: existingPhone } = await supabase
+        .from('users')
+        .select('id')
+        .eq('phone', cleanPhone)
+        .single();
+      if (existingPhone) {
+        throw new Error('This phone number is already registered. Please Sign In instead.');
       }
-      navigate(redirectUrl);
+
+      if (role === 'professional') {
+        if (!proTitle.trim()) throw new Error('Please enter your professional headline/title.');
+        if (!ratePerDay || isNaN(Number(ratePerDay)) || Number(ratePerDay) <= 0) {
+          throw new Error('Please specify your standard daily rate.');
+        }
+        if (!location.state || !location.city) {
+          throw new Error('Please select your operating location.');
+        }
+      }
+
+      const payload = role === 'customer' ? {
+        name: name.trim(),
+        email: regEmail.trim(),
+        phone: cleanPhone,
+        password: regPassword,
+      } : {
+        name: name.trim(),
+        email: regEmail.trim(),
+        phone: cleanPhone,
+        password: regPassword,
+        title: proTitle.trim(),
+        bio,
+        ratePerDay: Number(ratePerDay),
+        state: location.state,
+        district: location.district,
+        city: location.city,
+        categories: [selectedCategory],
+      };
+
+      // Require SMS OTP verification before creating the account
+      setPendingAuthAction('register');
+      setPendingAuthPayload(payload);
+      setOtpTargetPhone(cleanPhone);
+      setAuthFlowStep('otp');
+      setOtp('');
+      setOtpTimer(30);
+      setSuccessNotice(`Verification code sent to +91 ${cleanPhone}. (Testing dummy OTP: 123456)`);
     } catch (err: any) {
       setError(err.message || 'Registration failed.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleVerifyOtpStep = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanOtp = otp.trim();
+    if (!cleanOtp) {
+      setError('Please enter the 6-digit verification code.');
+      return;
+    }
+    if (cleanOtp !== '123456') {
+      setError('Invalid OTP code. Please enter 123456.');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      if (pendingAuthAction === 'login') {
+        if (!pendingAuthPayload?.user || !pendingAuthPayload?.token) {
+          throw new Error('Session expired. Please sign in again.');
+        }
+        await login(pendingAuthPayload.user, pendingAuthPayload.token);
+      } else {
+        // Complete Registration
+        if (role === 'customer') {
+          const res = await authApi.registerCustomer(pendingAuthPayload);
+          await login(res.user, res.token);
+        } else {
+          const res = await authApi.registerProfessional(pendingAuthPayload);
+          await login(res.user, res.token);
+        }
+      }
+      navigate(redirectUrl);
+    } catch (err: any) {
+      setError(err.message || 'Verification failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendAuthOtp = async () => {
+    setOtpTimer(30);
+    setSuccessNotice(`New OTP code dispatched to +91 ${otpTargetPhone}. (Testing dummy OTP: 123456)`);
+    setError('');
   };
 
   if (isLoading || (isAuthenticated && user)) {
@@ -154,30 +256,126 @@ export const AuthPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Primary Segmented Toggle: Sign In vs Register */}
-        <div className="auth-primary-segmented-switch">
-          <button
-            type="button"
-            className={`auth-segment-tab ${!isSignUp ? 'active' : ''}`}
-            onClick={() => { setIsSignUp(false); setError(''); }}
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            className={`auth-segment-tab ${isSignUp ? 'active' : ''}`}
-            onClick={() => { setIsSignUp(true); setError(''); }}
-          >
-            Register
-          </button>
-        </div>
-
-        {error && <div className="alert alert-danger" style={{ marginBottom: 16 }}>{error}</div>}
-
-        {!isSignUp ? (
-          /* ================= SIGN IN FORM ================= */
+        {authFlowStep === 'otp' ? (
+          /* ================= SMS OTP STEP ================= */
           <div className="auth-form-body">
-            <form onSubmit={handleLogin}>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              style={{ padding: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)' }}
+              onClick={() => {
+                setAuthFlowStep('form');
+                setError('');
+                setSuccessNotice('');
+              }}
+            >
+              <ArrowLeft size={16} />
+              <span>Back to {pendingAuthAction === 'login' ? 'Sign In' : 'Registration'}</span>
+            </button>
+
+            <div style={{ textAlign: 'center', marginBottom: 20 }}>
+              <div style={{ width: 48, height: 48, borderRadius: 24, background: 'rgba(63, 182, 104, 0.15)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#3fb668', marginBottom: 12 }}>
+                <ShieldCheck size={26} />
+              </div>
+              <h2 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 6px 0', color: 'var(--text-primary)' }}>
+                SMS OTP Verification
+              </h2>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
+                {pendingAuthAction === 'login' 
+                  ? 'A security code has been dispatched to your mobile number.' 
+                  : `A 6-digit verification code was sent to +91 ${otpTargetPhone}.`}
+              </p>
+            </div>
+
+            <div style={{
+              background: 'rgba(63, 182, 104, 0.12)',
+              border: '1px solid rgba(63, 182, 104, 0.3)',
+              borderRadius: 12,
+              padding: '10px 14px',
+              color: '#3fb668',
+              fontSize: 13,
+              fontWeight: 600,
+              textAlign: 'center',
+              marginBottom: 16
+            }}>
+              Dummy SMS OTP for testing: <strong style={{ letterSpacing: '2px', fontSize: 15 }}>123456</strong>
+            </div>
+
+            {error && <div className="alert alert-danger" style={{ marginBottom: 16 }}>{error}</div>}
+            {successNotice && <div className="alert alert-success" style={{ marginBottom: 16 }}>{successNotice}</div>}
+
+            <form onSubmit={handleVerifyOtpStep}>
+              <div className="auth-field-group">
+                <label className="auth-field-label">6-digit verification code</label>
+                <div className="auth-input-wrapper">
+                  <KeyRound size={16} className="auth-input-icon" />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    className="auth-input-box"
+                    placeholder="123456"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                    required
+                    style={{ letterSpacing: '4px', fontSize: 18, textAlign: 'center', fontWeight: 700 }}
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, marginBottom: 16 }}>
+                <button
+                  type="button"
+                  disabled={otpTimer > 0}
+                  onClick={handleResendAuthOtp}
+                  style={{ background: 'none', border: 'none', color: otpTimer > 0 ? 'var(--text-muted)' : '#3fb668', fontSize: 13, fontWeight: 600, cursor: otpTimer > 0 ? 'not-allowed' : 'pointer' }}
+                >
+                  {otpTimer > 0 ? `Resend OTP in ${otpTimer}s` : 'Resend Code'}
+                </button>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Code: 123456</span>
+              </div>
+
+              <button type="submit" className="auth-cta-btn" disabled={loading || otp.length < 6}>
+                {loading ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <>
+                    <span>{pendingAuthAction === 'login' ? 'Verify & Sign In' : 'Verify & Complete Registration'}</span>
+                    <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        ) : (
+          <>
+            {/* Primary Segmented Toggle: Sign In vs Register */}
+            <div className="auth-primary-segmented-switch">
+              <button
+                type="button"
+                className={`auth-segment-tab ${!isSignUp ? 'active' : ''}`}
+                onClick={() => { setIsSignUp(false); setError(''); setSuccessNotice(''); }}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                className={`auth-segment-tab ${isSignUp ? 'active' : ''}`}
+                onClick={() => { setIsSignUp(true); setError(''); setSuccessNotice(''); }}
+              >
+                Register
+              </button>
+            </div>
+
+            {error && <div className="alert alert-danger" style={{ marginBottom: 16 }}>{error}</div>}
+            {successNotice && <div className="alert alert-success" style={{ marginBottom: 16 }}>{successNotice}</div>}
+
+            {!isSignUp ? (
+              /* ================= SIGN IN FORM ================= */
+              <div className="auth-form-body">
+                <form onSubmit={handleLogin}>
               {/* Method Toggle: Email vs Mobile OTP */}
               <div className="auth-method-pill-switch">
                 <button
@@ -489,8 +687,10 @@ export const AuthPage: React.FC = () => {
             redirectUrl={redirectUrl}
             onError={setError}
           />
-        </div>
-      )}
+          </div>
+        )}
+          </>
+        )}
       </div>
     </div>
   );
