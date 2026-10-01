@@ -29,6 +29,7 @@ import Login from './pages/Login';
 
 import { useAuthStore } from './store/authStore';
 import { supabase } from './api/supabaseClient';
+import { ScrollToTop } from './components/ScrollToTop';
 import './index.css';
 import './App.css';
 
@@ -59,6 +60,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         {/* Main Website & User Portal Routes */}
         <Route element={<MainLayout theme={theme} toggleTheme={toggleTheme} />}>

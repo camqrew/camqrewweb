@@ -158,6 +158,10 @@ export const CreatorProfilePage: React.FC = () => {
 
   useEffect(() => {
     if (id) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+
       professionalApi.getProfileById(id)
         .then((profile) => {
           setPro(profile);
@@ -168,7 +172,14 @@ export const CreatorProfilePage: React.FC = () => {
           if (prods) setProducts(prods);
         })
         .catch((err) => setError(err.message || 'Failed to load profile'))
-        .finally(() => setLoading(false));
+        .finally(() => {
+          setLoading(false);
+          requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+          });
+        });
     }
   }, [id]);
 
