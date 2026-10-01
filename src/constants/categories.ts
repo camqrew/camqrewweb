@@ -1,4 +1,4 @@
-export type CategoryArchetype = 'media_crew' | 'catering' | 'event_management' | 'tech_digital' | 'beauty_bridal' | 'modeling_talent' | 'home_baker' | 'travels' | 'crafts_gifting';
+export type CategoryArchetype = 'media_crew' | 'catering' | 'event_management' | 'tech_digital' | 'beauty_bridal' | 'modeling_talent' | 'home_baker' | 'travels' | 'crafts_gifting' | 'musician' | 'emcee';
 
 export interface CategoryMeta {
   id: string;
@@ -409,6 +409,93 @@ export const ARCHETYPE_CONFIGS: Record<CategoryArchetype, ArchetypeConfig> = {
     serviceDeliverablesPlaceholder: 'e.g. Handcrafted Pine Wood Box, Gourmet Treats, Satin Ribbon, Wax Seal Note',
     bookingCtaPrefix: 'Order Gifting',
   },
+  musician: {
+    archetype: 'musician',
+    label: 'Musicians, Instrumentalists & Live Bands',
+    roleNoun: 'Musician / Artist',
+    rateLabel: 'Starting Performance Rate (₹)',
+    ratePlaceholder: '25000',
+    rateUnitDefault: 'Event',
+    rateUnitOptions: ['Event', 'Hour', 'Set (2 Hrs)', 'Day', 'Project'],
+    equipmentSectionTitle: 'Instruments, Audio & Stage Setup',
+    equipmentInputLabel: 'Add Instruments & Sound Gear',
+    equipmentInputPlaceholder: 'e.g. Acoustic Guitar, Electric Violin, Shure Wireless Mic, Line Array PA',
+    equipmentPresets: [
+      'Acoustic Guitar (Taylor / Yamaha)',
+      'Electric Guitar (Fender / Gibson)',
+      'Classical & Electric Violin',
+      'Lead & Backing Vocals',
+      'Keyboard / Synthesizer (Roland / Korg)',
+      'Acoustic & Electronic Drums',
+      'Bansuri / Bamboo Flute',
+      'Saxophone & Brass',
+      'Cajon & Percussion Kit',
+      'Wireless Vocal Mic (Shure Beta 58A)',
+      'In-Ear Monitors (IEMs)',
+      'Portable PA / Stage Line Array',
+    ],
+    skillsSectionTitle: 'Music Genres & Repertoire',
+    skillsInputLabel: 'Add Genres & Music Styles',
+    skillsInputPlaceholder: 'e.g. Bollywood Acoustic, Sufi Rock, Western Classical, Jazz, Indie Pop',
+    skillsPresets: [
+      'Bollywood Retro & Contemporary',
+      'Sufi & Qawwali Fusion',
+      'Acoustic Fingerstyle & Pop',
+      'Western Classical Recital',
+      'Instrumental & Ambient Background',
+      'Punjabi Folk & Bhangra Live',
+      'Jazz & Blues Standards',
+      'Original Songwriter & Composer',
+    ],
+    travelCheckboxLabel: 'Available for outstation destination weddings & tours',
+    portfolioPromptTitle: 'Add Music Videos & Performance Photos',
+    portfolioPromptSubtitle: 'Showcase stage performance clips, concert stills, and live acoustic sessions.',
+    serviceTitlePlaceholder: 'e.g. 2.5-Hour Live Acoustic Guitar & Vocal Set',
+    serviceDeliverablesPlaceholder: 'e.g. 2 x 60-min live sets, wireless vocal mic setup, guest song requests included',
+    bookingCtaPrefix: 'Book Musician',
+  },
+  emcee: {
+    archetype: 'emcee',
+    label: 'Master of Ceremonies (Anchor & Host)',
+    roleNoun: 'Emcee / Anchor',
+    rateLabel: 'Starting Hosting Rate (₹)',
+    ratePlaceholder: '25000',
+    rateUnitDefault: 'Event',
+    rateUnitOptions: ['Event', 'Day', 'Session', 'Hour', 'Package'],
+    equipmentSectionTitle: 'Stage Gear & Event Formats',
+    equipmentInputLabel: 'Add Event Formats & Equipment',
+    equipmentInputPlaceholder: 'e.g. Sangeet Hosting, Corporate Gala, Sennheiser Wireless Mic, Teleprompter',
+    equipmentPresets: [
+      'Wedding Sangeet & Reception Emcee',
+      'Corporate Summit & Conference Anchor',
+      'Award Night & Gala Host',
+      'Interactive Crowd Games & Icebreakers',
+      'Bilingual & Multilingual Stage Hosting',
+      'Teleprompter & Scripted Hosting',
+      'VIP & Celebrity Stage Introductions',
+      'Sennheiser / Shure Wireless Mic Kit',
+      'Improv Comedy & Audience Engagement',
+    ],
+    skillsSectionTitle: 'Languages Spoken & Diction Accreditations',
+    skillsInputLabel: 'Add Languages & Voice Accreditations',
+    skillsInputPlaceholder: 'e.g. Fluent English, Fluent Hindi, Punjabi Diction, Certified Voice Artist',
+    skillsPresets: [
+      'Fluent English (Neutral Global Accent)',
+      'Fluent Hindi (Conversational & Poetic)',
+      'Punjabi Live Stage Hosting',
+      'Urdu Diction & Shayari',
+      'Marathi & Gujarati Stage Hosting',
+      'South Indian (Tamil / Telugu / Kannada / Malayalam)',
+      'Certified Radio Jockey (RJ) / Voice Artist',
+      'Toastmasters International Member',
+    ],
+    travelCheckboxLabel: 'Available for destination weddings & multi-city summits',
+    portfolioPromptTitle: 'Add Stage Hosting Clips & Photos',
+    portfolioPromptSubtitle: 'Showcase stage anchoring reels, crowd engagement moments, and award ceremony highlights.',
+    serviceTitlePlaceholder: 'e.g. Sangeet Night Stage Hosting & Interactive Games',
+    serviceDeliverablesPlaceholder: 'e.g. 4-hour live stage hosting, couple games, dance coordination, crowd icebreakers',
+    bookingCtaPrefix: 'Hire Emcee',
+  },
 };
 
 export function getArchetype(categoryOrList?: string | string[]): ArchetypeConfig {
@@ -444,6 +531,12 @@ export function getArchetype(categoryOrList?: string | string[]): ArchetypeConfi
   if (lowerCats.some(c => c.includes('craft') || c.includes('hamper') || c.includes('gift') || c.includes('flower') || c.includes('wrap') || c.includes('trousseau') || c.includes('resin') || c.includes('kraft'))) {
     return ARCHETYPE_CONFIGS.crafts_gifting;
   }
+  if (lowerCats.some(c => c.includes('music') || c.includes('singer') || c.includes('vocal') || c.includes('guitar') || c.includes('violin') || c.includes('band') || c.includes('dj') || c.includes('instrument') || c.includes('flute') || c.includes('sax'))) {
+    return ARCHETYPE_CONFIGS.musician;
+  }
+  if (lowerCats.some(c => c.includes('ceremon') || c.includes('emcee') || c.includes('mc') || c.includes('anchor') || c.includes('host') || c.includes('presenter'))) {
+    return ARCHETYPE_CONFIGS.emcee;
+  }
   return ARCHETYPE_CONFIGS.media_crew;
 }
 
@@ -463,6 +556,22 @@ export const PROFESSIONAL_CATEGORIES: CategoryMeta[] = [
     icon: 'video',
     description: 'Cinematography, Events, Reels & Documentaries',
     bgGradient: ['#8a2387', '#e94057'],
+  },
+  {
+    id: 'musicians',
+    name: 'Musicians',
+    archetype: 'musician',
+    icon: 'music',
+    description: 'Guitarists, Vocalists, Violinists, DJs & Live Bands for Weddings and Events',
+    bgGradient: ['#f43f5e', '#fb7185'],
+  },
+  {
+    id: 'master_of_ceremonies',
+    name: 'Master of Ceremonies',
+    archetype: 'emcee',
+    icon: 'mic',
+    description: 'Multilingual Emcees, Wedding Anchors, Corporate Hosts & Stage Presenters',
+    bgGradient: ['#6366f1', '#a855f7'],
   },
   {
     id: 'models',

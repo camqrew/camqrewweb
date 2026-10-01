@@ -94,6 +94,10 @@ export interface ProfessionalProfile {
   };
   videoReels?: VideoReelItem[];
   menuItems?: MenuDishItem[];
+  musicTypes?: string[];
+  languages?: string[];
+  genres?: string[];
+  hostingStyles?: string[];
   views?: number;
   totalEarnings?: number;
 }

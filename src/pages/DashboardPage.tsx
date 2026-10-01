@@ -50,7 +50,10 @@ import {
   UtensilsCrossed,
   Search,
   Edit3,
-  Gift
+  Gift,
+  Music,
+  Globe,
+  Mic
 } from 'lucide-react';
 import type { VideoReelItem, MenuDishItem } from '../types/professional';
 import { authApi } from '../api/authApi';
@@ -62,8 +65,37 @@ import { ImageLightboxModal } from '../components/ImageLightboxModal';
 import { isCustomAvatar } from '../utils/avatarUtils';
 import { CustomSelect } from '../components/CustomSelect';
 import { ProductCard } from '../components/ProductCard';
+import { getArchetype } from '../constants/categories';
 
 type ProTab = 'overview' | 'bookings' | 'sales_rentals' | 'listings' | 'jobboard' | 'availability' | 'earnings' | 'client';
+
+const MUSIC_TYPE_PRESETS = [
+  'Guitarist', 'Acoustic Guitarist', 'Electric Guitarist',
+  'Violinist', 'Electric Violinist', 'Vocalist / Singer',
+  'Pianist / Keyboardist', 'Drummer / Percussionist', 'DJ / Music Producer',
+  'Bansuri / Flutist', 'Saxophonist', 'Bassist', 'Tabla Player',
+  'Live Band (Full Roster)', 'Acoustic Duo / Trio'
+];
+
+const MUSIC_GENRE_PRESETS = [
+  'Bollywood Retro & Modern', 'Sufi & Qawwali Fusion', 'Acoustic & Unplugged',
+  'Western Pop', 'Classical Indian', 'Western Classical',
+  'Jazz & Blues', 'Rock & Indie', 'Punjabi Folk & Bhangra',
+  'Ghazal & Semi-Classical', 'EDM / Club Hits', 'Instrumental Ambient'
+];
+
+const EMCEE_LANGUAGE_PRESETS = [
+  'English (Neutral Accent)', 'Hindi (Conversational & Poetic)',
+  'Punjabi', 'Urdu / Shayari', 'Tamil', 'Telugu',
+  'Bengali', 'Marathi', 'Gujarati', 'Malayalam', 'Kannada'
+];
+
+const EMCEE_STYLE_PRESETS = [
+  'Wedding Sangeet & Reception', 'Corporate Summit & Conference',
+  'Annual Gala & Award Night', 'Product Launch & Keynote',
+  'Concert & Music Festival', 'Interactive Crowd Games & Icebreakers',
+  'Bilingual Stage Hosting', 'Formal Teleprompter Hosting'
+];
 
 export const DashboardPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -78,7 +110,9 @@ export const DashboardPage: React.FC = () => {
   const [proProfile, setProProfile] = useState<ProfessionalProfile | null>(null);
   const [isAvailable, setIsAvailable] = useState<boolean>(true);
 
-  // Caterer, Home Baker & Crafts archetype detection
+  // Archetype & category detection
+  const proArchetype = useMemo(() => getArchetype(proProfile?.categories), [proProfile?.categories]);
+
   const isBaker = Boolean(
     proProfile?.categories?.some(c =>
       c.toLowerCase().includes('baker') ||
@@ -95,6 +129,28 @@ export const DashboardPage: React.FC = () => {
       c.toLowerCase().includes('gift') ||
       c.toLowerCase().includes('flower') ||
       c.toLowerCase().includes('wrap')
+    )
+  );
+
+  const isMusician = proArchetype.archetype === 'musician' || Boolean(
+    proProfile?.categories?.some(c =>
+      c.toLowerCase().includes('music') ||
+      c.toLowerCase().includes('band') ||
+      c.toLowerCase().includes('guitar') ||
+      c.toLowerCase().includes('violin') ||
+      c.toLowerCase().includes('vocal') ||
+      c.toLowerCase().includes('singer') ||
+      c.toLowerCase().includes('instrument')
+    )
+  );
+
+  const isEmcee = proArchetype.archetype === 'emcee' || Boolean(
+    proProfile?.categories?.some(c =>
+      c.toLowerCase().includes('ceremon') ||
+      c.toLowerCase().includes('emcee') ||
+      c.toLowerCase().includes('mc') ||
+      c.toLowerCase().includes('anchor') ||
+      c.toLowerCase().includes('host')
     )
   );
 
@@ -205,6 +261,13 @@ export const DashboardPage: React.FC = () => {
   const [showAddPhotoUrlModal, setShowAddPhotoUrlModal] = useState(false);
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+
+  // Musician & Emcee Specialties State
+  const [customMusicType, setCustomMusicType] = useState('');
+  const [customGenre, setCustomGenre] = useState('');
+  const [customLanguage, setCustomLanguage] = useState('');
+  const [customHostingStyle, setCustomHostingStyle] = useState('');
+  const [showAllSpecialtyEditors, setShowAllSpecialtyEditors] = useState(false);
 
   // Lightbox state for previewing full images
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -746,6 +809,132 @@ export const DashboardPage: React.FC = () => {
       showToast('Portfolio photo removed.');
     } catch (err: any) {
       alert(err.message || 'Failed to remove photo');
+    }
+  };
+
+  // Musician specialization handlers
+  const handleToggleMusicType = async (type: string) => {
+    if (!proProfile) return;
+    const current = proProfile.musicTypes || [];
+    const next = current.includes(type) ? current.filter(t => t !== type) : [...current, type];
+    setProProfile({ ...proProfile, musicTypes: next });
+    try {
+      await professionalApi.updateProfile({ musicTypes: next }, user?.id);
+      showToast(`Updated music types`);
+    } catch (e: any) {
+      showToast(e.message || 'Failed to update');
+    }
+  };
+
+  const handleAddCustomMusicType = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!customMusicType.trim() || !proProfile) return;
+    const item = customMusicType.trim();
+    const current = proProfile.musicTypes || [];
+    if (!current.includes(item)) {
+      const next = [...current, item];
+      setProProfile({ ...proProfile, musicTypes: next });
+      setCustomMusicType('');
+      try {
+        await professionalApi.updateProfile({ musicTypes: next }, user?.id);
+        showToast(`Added ${item}`);
+      } catch (e: any) {
+        showToast(e.message || 'Failed to update');
+      }
+    }
+  };
+
+  const handleToggleGenre = async (genre: string) => {
+    if (!proProfile) return;
+    const current = proProfile.genres || [];
+    const next = current.includes(genre) ? current.filter(g => g !== genre) : [...current, genre];
+    setProProfile({ ...proProfile, genres: next });
+    try {
+      await professionalApi.updateProfile({ genres: next }, user?.id);
+      showToast(`Updated genres`);
+    } catch (e: any) {
+      showToast(e.message || 'Failed to update');
+    }
+  };
+
+  const handleAddCustomGenre = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!customGenre.trim() || !proProfile) return;
+    const item = customGenre.trim();
+    const current = proProfile.genres || [];
+    if (!current.includes(item)) {
+      const next = [...current, item];
+      setProProfile({ ...proProfile, genres: next });
+      setCustomGenre('');
+      try {
+        await professionalApi.updateProfile({ genres: next }, user?.id);
+        showToast(`Added ${item}`);
+      } catch (e: any) {
+        showToast(e.message || 'Failed to update');
+      }
+    }
+  };
+
+  // Master of Ceremonies specialization handlers
+  const handleToggleLanguage = async (lang: string) => {
+    if (!proProfile) return;
+    const current = proProfile.languages || [];
+    const next = current.includes(lang) ? current.filter(l => l !== lang) : [...current, lang];
+    setProProfile({ ...proProfile, languages: next });
+    try {
+      await professionalApi.updateProfile({ languages: next }, user?.id);
+      showToast(`Updated languages`);
+    } catch (e: any) {
+      showToast(e.message || 'Failed to update');
+    }
+  };
+
+  const handleAddCustomLanguage = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!customLanguage.trim() || !proProfile) return;
+    const item = customLanguage.trim();
+    const current = proProfile.languages || [];
+    if (!current.includes(item)) {
+      const next = [...current, item];
+      setProProfile({ ...proProfile, languages: next });
+      setCustomLanguage('');
+      try {
+        await professionalApi.updateProfile({ languages: next }, user?.id);
+        showToast(`Added ${item}`);
+      } catch (e: any) {
+        showToast(e.message || 'Failed to update');
+      }
+    }
+  };
+
+  const handleToggleHostingStyle = async (style: string) => {
+    if (!proProfile) return;
+    const current = proProfile.hostingStyles || [];
+    const next = current.includes(style) ? current.filter(s => s !== style) : [...current, style];
+    setProProfile({ ...proProfile, hostingStyles: next });
+    try {
+      await professionalApi.updateProfile({ hostingStyles: next }, user?.id);
+      showToast(`Updated hosting formats`);
+    } catch (e: any) {
+      showToast(e.message || 'Failed to update');
+    }
+  };
+
+  const handleAddCustomHostingStyle = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!customHostingStyle.trim() || !proProfile) return;
+    const item = customHostingStyle.trim();
+    const current = proProfile.hostingStyles || [];
+    if (!current.includes(item)) {
+      const next = [...current, item];
+      setProProfile({ ...proProfile, hostingStyles: next });
+      setCustomHostingStyle('');
+      try {
+        await professionalApi.updateProfile({ hostingStyles: next }, user?.id);
+        showToast(`Added ${item}`);
+      } catch (e: any) {
+        showToast(e.message || 'Failed to update');
+      }
     }
   };
 
@@ -1505,6 +1694,303 @@ export const DashboardPage: React.FC = () => {
                   </div>
                 )}
               </div>
+
+              {/* Optional Specializations Switcher for Cross-Functional Creators */}
+              <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-xs"
+                  onClick={() => setShowAllSpecialtyEditors(prev => !prev)}
+                  style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                >
+                  <Music size={13} color="var(--accent)" />
+                  <span>{showAllSpecialtyEditors ? 'Hide Music & Emcee Editors ▲' : '+ Manage Music Instruments & Emcee Languages ▼'}</span>
+                </button>
+              </div>
+
+              {/* ── MUSICIAN SPECIALIZATIONS & INSTRUMENTS MANAGER ── */}
+              {(isMusician || showAllSpecialtyEditors || (proProfile?.musicTypes && proProfile.musicTypes.length > 0)) && (
+                <div className="card pro-menu-manager-card" style={{ marginTop: 14 }}>
+                  <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+                    <div>
+                      <h3 className="section-heading" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Music size={20} color="var(--accent, #3fb668)" />
+                        Musician Specializations & Instruments
+                        <span className="badge-sub" style={{ fontSize: 12, padding: '2px 8px' }}>
+                          {(proProfile?.musicTypes?.length || 0)} types • {(proProfile?.genres?.length || 0)} genres
+                        </span>
+                      </h3>
+                      <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
+                        Configure your instruments (Guitarist, Violinist, Vocalist...) and music genres so clients can find and book your specific live performance repertoire.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Section 1: Music Types & Instruments */}
+                  <div style={{ marginBottom: 20, background: 'rgba(255,255,255,0.02)', padding: '16px 18px', borderRadius: 12, border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <Music size={15} color="var(--accent)" />
+                          Instruments & Music Types
+                        </h4>
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                          Click any tag to add or remove it from your public booking profile
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Preset Chips */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+                      {MUSIC_TYPE_PRESETS.map((type) => {
+                        const isSelected = proProfile?.musicTypes?.includes(type);
+                        return (
+                          <button
+                            key={type}
+                            type="button"
+                            onClick={() => handleToggleMusicType(type)}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              padding: '6px 14px',
+                              borderRadius: 20,
+                              fontSize: 13,
+                              fontWeight: isSelected ? 700 : 500,
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                              border: isSelected ? '1px solid var(--accent, #3fb668)' : '1px solid rgba(255,255,255,0.12)',
+                              background: isSelected ? 'rgba(63, 182, 104, 0.18)' : 'rgba(255,255,255,0.04)',
+                              color: isSelected ? 'var(--accent, #3fb668)' : 'var(--text-primary)',
+                            }}
+                          >
+                            <span>{isSelected ? '✓' : '+'}</span>
+                            <span>{type}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Custom Tag Input */}
+                    <form onSubmit={handleAddCustomMusicType} style={{ display: 'flex', gap: 8, maxWidth: 440 }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        style={{ height: 38, fontSize: 13 }}
+                        placeholder="Add custom instrument (e.g. Sitarist, Cellist)..."
+                        value={customMusicType}
+                        onChange={(e) => setCustomMusicType(e.target.value)}
+                      />
+                      <button type="submit" className="btn btn-outline btn-sm" style={{ whiteSpace: 'nowrap', height: 38 }}>
+                        <Plus size={14} /> Add
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Section 2: Genres & Repertoire */}
+                  <div style={{ background: 'rgba(255,255,255,0.02)', padding: '16px 18px', borderRadius: 12, border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span>🎵</span>
+                          Music Genres & Performance Repertoire
+                        </h4>
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                          Select the genres and musical styles you perform at weddings, concerts, and private gigs
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Preset Genre Chips */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+                      {MUSIC_GENRE_PRESETS.map((genre) => {
+                        const isSelected = proProfile?.genres?.includes(genre);
+                        return (
+                          <button
+                            key={genre}
+                            type="button"
+                            onClick={() => handleToggleGenre(genre)}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              padding: '6px 14px',
+                              borderRadius: 20,
+                              fontSize: 13,
+                              fontWeight: isSelected ? 700 : 500,
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                              border: isSelected ? '1px solid #f43f5e' : '1px solid rgba(255,255,255,0.12)',
+                              background: isSelected ? 'rgba(244, 63, 94, 0.18)' : 'rgba(255,255,255,0.04)',
+                              color: isSelected ? '#fb7185' : 'var(--text-primary)',
+                            }}
+                          >
+                            <span>{isSelected ? '✓' : '+'}</span>
+                            <span>{genre}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Custom Genre Input */}
+                    <form onSubmit={handleAddCustomGenre} style={{ display: 'flex', gap: 8, maxWidth: 440 }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        style={{ height: 38, fontSize: 13 }}
+                        placeholder="Add custom genre (e.g. Heavy Metal, Carnatic, Lo-Fi)..."
+                        value={customGenre}
+                        onChange={(e) => setCustomGenre(e.target.value)}
+                      />
+                      <button type="submit" className="btn btn-outline btn-sm" style={{ whiteSpace: 'nowrap', height: 38 }}>
+                        <Plus size={14} /> Add
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {/* ── MASTER OF CEREMONIES LANGUAGES & STAGE FORMATS MANAGER ── */}
+              {(isEmcee || showAllSpecialtyEditors || (proProfile?.languages && proProfile.languages.length > 0)) && (
+                <div className="card pro-menu-manager-card" style={{ marginTop: 28 }}>
+                  <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+                    <div>
+                      <h3 className="section-heading" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Mic size={20} color="var(--accent, #3fb668)" />
+                        Master of Ceremonies Languages & Stage Portfolio
+                        <span className="badge-sub" style={{ fontSize: 12, padding: '2px 8px' }}>
+                          {(proProfile?.languages?.length || 0)} languages • {(proProfile?.hostingStyles?.length || 0)} formats
+                        </span>
+                      </h3>
+                      <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
+                        Configure the languages you speak and host in, plus your signature event formats (Sangeets, Corporate Summits, Gala Awards).
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Section 1: Languages Spoken & Hosted */}
+                  <div style={{ marginBottom: 20, background: 'rgba(255,255,255,0.02)', padding: '16px 18px', borderRadius: 12, border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <Globe size={15} color="#3b82f6" />
+                          Languages Spoken & Hosted
+                        </h4>
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                          Select all languages you are fluent in and can confidently host and engage audiences in
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Preset Language Chips */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+                      {EMCEE_LANGUAGE_PRESETS.map((lang) => {
+                        const isSelected = proProfile?.languages?.includes(lang);
+                        return (
+                          <button
+                            key={lang}
+                            type="button"
+                            onClick={() => handleToggleLanguage(lang)}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              padding: '6px 14px',
+                              borderRadius: 20,
+                              fontSize: 13,
+                              fontWeight: isSelected ? 700 : 500,
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                              border: isSelected ? '1px solid #3b82f6' : '1px solid rgba(255,255,255,0.12)',
+                              background: isSelected ? 'rgba(59, 130, 246, 0.18)' : 'rgba(255,255,255,0.04)',
+                              color: isSelected ? '#60a5fa' : 'var(--text-primary)',
+                            }}
+                          >
+                            <span>{isSelected ? '✓' : '+'}</span>
+                            <span>{lang}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Custom Language Input */}
+                    <form onSubmit={handleAddCustomLanguage} style={{ display: 'flex', gap: 8, maxWidth: 440 }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        style={{ height: 38, fontSize: 13 }}
+                        placeholder="Add custom language (e.g. French, Marwari, Sindhi)..."
+                        value={customLanguage}
+                        onChange={(e) => setCustomLanguage(e.target.value)}
+                      />
+                      <button type="submit" className="btn btn-outline btn-sm" style={{ whiteSpace: 'nowrap', height: 38 }}>
+                        <Plus size={14} /> Add
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Section 2: Hosting Formats & Event Styles */}
+                  <div style={{ background: 'rgba(255,255,255,0.02)', padding: '16px 18px', borderRadius: 12, border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <Mic size={15} color="var(--accent)" />
+                          Hosting Formats & Event Styles
+                        </h4>
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                          Select the stage anchoring genres and event formats you excel in
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Preset Style Chips */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+                      {EMCEE_STYLE_PRESETS.map((style) => {
+                        const isSelected = proProfile?.hostingStyles?.includes(style);
+                        return (
+                          <button
+                            key={style}
+                            type="button"
+                            onClick={() => handleToggleHostingStyle(style)}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              padding: '6px 14px',
+                              borderRadius: 20,
+                              fontSize: 13,
+                              fontWeight: isSelected ? 700 : 500,
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                              border: isSelected ? '1px solid var(--accent, #3fb668)' : '1px solid rgba(255,255,255,0.12)',
+                              background: isSelected ? 'rgba(63, 182, 104, 0.18)' : 'rgba(255,255,255,0.04)',
+                              color: isSelected ? 'var(--accent, #3fb668)' : 'var(--text-primary)',
+                            }}
+                          >
+                            <span>{isSelected ? '✓' : '+'}</span>
+                            <span>{style}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Custom Style Input */}
+                    <form onSubmit={handleAddCustomHostingStyle} style={{ display: 'flex', gap: 8, maxWidth: 440 }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        style={{ height: 38, fontSize: 13 }}
+                        placeholder="Add custom format (e.g. Sports Commentary, Stand-up Anchor)..."
+                        value={customHostingStyle}
+                        onChange={(e) => setCustomHostingStyle(e.target.value)}
+                      />
+                      <button type="submit" className="btn btn-outline btn-sm" style={{ whiteSpace: 'nowrap', height: 38 }}>
+                        <Plus size={14} /> Add
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              )}
 
               {/* ── CATERING & BAKERY MENU MANAGER ── */}
               {isCaterer && (

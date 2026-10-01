@@ -33,7 +33,10 @@ import {
   Sparkles,
   Gift,
   ShoppingBag,
-  Eye
+  Eye,
+  Music,
+  Globe,
+  Mic
 } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
 import { SocialShareModal } from '../components/SocialShareModal';
@@ -74,6 +77,8 @@ export const CreatorProfilePage: React.FC = () => {
   const proArchetype = useMemo(() => getArchetype(pro?.categories), [pro?.categories]);
   const isBaker = proArchetype.archetype === 'home_baker';
   const isCrafts = proArchetype.archetype === 'crafts_gifting';
+  const isMusician = proArchetype.archetype === 'musician' || Boolean(pro?.categories?.some(c => c.toLowerCase().includes('music') || c.toLowerCase().includes('band')));
+  const isEmcee = proArchetype.archetype === 'emcee' || Boolean(pro?.categories?.some(c => c.toLowerCase().includes('ceremon') || c.toLowerCase().includes('emcee') || c.toLowerCase().includes('host')));
   const isItemDirectTotal = isBaker || isCrafts;
 
   // Catering & Bakery Menu State
@@ -341,6 +346,18 @@ export const CreatorProfilePage: React.FC = () => {
                       <Briefcase size={16} color="var(--text-muted)" />
                       {pro.experienceYears}+ years exp
                     </span>
+                    {pro.musicTypes && pro.musicTypes.length > 0 && (
+                      <span className="meta-pill" title="Music Types / Instruments">
+                        <Music size={15} color="var(--accent)" />
+                        <strong>{pro.musicTypes.slice(0, 3).join(', ')}{pro.musicTypes.length > 3 ? ` +${pro.musicTypes.length - 3}` : ''}</strong>
+                      </span>
+                    )}
+                    {pro.languages && pro.languages.length > 0 && (
+                      <span className="meta-pill" title="Languages Spoken & Hosted">
+                        <Globe size={15} color="var(--accent)" />
+                        <strong>{pro.languages.slice(0, 3).join(', ')}{pro.languages.length > 3 ? ` +${pro.languages.length - 3}` : ''}</strong>
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -359,6 +376,88 @@ export const CreatorProfilePage: React.FC = () => {
               <h3 className="section-heading">About the {proArchetype.roleNoun}</h3>
               <p className="bio-text">{pro.bio || 'No bio provided.'}</p>
             </div>
+
+            {/* ── MUSICIAN SPECIALIZATIONS CARD ── */}
+            {(isMusician || (pro.musicTypes && pro.musicTypes.length > 0) || (pro.genres && pro.genres.length > 0)) && (
+              <div className="card profile-section-card musician-specialties-card">
+                <div className="section-header-inline" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                  <Music size={20} color="var(--accent, #3fb668)" />
+                  <h3 className="section-heading" style={{ margin: 0 }}>Music Specializations & Performance Roster</h3>
+                </div>
+                
+                {pro.musicTypes && pro.musicTypes.length > 0 && (
+                  <div style={{ marginBottom: 16 }}>
+                    <h4 style={{ fontSize: 12.5, textTransform: 'uppercase', letterSpacing: 0.6, color: 'var(--text-secondary)', marginBottom: 8, fontWeight: 700 }}>
+                      Instruments & Music Types
+                    </h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {pro.musicTypes.map((type) => (
+                        <span key={type} className="gear-item-card" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 20, background: 'rgba(63, 182, 104, 0.08)', borderColor: 'rgba(63, 182, 104, 0.25)' }}>
+                          <Music size={14} color="var(--accent)" />
+                          <strong style={{ fontSize: 13, color: 'var(--text-primary)' }}>{type}</strong>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {pro.genres && pro.genres.length > 0 && (
+                  <div>
+                    <h4 style={{ fontSize: 12.5, textTransform: 'uppercase', letterSpacing: 0.6, color: 'var(--text-secondary)', marginBottom: 8, fontWeight: 700 }}>
+                      Genres & Performance Repertoire
+                    </h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {pro.genres.map((genre) => (
+                        <span key={genre} className="meta-pill" style={{ fontSize: 12.5, padding: '5px 12px', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
+                          🎵 {genre}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── MASTER OF CEREMONIES SPECIALIZATIONS CARD ── */}
+            {(isEmcee || (pro.languages && pro.languages.length > 0) || (pro.hostingStyles && pro.hostingStyles.length > 0)) && (
+              <div className="card profile-section-card emcee-specialties-card">
+                <div className="section-header-inline" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                  <Mic size={20} color="var(--accent, #3fb668)" />
+                  <h3 className="section-heading" style={{ margin: 0 }}>Languages & Stage Hosting Portfolio</h3>
+                </div>
+
+                {pro.languages && pro.languages.length > 0 && (
+                  <div style={{ marginBottom: 16 }}>
+                    <h4 style={{ fontSize: 12.5, textTransform: 'uppercase', letterSpacing: 0.6, color: 'var(--text-secondary)', marginBottom: 8, fontWeight: 700 }}>
+                      Languages Spoken & Hosted
+                    </h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {pro.languages.map((lang) => (
+                        <span key={lang} className="gear-item-card" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 20, background: 'rgba(59, 130, 246, 0.08)', borderColor: 'rgba(59, 130, 246, 0.25)' }}>
+                          <Globe size={14} color="#3b82f6" />
+                          <strong style={{ fontSize: 13, color: 'var(--text-primary)' }}>{lang}</strong>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {pro.hostingStyles && pro.hostingStyles.length > 0 && (
+                  <div>
+                    <h4 style={{ fontSize: 12.5, textTransform: 'uppercase', letterSpacing: 0.6, color: 'var(--text-secondary)', marginBottom: 8, fontWeight: 700 }}>
+                      Hosting Formats & Event Styles
+                    </h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {pro.hostingStyles.map((style) => (
+                        <span key={style} className="meta-pill" style={{ fontSize: 12.5, padding: '5px 12px', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
+                          🎤 {style}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* ── SERVICES & PACKAGES SECTION (PRODUCT CARD DESIGN) ── */}
             {pro.services && pro.services.length > 0 && (

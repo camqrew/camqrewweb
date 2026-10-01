@@ -296,6 +296,22 @@ export const getDefaultServicesForCategories = (categories: string[] = [], baseR
     ];
   }
 
+  if (cats.some(c => c.includes('music') || c.includes('musician') || c.includes('band') || c.includes('guitar') || c.includes('vocal') || c.includes('violin') || c.includes('dj') || c.includes('instrument'))) {
+    return [
+      { id: 'def_srv_mus_1', title: 'Live Acoustic Performance & Vocals', category: 'Live Performance', rate: Math.max(25000, baseRate), unit: 'Performance (3 Hrs)', description: 'Acoustic guitar/violin and vocal set covering Bollywood, Sufi, Western pop, and retro classics with professional audio monitoring.', deliverables: '3 hours live performance, 2 set breaks, custom song requests included' },
+      { id: 'def_srv_mus_2', title: 'Full Live Band Concert Experience', category: 'Live Band', rate: Math.max(65000, baseRate * 2), unit: 'Concert Set', description: '4-to-5 piece live band setup (Drums, Bass, Lead Guitar, Keys, Lead Vocalist) for grand sangeet, concerts, or college fests.', deliverables: 'High-energy 2.5-hour concert set, live stage coordination, complete band soundcheck' },
+      { id: 'def_srv_mus_3', title: 'Solo Instrumental & Ambient Melodies', category: 'Solo Instrumental', rate: Math.max(15000, Math.round(baseRate * 0.6)), unit: 'Session', description: 'Soulful solo violin, flute, saxophone, or classical guitar set for guest receptions, cocktail dinners, and bridal entries.', deliverables: '2-hour ambient music set, wireless instrument pickup setup' },
+    ];
+  }
+
+  if (cats.some(c => c.includes('emcee') || c.includes('ceremon') || c.includes('anchor') || c.includes('host') || c.includes('mc'))) {
+    return [
+      { id: 'def_srv_emc_1', title: 'Grand Wedding Sangeet & Reception Emcee', category: 'Wedding Emcee', rate: Math.max(25000, baseRate), unit: 'Evening Event', description: 'Bilingual energetic hosting (Hindi & English) driving family games, couple entries, dance performances, and audience engagement.', deliverables: 'Complete show rundown curation, stage anchoring up to 5 hours, crowd icebreakers' },
+      { id: 'def_srv_emc_2', title: 'Corporate Summit & Annual Awards Host', category: 'Corporate Host', rate: Math.max(30000, baseRate), unit: 'Day / Conference', description: 'Polished, articulate, and poised stage presence for corporate summits, product launches, panel discussions, and gala dinner awards.', deliverables: 'Full day teleprompter / cue card hosting, speaker introductions, award protocol management' },
+      { id: 'def_srv_emc_3', title: 'High-Energy Festival & Concert Stage Anchor', category: 'Concert Anchor', rate: Math.max(35000, baseRate), unit: 'Concert / Fest', description: 'Electrifying crowd engagement, celebrity intros, and rhythm coordination for college fests, music concerts, and sports leagues.', deliverables: 'Dynamic stage presence, sponsor rollouts, artist handoffs' },
+    ];
+  }
+
   // Default: Photography & General Creative Media
   return [
     { id: 'def_srv_photo_1', title: 'Full-Day Candid & Traditional Photography', category: 'Photography', rate: Math.max(20000, baseRate), unit: 'Day', description: 'Comprehensive shoot coverage with prime lenses capturing candid moments and portraits.', deliverables: '250+ color-graded high-resolution photos, private cloud gallery, 25 sneak peeks in 24 hrs' },
@@ -361,6 +377,10 @@ const mapPro = (row: any): ProfessionalProfile => {
     services: rawServices, 
     videoReels: Array.isArray(row.video_reels) ? row.video_reels : [],
     menuItems: resolvedMenuItems,
+    musicTypes: Array.isArray(row.music_types) ? row.music_types : [],
+    languages: Array.isArray(row.languages) ? row.languages : [],
+    genres: Array.isArray(row.genres) ? row.genres : [],
+    hostingStyles: Array.isArray(row.hosting_styles) ? row.hosting_styles : [],
     reviews: [],
     weeklyAvailability: { mon: true, tue: true, wed: true, thu: true, fri: true, sat: true, sun: false },
     blockedDates: [],
@@ -598,6 +618,10 @@ export const professionalApi = {
     if (proFields.certifications) updatePayload.skills = proFields.certifications;
     if (proFields.services) updatePayload.services = proFields.services;
     if (proFields.videoReels !== undefined) updatePayload.video_reels = proFields.videoReels;
+    if (proFields.musicTypes !== undefined) updatePayload.music_types = proFields.musicTypes;
+    if (proFields.languages !== undefined) updatePayload.languages = proFields.languages;
+    if (proFields.genres !== undefined) updatePayload.genres = proFields.genres;
+    if (proFields.hostingStyles !== undefined) updatePayload.hosting_styles = proFields.hostingStyles;
     if (proFields.menuItems !== undefined) {
       try {
         localStorage.setItem(`@camqrew_menu_items_${ownerId}`, JSON.stringify(proFields.menuItems));
@@ -621,6 +645,10 @@ export const professionalApi = {
         skills: proFields.certifications || [],
         equipment: proFields.equipment || [],
         video_reels: proFields.videoReels || [],
+        music_types: proFields.musicTypes || [],
+        languages: proFields.languages || [],
+        genres: proFields.genres || [],
+        hosting_styles: proFields.hostingStyles || [],
         ...updatePayload,
       };
 

@@ -24,8 +24,18 @@ export function getServiceImage(service: ServiceItem, fallbackCover?: string): s
     return 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800';
   }
 
+  // Live Musicians, Bands, Vocalists & Instrumentals
+  if (title.includes('band') || title.includes('acoustic') || title.includes('guitar') || title.includes('violin') || title.includes('vocal') || title.includes('flute') || title.includes('dj') || title.includes('singer') || cat.includes('live band') || cat.includes('live performance') || cat.includes('solo instrumental') || cat.includes('musician')) {
+    return 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800';
+  }
+
+  // Master of Ceremonies, Anchors & Event Hosts
+  if (title.includes('emcee') || title.includes('anchor') || title.includes('host') || title.includes('ceremon') || cat.includes('emcee') || cat.includes('host') || cat.includes('anchor')) {
+    return 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=800';
+  }
+
   // Music Video & Fashion
-  if (title.includes('music video') || title.includes('fashion video') || cat.includes('music') || title.includes('dance')) {
+  if (title.includes('music video') || title.includes('fashion video') || title.includes('dance')) {
     return 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=800';
   }
 
