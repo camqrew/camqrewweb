@@ -145,7 +145,7 @@ export const LegalPage: React.FC = () => {
                   <span className="legal-doc-badge">Document Ref: CC-LEGAL-TOS-2026</span>
                   <h2>Terms of Service</h2>
                   <p className="lead-text">
-                    Welcome to Camqrew India Technologies Pvt Ltd (&quot;Camqrew&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;). By accessing or using the Camqrew web platform, mobile applications, or associated escrow services, you agree to be bound by these Terms of Service.
+                    Welcome to Camqrew LLP (&quot;Camqrew&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;). By accessing or using the Camqrew web platform, mobile applications, or associated escrow services, you agree to be bound by these Terms of Service.
                   </p>
 
                   <section className="legal-section">
@@ -339,7 +339,7 @@ export const LegalPage: React.FC = () => {
                   <span className="legal-doc-badge">Document Ref: CC-LEGAL-PRIVACY-2026</span>
                   <h2>Privacy Policy (DPDP Act 2023 Compliant)</h2>
                   <p className="lead-text">
-                    Camqrew India Technologies Pvt Ltd is committed to safeguarding your personal and creative data in compliance with India&apos;s Digital Personal Data Protection (DPDP) Act, 2023.
+                    Camqrew LLP is committed to safeguarding your personal and creative data in compliance with India&apos;s Digital Personal Data Protection (DPDP) Act, 2023.
                   </p>
 
                   <section className="legal-section">

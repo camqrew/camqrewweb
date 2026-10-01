@@ -55,19 +55,25 @@ export const Footer: React.FC = () => {
         </div>
 
         <div className="footer-bottom">
-          <div className="footer-legal-links" style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 10, fontSize: 12 }}>
-            <Link to="/terms" style={{ color: 'var(--text-muted)' }}>Terms of Service</Link>
-            <span style={{ color: 'var(--border-color)' }}>•</span>
-            <Link to="/legal?section=escrow" style={{ color: 'var(--text-muted)' }}>Escrow Terms</Link>
-            <span style={{ color: 'var(--border-color)' }}>•</span>
-            <Link to="/legal?section=cancellation" style={{ color: 'var(--text-muted)' }}>Cancellation Policy</Link>
-            <span style={{ color: 'var(--border-color)' }}>•</span>
-            <Link to="/privacy" style={{ color: 'var(--text-muted)' }}>Privacy Policy</Link>
-            <span style={{ color: 'var(--border-color)' }}>•</span>
-            <Link to="/legal?section=deletion" style={{ color: 'var(--text-muted)' }}>Data Erasure</Link>
+          <div className="footer-legal-links">
+            <Link to="/terms">Terms of Service</Link>
+            <span className="footer-dot">•</span>
+            <Link to="/legal?section=escrow">Escrow Terms</Link>
+            <span className="footer-dot">•</span>
+            <Link to="/legal?section=cancellation">Cancellation Policy</Link>
+            <span className="footer-dot">•</span>
+            <Link to="/privacy">Privacy Policy</Link>
+            <span className="footer-dot">•</span>
+            <Link to="/legal?section=deletion">Data Erasure</Link>
           </div>
-          <p>© {new Date().getFullYear()} Camqrew India Technologies Pvt Ltd. All rights reserved.</p>
-          <p className="footer-credit">Built with <Heart size={14} fill="var(--danger)" color="var(--danger)" /> for Indian Creators</p>
+
+          <p className="footer-copyright">
+            © {new Date().getFullYear()} Camqrew LLP | All rights reserved.
+          </p>
+
+          <p className="footer-credit">
+            Built with <Heart size={14} fill="var(--danger)" color="var(--danger)" /> for Indian Creators
+          </p>
         </div>
       </div>
     </footer>
