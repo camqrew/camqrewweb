@@ -20,7 +20,9 @@ import {
   Briefcase,
   MapPin,
   ChevronRight,
-  Info
+  Info,
+  Eye,
+  ShoppingBag
 } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
 
@@ -418,32 +420,91 @@ export const ServiceDetailPage: React.FC = () => {
                   </Link>
                 </div>
 
-                <div className="minimal-service-grid">
+                <div className="pros-grid" style={{ marginTop: 14 }}>
                   {otherServices.slice(0, 2).map((other) => (
                     <div 
                       key={other.id} 
-                      className="minimal-service-card"
+                      className="pro-card product-card-mobile-match cursor-pointer"
                       onClick={() => navigate(`/creators/${creator.id}/services/${other.id}`)}
                     >
-                      <div className="minimal-service-banner">
+                      <div className="pro-card-banner-wrapper">
                         <img 
                           src={getServiceImage(other, creator.bannerImage)} 
                           alt={other.title} 
-                          className="minimal-service-img" 
+                          className="pro-card-banner-img" 
+                          loading="lazy"
                         />
-                        <span className="minimal-service-cat-badge">{other.category}</span>
-                      </div>
-                      <div className="minimal-service-body">
-                        <h4 className="minimal-service-title">{other.title}</h4>
-                        <div className="minimal-service-footer">
-                          <div className="minimal-service-price">
-                            <span className="minimal-price-prefix">From</span>
-                            <span className="minimal-price-val">₹{other.rate.toLocaleString('en-IN')}</span>
-                            <span className="minimal-price-unit">/{other.unit?.toLowerCase() || 'package'}</span>
-                          </div>
-                          <span className="minimal-service-view-btn">
-                            View <ArrowRight size={13} />
+                        <div className="product-banner-badges">
+                          <span className="product-type-badge badge-sale">
+                            {other.type === 'package' ? 'PACKAGE' : 'SERVICE'}
                           </span>
+                          <span className="product-cat-pill">{other.category || 'Package'}</span>
+                        </div>
+                      </div>
+
+                      <div className="pro-card-floating-body">
+                        <div className="pro-card-header-row product-card-header-row">
+                          <div className="product-brand-box">
+                            <span className="product-brand-pill">{creator.name}</span>
+                          </div>
+                          <div className="pro-card-info-col">
+                            <div className="pro-card-rating-row">
+                              <Star size={13} fill="#3fb668" color="#3fb668" />
+                              <span className="pro-card-rating-val">{(creator.rating || 5.0).toFixed(1)}</span>
+                              <span className="pro-card-review-count">(Escrow)</span>
+                              <span className="pro-card-meta-dot">•</span>
+                              <span className="product-stock-pill in-stock">Available</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <h4 className="pro-card-pro-name product-title" title={other.title}>
+                          {other.title}
+                        </h4>
+
+                        <p className="pro-card-role-title product-subtitle">
+                          {other.category} Package • 100% Escrow
+                        </p>
+
+                        <p className="product-desc-snippet" title={other.description}>
+                          {other.description}
+                        </p>
+
+                        <div className="pro-card-rate-line product-price-line">
+                          <span className="pro-card-rate-label">Starting from</span>
+                          <span className="pro-card-rate-val product-price-val">
+                            ₹{other.rate.toLocaleString('en-IN')}
+                          </span>
+                          <span className="pro-card-rate-unit">/{other.unit?.toLowerCase() || 'package'}</span>
+                        </div>
+
+                        <div className="pro-card-actions-row product-card-actions-row">
+                          <button 
+                            type="button"
+                            className="pro-card-btn-view"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/creators/${creator.id}/services/${other.id}`);
+                            }}
+                            title="View Service Details"
+                          >
+                            <span>View</span>
+                            <Eye size={15} />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const notes = `Service: ${other.title}\nCategory: ${other.category}\nRate: ₹${other.rate.toLocaleString('en-IN')}/${other.unit}\nDescription: ${other.description}${other.deliverables ? `\nDeliverables: ${other.deliverables}` : ''}`;
+                              navigate(`/book/${creator.id}?jobTitle=${encodeURIComponent(other.title)}&total=${other.rate}&notes=${encodeURIComponent(notes)}`);
+                            }}
+                            className="pro-card-btn-book product-btn-add-cart"
+                            title="Book Service"
+                          >
+                            <ShoppingBag size={15} />
+                            <span>Book</span>
+                          </button>
                         </div>
                       </div>
                     </div>

@@ -32,7 +32,8 @@ import {
   Clock,
   Sparkles,
   Gift,
-  ShoppingBag
+  ShoppingBag,
+  Eye
 } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
 import { SocialShareModal } from '../components/SocialShareModal';
@@ -377,50 +378,112 @@ export const CreatorProfilePage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="minimal-services-grid">
+                <div className="pros-grid" style={{ marginTop: 14 }}>
                   {pro.services.map((srv) => (
                     <div 
                       key={srv.id} 
-                      className="minimal-service-card"
+                      className="pro-card product-card-mobile-match cursor-pointer"
                       onClick={() => navigate(`/creators/${pro.id}/services/${srv.id}`)}
-                      title={`View details for ${srv.title}`}
                     >
-                      {/* Top Clean Visual Banner */}
-                      <div className="minimal-service-banner">
+                      {/* Top Cinematic Image Banner */}
+                      <div className="pro-card-banner-wrapper">
                         <img
                           src={getServiceImage(srv, pro.bannerImage)}
                           alt={srv.title}
-                          className="minimal-service-img"
+                          className="pro-card-banner-img"
                           loading="lazy"
                         />
-                        <span className="minimal-service-badge">
-                          {srv.category || 'Package'}
-                        </span>
+
+                        {/* Floating Badges on Banner */}
+                        <div className="product-banner-badges">
+                          <span className="product-type-badge badge-sale">
+                            {srv.type === 'package' ? 'PACKAGE' : 'SERVICE'}
+                          </span>
+
+                          <span className="product-cat-pill">
+                            {srv.category || 'Package'}
+                          </span>
+                        </div>
                       </div>
 
-                      {/* Clean Minimal Body */}
-                      <div className="minimal-service-body">
-                        <h4 className="minimal-service-title" title={srv.title}>
-                          {srv.title}
-                        </h4>
-
-                        <div className="minimal-service-footer">
-                          <div className="minimal-service-price">
-                            <span className="minimal-price-prefix">From</span>
-                            <span className="minimal-price-val">₹{srv.rate.toLocaleString('en-IN')}</span>
-                            <span className="minimal-price-unit">/{srv.unit?.toLowerCase() || 'project'}</span>
+                      {/* Floating Content Box with curved top overlapping banner */}
+                      <div className="pro-card-floating-body">
+                        {/* Header Info Row: Brand tag & Star Rating */}
+                        <div className="pro-card-header-row product-card-header-row">
+                          <div className="product-brand-box">
+                            <span className="product-brand-pill">
+                              {pro.name}
+                            </span>
                           </div>
 
-                          <button
+                          <div className="pro-card-info-col">
+                            <div className="pro-card-rating-row">
+                              <Star size={13} fill="#3fb668" color="#3fb668" />
+                              <span className="pro-card-rating-val">{(pro.rating || 5.0).toFixed(1)}</span>
+                              <span className="pro-card-review-count">
+                                (Escrow)
+                              </span>
+                              <span className="pro-card-meta-dot">•</span>
+                              <span className="product-stock-pill in-stock">
+                                Available
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Product Title */}
+                        <h3 className="pro-card-pro-name product-title" title={srv.title}>
+                          {srv.title}
+                        </h3>
+
+                        {/* Specs / Condition Subtitle */}
+                        <p className="pro-card-role-title product-subtitle">
+                          {srv.category} Package • 100% Escrow
+                        </p>
+
+                        {/* Description snippet */}
+                        <p className="product-desc-snippet" title={srv.description}>
+                          {srv.description}
+                        </p>
+
+                        {/* Price / Rate Line */}
+                        <div className="pro-card-rate-line product-price-line">
+                          <span className="pro-card-rate-label">
+                            Starting from
+                          </span>
+                          <span className="pro-card-rate-val product-price-val">
+                            ₹{srv.rate.toLocaleString('en-IN')}
+                          </span>
+                          <span className="pro-card-rate-unit">/{srv.unit?.toLowerCase() || 'package'}</span>
+                        </div>
+
+                        {/* Action Buttons Row: View + Book */}
+                        <div className="pro-card-actions-row product-card-actions-row">
+                          <button 
                             type="button"
-                            className="minimal-service-view-btn"
+                            className="pro-card-btn-view"
                             onClick={(e) => {
                               e.stopPropagation();
                               navigate(`/creators/${pro.id}/services/${srv.id}`);
                             }}
+                            title="View Service Details"
                           >
-                            <span>View Details</span>
-                            <ArrowRight size={13} />
+                            <span>View</span>
+                            <Eye size={15} />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const notes = `Service: ${srv.title}\nCategory: ${srv.category}\nRate: ₹${srv.rate.toLocaleString('en-IN')}/${srv.unit}\nDescription: ${srv.description}${srv.deliverables ? `\nDeliverables: ${srv.deliverables}` : ''}`;
+                              navigate(`/book/${pro.id}?jobTitle=${encodeURIComponent(srv.title)}&total=${srv.rate}&notes=${encodeURIComponent(notes)}`);
+                            }}
+                            className="pro-card-btn-book product-btn-add-cart"
+                            title="Book Service"
+                          >
+                            <ShoppingBag size={15} />
+                            <span>Book</span>
                           </button>
                         </div>
                       </div>
