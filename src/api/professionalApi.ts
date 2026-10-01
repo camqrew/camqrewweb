@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient';
 import { useAuthStore } from '../store/authStore';
-import type { ProfessionalProfile, ReviewItem, FeedReelItem, MenuDishItem } from '../types/professional';
+import type { ProfessionalProfile, ReviewItem, FeedReelItem, MenuDishItem, ServiceItem } from '../types/professional';
 
 export interface GetProfessionalsFilter {
   category?: string;
@@ -189,6 +189,121 @@ export const getCategoryDefaultCover = (categories?: string[]): string => {
   return 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=1600';
 };
 
+export const getDefaultServicesForCategories = (categories: string[] = [], baseRate: number = 15000): ServiceItem[] => {
+  const cats = (categories || []).map(c => (c || '').toLowerCase());
+  
+  if (cats.some(c => c.includes('drone') || c.includes('pilot') || c.includes('aerial'))) {
+    return [
+      { id: 'def_srv_drone_1', title: 'Cinematic 4K Aerial Drone Coverage', category: 'Aerial', rate: Math.max(18000, baseRate), unit: 'Day', description: '4K ProRes drone sweeps, procession and venue overhead captures with DGCA compliance.', deliverables: '4K uncompressed video files, 48MP raw still photos, dual battery operations' },
+      { id: 'def_srv_drone_2', title: 'Dynamic FPV Indoor / Outdoor Flythrough', category: 'FPV', rate: Math.max(22000, Math.round(baseRate * 1.25)), unit: 'Day', description: 'One-shot continuous FPV drone flythrough of venues, resorts, or automotive chases.', deliverables: 'Reel-steady 4K 60fps stabilized footage, color graded rushes' },
+      { id: 'def_srv_drone_3', title: 'Live Aerial Video Feed for Broadcast / LED', category: 'Live Feed', rate: Math.max(15000, Math.round(baseRate * 0.8)), unit: 'Event', description: 'Wireless zero-latency 1080p aerial feed output directly to OB vans or stage LED screens.', deliverables: 'Wireless receiver setup, HDMI/SDI output, continuous flight operator' },
+    ];
+  }
+
+  if (cats.some(c => c.includes('video') || c.includes('cinema') || c.includes('film'))) {
+    return [
+      { id: 'def_srv_vid_1', title: 'Full-Day Cinematic Film Production', category: 'Cinematography', rate: Math.max(25000, baseRate), unit: 'Day', description: 'Multi-cam cinema production, prime lenses, gimbal stabilization, and wireless audio recording.', deliverables: 'Full day coverage, 1 highlight teaser (60s), 1 extended film, all raw rushes' },
+      { id: 'def_srv_vid_2', title: 'Commercial Brand & Ad Directing', category: 'Commercial', rate: Math.max(30000, Math.round(baseRate * 1.2)), unit: 'Day', description: 'End-to-end commercial film directing, lighting setup, and creative moodboard execution.', deliverables: 'ProRes 422 HQ camera footage, multiple aspect ratio deliverables (16:9, 9:16)' },
+      { id: 'def_srv_vid_3', title: 'Fast-Paced Event Aftermovie', category: 'Event Video', rate: Math.max(18000, Math.round(baseRate * 0.75)), unit: 'Event', description: 'High-energy event recap with dynamic editing, sound effects, and color grading.', deliverables: '2-3 minute social aftermovie delivered within 48-72 hours' },
+    ];
+  }
+
+  if (cats.some(c => c.includes('edit') || c.includes('colorist'))) {
+    return [
+      { id: 'def_srv_edit_1', title: 'Cinematic Film Editing & Sound Design', category: 'Post-Production', rate: Math.max(20000, baseRate), unit: 'Project', description: 'Non-linear editing of multi-cam footage with dialogue cleanup and bespoke sound design.', deliverables: 'Full master cut, 2 revisions, mastered audio stems' },
+      { id: 'def_srv_edit_2', title: 'DaVinci Resolve Creative Color Grade', category: 'Color Grading', rate: Math.max(15000, Math.round(baseRate * 0.8)), unit: 'Project', description: 'Color calibration, skin-tone optimization, and creative film emulation styling.', deliverables: 'DaVinci Resolve project archive and exported ProRes 4444 masters' },
+      { id: 'def_srv_edit_3', title: 'Social Video & Reel Growth Pack (10 Reels)', category: 'Social Media', rate: Math.max(12000, Math.round(baseRate * 0.6)), unit: 'Package', description: '10 viral-hook short form reels with dynamic subtitles, B-roll overlays, and SFX.', deliverables: '10 finished 9:16 reels under 60 seconds' },
+    ];
+  }
+
+  if (cats.some(c => c.includes('makeup') || c.includes('beauty'))) {
+    return [
+      { id: 'def_srv_mua_1', title: 'HD Airbrush Bridal Makeover & Hair', category: 'Bridal', rate: Math.max(18000, baseRate), unit: 'Bride', description: '18-hour sweatproof airbrush HD makeup, mink eyelashes, hair styling, and dupatta draping.', deliverables: 'Full bridal makeover, luxury cosmetics kit, complimentary touch-up set' },
+      { id: 'def_srv_mua_2', title: 'Cocktail & Sangeet Party Glam', category: 'Party Glam', rate: Math.max(10000, Math.round(baseRate * 0.6)), unit: 'Person', description: 'Glam party makeup with smokey eye artistry, dewy finish, and Hollywood wave styling.', deliverables: 'Complete party makeover with false lashes and hair styling' },
+      { id: 'def_srv_mua_3', title: 'Editorial & Fashion Shoot Makeup', category: 'Editorial', rate: Math.max(14000, Math.round(baseRate * 0.8)), unit: 'Day', description: 'On-set makeup for model catalogs, lookbooks, and high-fashion campaign photography.', deliverables: 'Up to 4 creative look changes, continuous set touch-ups' },
+    ];
+  }
+
+  if (cats.some(c => c.includes('mehendi') || c.includes('henna') || c.includes('mehndi'))) {
+    return [
+      { id: 'def_srv_meh_1', title: 'Royal Bridal Mehendi (Elbows & Feet)', category: 'Bridal Henna', rate: Math.max(10000, baseRate), unit: 'Bride', description: 'Intricate bridal motifs, couple portraits, customized wedding hashtags, and 100% organic henna.', deliverables: 'Full bridal application up to elbows and feet, natural dark-stain aftercare kit' },
+      { id: 'def_srv_meh_2', title: 'Sangeet Party Guest Henna (3 Hours)', category: 'Guest Package', rate: Math.max(7500, Math.round(baseRate * 0.75)), unit: 'Event', description: 'Fast elegant Arabic and Mandala floral patterns for up to 30 wedding guests with assistant artists.', deliverables: '3 hours continuous guest service, chemical-free organic cones' },
+      { id: 'def_srv_meh_3', title: 'Engagement Minimalist Henna Cuffs', category: 'Contemporary', rate: Math.max(4500, Math.round(baseRate * 0.5)), unit: 'Hands', description: 'Delicate Moroccan cuffs and finger lace artwork for modern engagement celebrations.', deliverables: 'Both hands front & back application' },
+    ];
+  }
+
+  if (cats.some(c => c.includes('cater') || c.includes('chef') || c.includes('culinary'))) {
+    return [
+      { id: 'def_srv_cat_1', title: 'Royal Banquet & Wedding Buffet', category: 'Wedding Catering', rate: Math.max(1200, baseRate), unit: 'Plate', description: 'Extensive multi-course gourmet buffet with live tandoor and uniformed five-star waitstaff.', deliverables: 'Complete chafing setup, fine bone china cutlery, service crew' },
+      { id: 'def_srv_cat_2', title: 'Chef-Attended Live Street Food Counter', category: 'Live Counter', rate: 22000, unit: 'Counter', description: 'Interactive live cooking stations for woodfire pizza, dimsum, or gourmet chaat.', deliverables: 'Live equipment, ingredients, and specialized chefs for 150 guests' },
+      { id: 'def_srv_cat_3', title: 'Gourmet Hi-Tea & Grazing Table', category: 'Corporate Catering', rate: 850, unit: 'Guest', description: 'Artisan grazing table with imported cheeses, canapés, dip platters, and mocktails.', deliverables: 'Aesthetic grazing setup, mocktail bar, premium glassware' },
+    ];
+  }
+
+  if (cats.some(c => c.includes('organis') || c.includes('event') || c.includes('planner'))) {
+    return [
+      { id: 'def_srv_org_1', title: 'Turnkey Wedding Planning & Showrunning', category: 'Wedding Planning', rate: Math.max(100000, baseRate), unit: 'Event', description: 'Complete planning, vendor contracting, guest hospitality, logistics, and day-of show coordination.', deliverables: 'Full coordination crew, vendor milestone escrow management, detailed run of show' },
+      { id: 'def_srv_org_2', title: 'Stage Fabrication, Trussing & LED Wall Setup', category: 'Stage Production', rate: Math.max(80000, Math.round(baseRate * 0.8)), unit: 'Event', description: 'AV stage trussing, curved LED video wall, digital lighting console, and sound engineering.', deliverables: 'Turnkey stage setup, audio/light engineers on site, tear-down crew' },
+      { id: 'def_srv_org_3', title: 'Thematic Sangeet & Reception Decor', category: 'Decor', rate: Math.max(65000, Math.round(baseRate * 0.65)), unit: 'Event', description: 'Bespoke floral artistry, bridal entry walkway, set fabrication, and photo booths.', deliverables: 'Complete decor installation and lighting ambiance' },
+    ];
+  }
+
+  if (cats.some(c => c.includes('baker') || c.includes('bake') || c.includes('cake'))) {
+    return [
+      { id: 'def_srv_bak_1', title: 'Multi-Tier Designer Wedding Cake', category: 'Wedding Cake', rate: 6000, unit: 'Cake (3-Tier)', description: 'Bespoke centerpiece wedding cake with edible gold leaf, handcrafted flowers, and gourmet Belgian truffle.', deliverables: '3-tier cake (4.5kg), temperature-controlled delivery, cake display setup' },
+      { id: 'def_srv_bak_2', title: 'Artisan Dessert Table & Grazing Bar', category: 'Dessert Table', rate: 11000, unit: 'Table Setup', description: 'Gourmet dessert station with macarons, mini tartlets, cheesecake shooters, and cake pops (50 portions).', deliverables: '50 dessert portions, tiered display stands, name signage' },
+      { id: 'def_srv_bak_3', title: 'Custom 3D Fondant Birthday Cake (2 Kg)', category: 'Celebration Cake', rate: 2600, unit: 'Cake', description: 'Handcrafted custom theme cake with 3D figurines and premium gift box packaging.', deliverables: '2kg cake in flavor of choice, custom sparkler candle' },
+    ];
+  }
+
+  if (cats.some(c => c.includes('travel') || c.includes('transport') || c.includes('fleet'))) {
+    return [
+      { id: 'def_srv_trv_1', title: 'Luxury 2-Room Film Production Vanity Van', category: 'Vanity Van', rate: 14000, unit: 'Day (12 Hrs)', description: 'Dual room luxury van with illuminated makeup mirrors, AC, lounge, private washroom, and generator.', deliverables: '12-hour van hire with dedicated operator and generator fuel included' },
+      { id: 'def_srv_trv_2', title: 'Toyota Innova Crysta / Hycross Crew Transport', category: 'Crew MPV', rate: 4500, unit: 'Day (8 Hrs / 80 Km)', description: 'Chauffeur-driven luxury MPV equipped with heavy-duty roof carrier for camera equipment cases.', deliverables: '8 hrs / 80 km package with verified professional driver' },
+      { id: 'def_srv_trv_3', title: 'Mercedes E-Class / Luxury Bridal Entry Car', category: 'Bridal Car', rate: 18000, unit: 'Day', description: 'Decorated luxury sedan with executive chauffeur for bride & groom entry and departure.', deliverables: 'Uniformed chauffeur, premium floral car decoration, 100km package' },
+    ];
+  }
+
+  if (cats.some(c => c.includes('craft') || c.includes('gift') || c.includes('hamper'))) {
+    return [
+      { id: 'def_srv_crf_1', title: 'Bespoke Wedding Trousseau Packing Trays', category: 'Trousseau', rate: 15000, unit: 'Set of 10 Trays', description: 'Handcrafted velvet and laser-cut acrylic trays with silk flowers and brocade accents.', deliverables: '10 presentation trays with protective cellophane wraps and monogram tags' },
+      { id: 'def_srv_crf_2', title: 'Luxury VIP Return Gift Hampers', category: 'Hampers', rate: 1850, unit: 'Hamper', description: 'Curated wooden gift boxes with artisan candles, brass coasters, and dry fruits jars.', deliverables: 'Custom packed hamper with personalized wax seal tags' },
+      { id: 'def_srv_crf_3', title: 'Fresh Floral Phoolon Ki Chaadar', category: 'Floral Crafts', rate: 6500, unit: 'Piece', description: 'Handcrafted fresh tuberose, baby breath, and rose chaadar with fairy-light accents.', deliverables: 'Fresh floral canopy ready on wedding day with 4-corner carry poles' },
+    ];
+  }
+
+  if (cats.some(c => c.includes('develop') || c.includes('code') || c.includes('tech') || c.includes('software'))) {
+    return [
+      { id: 'def_srv_dev_1', title: 'Full-Stack Web App / SaaS MVP Development', category: 'Web App', rate: 85000, unit: 'Project', description: 'Production Next.js/React web application with Supabase/PostgreSQL, authentication, and payments.', deliverables: 'Full source code repo, CI/CD pipeline, SSL setup, 30 days support' },
+      { id: 'def_srv_dev_2', title: 'Custom React Native Mobile App (iOS & Android)', category: 'Mobile App', rate: 75000, unit: 'Project', description: 'Cross-platform mobile app with push notifications, offline cache, and native fluid UI.', deliverables: 'App Store / Play Store submission packages and API integration' },
+      { id: 'def_srv_dev_3', title: 'Technical Architecture & Code Performance Audit', category: 'Consulting', rate: 22000, unit: 'Day', description: 'Comprehensive review of database queries, security headers, and Core Web Vitals.', deliverables: 'Detailed technical remediation audit report with actionable pull requests' },
+    ];
+  }
+
+  if (cats.some(c => c.includes('design') || c.includes('ui/ux'))) {
+    return [
+      { id: 'def_srv_des_1', title: 'Full Mobile App UI/UX Design System (Figma)', category: 'Product Design', rate: 55000, unit: 'Project', description: 'User-centered mobile UI in Figma up to 20 screens, clickable prototypes, and component library.', deliverables: 'Figma master file, atomic component library, responsive layouts, developer handoff' },
+      { id: 'def_srv_des_2', title: 'Complete Brand Identity & Guidelines', category: 'Branding', rate: 32000, unit: 'Project', description: 'Custom logo mark, color palette, typography guidelines, stationery, and social media brand kit.', deliverables: 'Brand style guide PDF (30+ pages), vector logos (SVG, AI, PNG)' },
+      { id: 'def_srv_des_3', title: 'High-Converting Landing Page Redesign', category: 'Web Design', rate: 25000, unit: 'Project', description: 'Modern desktop and mobile landing page engineered for maximum conversion and aesthetic delight.', deliverables: 'Figma artboards, vector illustrations, micro-interaction guidelines' },
+    ];
+  }
+
+  if (cats.some(c => c.includes('model') || c.includes('runway'))) {
+    return [
+      { id: 'def_srv_mod_1', title: 'Full-Day Fashion Catalog & Lookbook Modeling', category: 'Fashion Modeling', rate: 22000, unit: 'Day', description: '8-hour editorial and e-commerce photoshoot for fashion labels with versatile posing.', deliverables: 'Up to 15 outfit changes, full digital & print promotional usage rights' },
+      { id: 'def_srv_mod_2', title: 'Bridal Couture & High Jewelry Campaign', category: 'Bridal Fashion', rate: 28000, unit: 'Day', description: 'Luxury ethnic bridal wear and fine diamond/gold jewelry modeling with regal expressions.', deliverables: 'Full-day campaign shoot, close-up portraits, short reel clips' },
+      { id: 'def_srv_mod_3', title: 'TVC & Digital Video Ad Campaign Appearance', category: 'Commercial Acting', rate: 25000, unit: 'Day', description: 'Lead or featured on-camera talent for brand commercials or digital advertising films.', deliverables: 'On-set performance up to 10 hours, character acting release' },
+    ];
+  }
+
+  // Default: Photography & General Creative Media
+  return [
+    { id: 'def_srv_photo_1', title: 'Full-Day Candid & Traditional Photography', category: 'Photography', rate: Math.max(20000, baseRate), unit: 'Day', description: 'Comprehensive shoot coverage with prime lenses capturing candid moments and portraits.', deliverables: '250+ color-graded high-resolution photos, private cloud gallery, 25 sneak peeks in 24 hrs' },
+    { id: 'def_srv_photo_2', title: 'Pre-Wedding / Couple Portrait Storybook', category: 'Portraits', rate: Math.max(15000, Math.round(baseRate * 0.75)), unit: 'Session', description: '4-hour outdoor sunset session with 3 wardrobe changes and artistic creative direction.', deliverables: '40 master-retouched portraits, digital invitation graphic, all original high-res JPEG files' },
+    { id: 'def_srv_photo_3', title: 'Executive Headshots & Studio Portraiture', category: 'Corporate', rate: Math.max(8000, Math.round(baseRate * 0.4)), unit: 'Session', description: 'Studio lighting setup for leadership team headshots, LinkedIn, and editorial PR portraits.', deliverables: '10 magazine-grade retouched headshots, transparent background cutouts' },
+  ];
+};
+
 const mapPro = (row: any): ProfessionalProfile => {
   const user = row.users || {};
   const name = user.name || 'Creative Studio';
@@ -218,6 +333,10 @@ const mapPro = (row: any): ProfessionalProfile => {
     }
   }
 
+  const rawServices = Array.isArray(row.services) && row.services.length > 0
+    ? (row.services as ServiceItem[])
+    : getDefaultServicesForCategories(row.categories, Number(row.rate_per_day || 0));
+
   return {
     id: String(row.id),
     userId: String(row.id),
@@ -239,7 +358,7 @@ const mapPro = (row: any): ProfessionalProfile => {
     equipment: Array.isArray(row.equipment) ? row.equipment : [],
     certifications: Array.isArray(row.certifications) ? row.certifications : (Array.isArray(row.skills) ? row.skills : []),
     portfolio: Array.isArray(row.portfolio_items) ? row.portfolio_items.map((i: any) => i.media_url) : [],
-    services: Array.isArray(row.services) ? row.services : [], 
+    services: rawServices, 
     videoReels: Array.isArray(row.video_reels) ? row.video_reels : [],
     menuItems: resolvedMenuItems,
     reviews: [],

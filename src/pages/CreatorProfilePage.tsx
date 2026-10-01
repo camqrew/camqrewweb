@@ -358,6 +358,69 @@ export const CreatorProfilePage: React.FC = () => {
               <p className="bio-text">{pro.bio || 'No bio provided.'}</p>
             </div>
 
+            {/* ── SERVICES & PACKAGES SECTION ── */}
+            {pro.services && pro.services.length > 0 && (
+              <div className="card profile-section-card services-section-card">
+                <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+                  <div>
+                    <h3 className="section-heading" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Sparkles size={20} color="var(--accent, #3fb668)" />
+                      Services & Packages
+                      <span className="badge-sub" style={{ fontSize: 12, padding: '2px 8px' }}>
+                        {pro.services.length} {pro.services.length === 1 ? 'service' : 'services'}
+                      </span>
+                    </h3>
+                    <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
+                      Standardized creative offerings and customizable packages with milestone escrow protection.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="services-list-grid">
+                  {pro.services.map((srv) => (
+                    <div key={srv.id} className="service-package-card">
+                      <div className="service-card-top">
+                        <div className="service-card-header-left">
+                          <span className="service-category-tag">{srv.category || proArchetype.label}</span>
+                          <h4 className="service-title">{srv.title}</h4>
+                        </div>
+                        <div className="service-price-badge">
+                          <span className="service-price-amount">₹{srv.rate.toLocaleString('en-IN')}</span>
+                          <span className="service-price-unit">/{srv.unit || 'project'}</span>
+                        </div>
+                      </div>
+
+                      <p className="service-description">{srv.description}</p>
+
+                      {srv.deliverables && (
+                        <div className="service-deliverables-box">
+                          <div className="service-deliverables-label">
+                            <CheckCircle size={14} color="var(--accent, #3fb668)" />
+                            <span>Deliverables & Scope</span>
+                          </div>
+                          <p className="service-deliverables-text">{srv.deliverables}</p>
+                        </div>
+                      )}
+
+                      <div className="service-card-actions">
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-sm service-book-btn"
+                          onClick={() => {
+                            const notes = `Service: ${srv.title}\nCategory: ${srv.category}\nRate: ₹${srv.rate.toLocaleString('en-IN')}/${srv.unit}\nDescription: ${srv.description}${srv.deliverables ? `\nDeliverables: ${srv.deliverables}` : ''}`;
+                            navigate(`/book/${pro.id}?jobTitle=${encodeURIComponent(srv.title)}&total=${srv.rate}&notes=${encodeURIComponent(notes)}`);
+                          }}
+                        >
+                          <span>Book This Service</span>
+                          <ArrowRight size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* ── PRODUCT CARDS (CRAFTS, HAMPERS & GEAR FOR SALE) ── */}
             {displayProducts && displayProducts.length > 0 && (
               <div className="card profile-section-card products-section-card">
