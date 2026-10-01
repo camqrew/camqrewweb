@@ -377,108 +377,50 @@ export const CreatorProfilePage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="services-product-grid">
+                <div className="minimal-services-grid">
                   {pro.services.map((srv) => (
                     <div 
                       key={srv.id} 
-                      className="pro-card product-card-mobile-match service-product-card"
+                      className="minimal-service-card"
+                      onClick={() => navigate(`/creators/${pro.id}/services/${srv.id}`)}
+                      title={`View details for ${srv.title}`}
                     >
-                      {/* Top Cinematic Image Banner */}
-                      <div className="pro-card-banner-wrapper service-banner-wrapper">
+                      {/* Top Clean Visual Banner */}
+                      <div className="minimal-service-banner">
                         <img
                           src={getServiceImage(srv, pro.bannerImage)}
                           alt={srv.title}
-                          className="pro-card-banner-img"
+                          className="minimal-service-img"
                           loading="lazy"
                         />
-
-                        {/* Floating Badges on Banner */}
-                        <div className="product-banner-badges">
-                          <span className="product-type-badge badge-service">
-                            {srv.category || 'PACKAGE'}
-                          </span>
-                          <span className="product-cat-pill service-escrow-pill">
-                            <ShieldCheck size={12} />
-                            <span>100% Escrow</span>
-                          </span>
-                        </div>
+                        <span className="minimal-service-badge">
+                          {srv.category || 'Package'}
+                        </span>
                       </div>
 
-                      {/* Floating Content Box with curved top overlapping banner */}
-                      <div className="pro-card-floating-body service-card-floating-body">
-                        {/* Header Info Row: Creator Tag & Rating */}
-                        <div className="pro-card-header-row product-card-header-row">
-                          <div className="product-brand-box">
-                            <span className="product-brand-pill">
-                              {pro.name}
-                            </span>
-                          </div>
-
-                          <div className="pro-card-info-col">
-                            <div className="pro-card-rating-row">
-                              <Star size={13} fill="#3fb668" color="#3fb668" />
-                              <span className="pro-card-rating-val">{pro.rating?.toFixed(1) || '5.0'}</span>
-                              <span className="pro-card-review-count">
-                                ({reviews.length || pro.reviewCount || 0})
-                              </span>
-                              <span className="pro-card-meta-dot">•</span>
-                              <span className="product-stock-pill in-stock">
-                                Available
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Service Title */}
-                        <h3 className="pro-card-pro-name product-title service-product-title" title={srv.title}>
+                      {/* Clean Minimal Body */}
+                      <div className="minimal-service-body">
+                        <h4 className="minimal-service-title" title={srv.title}>
                           {srv.title}
-                        </h3>
+                        </h4>
 
-                        {/* Category Subtitle */}
-                        <p className="pro-card-role-title product-subtitle">
-                          {srv.category} Package • Milestone Escrow
-                        </p>
-
-                        {/* Description snippet */}
-                        <p className="product-desc-snippet service-product-desc" title={srv.description}>
-                          {srv.description}
-                        </p>
-
-                        {/* Deliverables snippet box */}
-                        {srv.deliverables && (
-                          <div className="service-product-deliverables">
-                            <div className="service-product-deliverables-header">
-                              <CheckCircle2 size={13} color="var(--accent, #3fb668)" />
-                              <span>Deliverables & Scope</span>
-                            </div>
-                            <p className="service-product-deliverables-text">
-                              {srv.deliverables}
-                            </p>
+                        <div className="minimal-service-footer">
+                          <div className="minimal-service-price">
+                            <span className="minimal-price-prefix">From</span>
+                            <span className="minimal-price-val">₹{srv.rate.toLocaleString('en-IN')}</span>
+                            <span className="minimal-price-unit">/{srv.unit?.toLowerCase() || 'project'}</span>
                           </div>
-                        )}
 
-                        {/* Price Line (Matching Product Card Style) */}
-                        <div className="pro-card-rate-line product-price-line service-product-price-line">
-                          <span className="pro-card-rate-label">Starting from</span>
-                          <span className="pro-card-rate-val product-price-val service-product-price-val">
-                            ₹{srv.rate.toLocaleString('en-IN')}
-                          </span>
-                          <span className="pro-card-rate-unit">/{srv.unit?.toLowerCase() || 'package'}</span>
-                        </div>
-
-                        {/* Action Buttons Row */}
-                        <div className="pro-card-actions-row product-card-actions-row">
                           <button
                             type="button"
-                            className="pro-card-btn-book service-btn-book-action"
-                            onClick={() => {
-                              const notes = `Service: ${srv.title}\nCategory: ${srv.category}\nRate: ₹${srv.rate.toLocaleString('en-IN')}/${srv.unit}\nDescription: ${srv.description}${srv.deliverables ? `\nDeliverables: ${srv.deliverables}` : ''}`;
-                              navigate(`/book/${pro.id}?jobTitle=${encodeURIComponent(srv.title)}&total=${srv.rate}&notes=${encodeURIComponent(notes)}`);
+                            className="minimal-service-view-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/creators/${pro.id}/services/${srv.id}`);
                             }}
-                            title={`Book ${srv.title}`}
                           >
-                            <span>Book This Service</span>
-                            <ArrowRight size={15} />
+                            <span>View Details</span>
+                            <ArrowRight size={13} />
                           </button>
                         </div>
                       </div>

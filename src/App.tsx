@@ -12,6 +12,7 @@ import CreateJobPage from './pages/CreateJobPage';
 import JobReviewPage from './pages/JobReviewPage';
 import MarketplacePage from './pages/MarketplacePage';
 import ProductDetailPage from './pages/ProductDetailPage';
+import ServiceDetailPage from './pages/ServiceDetailPage';
 import ChatPage from './pages/ChatPage';
 import DashboardPage from './pages/DashboardPage';
 import AuthPage from './pages/AuthPage';
@@ -69,6 +70,9 @@ function App() {
           <Route path="/reels" element={<ReelsFeedPage />} />
           <Route path="/showcase" element={<Navigate to="/reels" replace />} />
           <Route path="/creators/:id" element={<CreatorProfilePage />} />
+          <Route path="/creators/:id/services/:serviceId" element={<ServiceDetailPage />} />
+          <Route path="/services/:id" element={<ServiceDetailPage />} />
+          <Route path="/services/:creatorId/:serviceId" element={<ServiceDetailPage />} />
           <Route path="/book/:id" element={<BookingPage />} />
           <Route path="/jobs/create" element={<CreateJobPage />} />
           <Route path="/jobs/review/:id" element={<JobReviewPage />} />
