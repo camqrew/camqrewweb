@@ -13,7 +13,6 @@ export interface MenuDishItem {
 }
 
 export interface ServiceItem {
-
   id: string;
   type?: 'standard' | 'package';
   title: string;
@@ -22,6 +21,7 @@ export interface ServiceItem {
   unit: string;
   description: string;
   deliverables?: string;
+  imageUrl?: string;
 }
 
 export interface ReviewItem {

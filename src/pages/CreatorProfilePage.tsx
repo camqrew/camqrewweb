@@ -44,70 +44,7 @@ import { ProductCard } from '../components/ProductCard';
 import { productApi } from '../api/productApi';
 import { useCartStore } from '../store/cartStore';
 import type { Product } from '../types/product';
-
-const getServiceThumbnail = (title: string, category: string, proCategory?: string): string => {
-  const text = `${title} ${category} ${proCategory || ''}`.toLowerCase();
-  
-  if (text.includes('drone') || text.includes('aerial') || text.includes('fpv')) {
-    return 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=800';
-  }
-  if (text.includes('wedding film') || text.includes('highlight film') || text.includes('cinemat')) {
-    return 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800';
-  }
-  if (text.includes('commercial') || text.includes('direct') || text.includes('ad film')) {
-    return 'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=800';
-  }
-  if (text.includes('music video') || text.includes('fashion video')) {
-    return 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800';
-  }
-  if (text.includes('pre-wedding') || text.includes('couple') || text.includes('sunset portrait')) {
-    return 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800';
-  }
-  if (text.includes('headshot') || text.includes('corporate') || text.includes('studio still') || text.includes('summit')) {
-    return 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800';
-  }
-  if (text.includes('photo') || text.includes('candid') || text.includes('portrait')) {
-    return 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?q=80&w=800';
-  }
-  if (text.includes('edit') || text.includes('color grade') || text.includes('davinci') || text.includes('post-production')) {
-    return 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?q=80&w=800';
-  }
-  if (text.includes('reel') || text.includes('social') || text.includes('youtube')) {
-    return 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=800';
-  }
-  if (text.includes('makeup') || text.includes('bridal glam') || text.includes('airbrush') || text.includes('hair')) {
-    return 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=800';
-  }
-  if (text.includes('mehendi') || text.includes('henna')) {
-    return 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=800';
-  }
-  if (text.includes('cater') || text.includes('buffet') || text.includes('banquet') || text.includes('feast') || text.includes('brunch')) {
-    return 'https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=800';
-  }
-  if (text.includes('cake') || text.includes('bake') || text.includes('pastry') || text.includes('dessert') || text.includes('cookie')) {
-    return 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800';
-  }
-  if (text.includes('hamper') || text.includes('trousseau') || text.includes('gift') || text.includes('invitation') || text.includes('chaadar')) {
-    return 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800';
-  }
-  if (text.includes('stage') || text.includes('decor') || text.includes('event') || text.includes('planner') || text.includes('expo') || text.includes('artist')) {
-    return 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=800';
-  }
-  if (text.includes('van') || text.includes('transport') || text.includes('fleet') || text.includes('car') || text.includes('bus')) {
-    return 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=800';
-  }
-  if (text.includes('app') || text.includes('web') || text.includes('code') || text.includes('saas') || text.includes('develop')) {
-    return 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=800';
-  }
-  if (text.includes('ui') || text.includes('ux') || text.includes('design') || text.includes('figma') || text.includes('brand') || text.includes('landing')) {
-    return 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=800';
-  }
-  if (text.includes('model') || text.includes('runway') || text.includes('catalog') || text.includes('couture')) {
-    return 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=800';
-  }
-
-  return 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=800';
-};
+import { getServiceImage } from '../utils/serviceUtils';
 
 export const CreatorProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -176,52 +113,6 @@ export const CreatorProfilePage: React.FC = () => {
   const grandQuotationTotal = useMemo(() => {
     return isItemDirectTotal ? perPlateSubtotal : (perPlateSubtotal * guestCount);
   }, [isItemDirectTotal, perPlateSubtotal, guestCount]);
-
-  // Services & Packages Menu State
-  const [selectedServiceCategory, setSelectedServiceCategory] = useState<string>('All');
-  const [selectedServiceIds, setSelectedServiceIds] = useState<Record<string, boolean>>({});
-
-  const availableServices = useMemo(() => {
-    return pro?.services || [];
-  }, [pro?.services]);
-
-  const serviceCategories = useMemo(() => {
-    const cats = ['All'];
-    availableServices.forEach(s => {
-      const cat = s.category || 'Package';
-      if (!cats.includes(cat)) cats.push(cat);
-    });
-    return cats;
-  }, [availableServices]);
-
-  const filteredServices = useMemo(() => {
-    if (selectedServiceCategory === 'All') return availableServices;
-    return availableServices.filter(s => (s.category || 'Package') === selectedServiceCategory);
-  }, [availableServices, selectedServiceCategory]);
-
-  const selectedServicesList = useMemo(() => {
-    return availableServices.filter(s => selectedServiceIds[s.id]);
-  }, [availableServices, selectedServiceIds]);
-
-  const selectedServicesTotal = useMemo(() => {
-    return selectedServicesList.reduce((acc, s) => acc + (s.rate || 0), 0);
-  }, [selectedServicesList]);
-
-  const handleToggleService = (serviceId: string) => {
-    setSelectedServiceIds(prev => ({
-      ...prev,
-      [serviceId]: !prev[serviceId]
-    }));
-  };
-
-  const handleBookSelectedServices = () => {
-    if (selectedServicesList.length === 0) return;
-    const titles = selectedServicesList.map(s => s.title).join(' + ');
-    const notes = selectedServicesList
-      .map(s => `• ${s.title} (₹${s.rate.toLocaleString('en-IN')}/${s.unit || 'project'})\n  ${s.description}${s.deliverables ? `\n  Deliverables: ${s.deliverables}` : ''}`)
-      .join('\n\n');
-    navigate(`/book/${pro?.id}?jobTitle=${encodeURIComponent(titles)}&total=${selectedServicesTotal}&notes=${encodeURIComponent(`Custom Service Package (${selectedServicesList.length} services):\n\n${notes}`)}`);
-  };
 
   const handleUpdateDishQty = (dishId: string, delta: number) => {
     setDishQuantities(prev => {
@@ -468,10 +359,10 @@ export const CreatorProfilePage: React.FC = () => {
               <p className="bio-text">{pro.bio || 'No bio provided.'}</p>
             </div>
 
-            {/* ── SERVICES & PACKAGES SECTION ── */}
+            {/* ── SERVICES & PACKAGES SECTION (PRODUCT CARD DESIGN) ── */}
             {pro.services && pro.services.length > 0 && (
               <div className="card profile-section-card services-section-card">
-                <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+                <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
                   <div>
                     <h3 className="section-heading" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Sparkles size={20} color="var(--accent, #3fb668)" />
@@ -486,222 +377,114 @@ export const CreatorProfilePage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Category Filter Pills */}
-                {serviceCategories.length > 2 && (
-                  <div className="menu-cat-filter-pills" style={{ marginBottom: 16 }}>
-                    {serviceCategories.map((cat) => (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => setSelectedServiceCategory(cat)}
-                        className={`menu-cat-pill ${selectedServiceCategory === cat ? 'active' : ''}`}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <div className="services-product-grid">
+                  {pro.services.map((srv) => (
+                    <div 
+                      key={srv.id} 
+                      className="pro-card product-card-mobile-match service-product-card"
+                    >
+                      {/* Top Cinematic Image Banner */}
+                      <div className="pro-card-banner-wrapper service-banner-wrapper">
+                        <img
+                          src={getServiceImage(srv, pro.bannerImage)}
+                          alt={srv.title}
+                          className="pro-card-banner-img"
+                          loading="lazy"
+                        />
 
-                {/* Services Grid (Matches Caterers Food Menu Layout) */}
-                <div className="catering-dishes-grid">
-                  {filteredServices.map((srv) => {
-                    const isSelected = !!selectedServiceIds[srv.id];
-                    const thumbUrl = getServiceThumbnail(srv.title, srv.category || '', pro.categories?.[0]);
+                        {/* Floating Badges on Banner */}
+                        <div className="product-banner-badges">
+                          <span className="product-type-badge badge-service">
+                            {srv.category || 'PACKAGE'}
+                          </span>
+                          <span className="product-cat-pill service-escrow-pill">
+                            <ShieldCheck size={12} />
+                            <span>100% Escrow</span>
+                          </span>
+                        </div>
+                      </div>
 
-                    return (
-                      <div
-                        key={srv.id}
-                        className={`customer-dish-card dish-card-mobile-match ${isSelected ? 'selected-dish' : ''}`}
-                      >
-                        {/* Top Image Banner */}
-                        <div className="dish-card-banner-wrapper">
-                          <img
-                            src={thumbUrl}
-                            alt={srv.title}
-                            className="dish-card-banner-img"
-                            loading="lazy"
-                          />
-                          <div className="dish-card-banner-badges">
-                            <div className="swiggy-fssai-box veg" title="Standard Escrow Protected">
-                              <div className="swiggy-fssai-dot veg" />
-                            </div>
-                            <span className="dish-banner-cat-pill">
-                              {srv.category || proArchetype.label}
+                      {/* Floating Content Box with curved top overlapping banner */}
+                      <div className="pro-card-floating-body service-card-floating-body">
+                        {/* Header Info Row: Creator Tag & Rating */}
+                        <div className="pro-card-header-row product-card-header-row">
+                          <div className="product-brand-box">
+                            <span className="product-brand-pill">
+                              {pro.name}
                             </span>
+                          </div>
+
+                          <div className="pro-card-info-col">
+                            <div className="pro-card-rating-row">
+                              <Star size={13} fill="#3fb668" color="#3fb668" />
+                              <span className="pro-card-rating-val">{pro.rating?.toFixed(1) || '5.0'}</span>
+                              <span className="pro-card-review-count">
+                                ({reviews.length || pro.reviewCount || 0})
+                              </span>
+                              <span className="pro-card-meta-dot">•</span>
+                              <span className="product-stock-pill in-stock">
+                                Available
+                              </span>
+                            </div>
                           </div>
                         </div>
 
-                        {/* Floating Body overlapping banner */}
-                        <div className="dish-card-floating-body">
-                          {/* Title & Price Row */}
-                          <div className="dish-card-header-row">
-                            <h4 className="dish-card-title" title={srv.title}>
-                              {srv.title}
-                            </h4>
-                            <div className="dish-card-price-box">
-                              <span className="dish-card-price-val">₹{srv.rate.toLocaleString('en-IN')}</span>
-                              <span className="dish-card-price-unit">/{srv.unit || 'project'}</span>
+                        {/* Service Title */}
+                        <h3 className="pro-card-pro-name product-title service-product-title" title={srv.title}>
+                          {srv.title}
+                        </h3>
+
+                        {/* Category Subtitle */}
+                        <p className="pro-card-role-title product-subtitle">
+                          {srv.category} Package • Milestone Escrow
+                        </p>
+
+                        {/* Description snippet */}
+                        <p className="product-desc-snippet service-product-desc" title={srv.description}>
+                          {srv.description}
+                        </p>
+
+                        {/* Deliverables snippet box */}
+                        {srv.deliverables && (
+                          <div className="service-product-deliverables">
+                            <div className="service-product-deliverables-header">
+                              <CheckCircle2 size={13} color="var(--accent, #3fb668)" />
+                              <span>Deliverables & Scope</span>
                             </div>
-                          </div>
-
-                          {/* Metadata Pills Row */}
-                          <div className="dish-card-pills-row">
-                            <span className="dish-pill dish-pill-veg">
-                              <ShieldCheck size={11} /> Escrow Protected
-                            </span>
-                            {srv.unit && (
-                              <span className="dish-pill dish-pill-prep">
-                                <Clock size={11} /> Per {srv.unit}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Description */}
-                          {srv.description && (
-                            <p className="dish-card-desc" title={srv.description}>
-                              {srv.description}
+                            <p className="service-product-deliverables-text">
+                              {srv.deliverables}
                             </p>
-                          )}
-
-                          {/* Deliverables snippet */}
-                          {srv.deliverables && (
-                            <div style={{ marginTop: 6, marginBottom: 8, fontSize: 11.5, color: 'var(--text-secondary)', display: 'flex', alignItems: 'flex-start', gap: 5 }}>
-                              <CheckCircle2 size={13} color="var(--accent, #3fb668)" style={{ flexShrink: 0, marginTop: 2 }} />
-                              <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }} title={srv.deliverables}>
-                                {srv.deliverables}
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Action Button Row */}
-                          <div className="dish-card-actions-row">
-                            {isSelected ? (
-                              <div className="dish-card-selected-group" style={{ width: '100%', justifyContent: 'space-between' }}>
-                                <div className="dish-card-qty-indicator" title="Selected in package">
-                                  <span className="dish-card-qty-check">✓</span>
-                                  <span>Added to Package</span>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => handleToggleService(srv.id)}
-                                  style={{
-                                    border: 'none',
-                                    background: 'rgba(239, 68, 68, 0.1)',
-                                    color: 'var(--error, #ef4444)',
-                                    padding: '4px 10px',
-                                    borderRadius: 6,
-                                    fontSize: 12,
-                                    fontWeight: 600,
-                                    cursor: 'pointer'
-                                  }}
-                                  title="Remove from package"
-                                >
-                                  Remove
-                                </button>
-                              </div>
-                            ) : (
-                              <div style={{ display: 'flex', gap: 6, width: '100%' }}>
-                                <button
-                                  type="button"
-                                  className="dish-btn-add-action"
-                                  onClick={() => handleToggleService(srv.id)}
-                                  title="Add service to custom package"
-                                  style={{ flex: 1 }}
-                                >
-                                  <span>ADD</span>
-                                  <Plus size={14} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const notes = `Service: ${srv.title}\nCategory: ${srv.category}\nRate: ₹${srv.rate.toLocaleString('en-IN')}/${srv.unit}\nDescription: ${srv.description}${srv.deliverables ? `\nDeliverables: ${srv.deliverables}` : ''}`;
-                                    navigate(`/book/${pro.id}?jobTitle=${encodeURIComponent(srv.title)}&total=${srv.rate}&notes=${encodeURIComponent(notes)}`);
-                                  }}
-                                  title="Direct Book this single service"
-                                  style={{
-                                    padding: '0 10px',
-                                    borderRadius: 8,
-                                    border: '1px solid var(--border)',
-                                    background: 'var(--bg-card, #fff)',
-                                    color: 'var(--text-secondary)',
-                                    fontSize: 12,
-                                    fontWeight: 600,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 4,
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  <span>Book</span>
-                                  <ArrowRight size={12} />
-                                </button>
-                              </div>
-                            )}
                           </div>
+                        )}
+
+                        {/* Price Line (Matching Product Card Style) */}
+                        <div className="pro-card-rate-line product-price-line service-product-price-line">
+                          <span className="pro-card-rate-label">Starting from</span>
+                          <span className="pro-card-rate-val product-price-val service-product-price-val">
+                            ₹{srv.rate.toLocaleString('en-IN')}
+                          </span>
+                          <span className="pro-card-rate-unit">/{srv.unit?.toLowerCase() || 'package'}</span>
+                        </div>
+
+                        {/* Action Buttons Row */}
+                        <div className="pro-card-actions-row product-card-actions-row">
+                          <button
+                            type="button"
+                            className="pro-card-btn-book service-btn-book-action"
+                            onClick={() => {
+                              const notes = `Service: ${srv.title}\nCategory: ${srv.category}\nRate: ₹${srv.rate.toLocaleString('en-IN')}/${srv.unit}\nDescription: ${srv.description}${srv.deliverables ? `\nDeliverables: ${srv.deliverables}` : ''}`;
+                              navigate(`/book/${pro.id}?jobTitle=${encodeURIComponent(srv.title)}&total=${srv.rate}&notes=${encodeURIComponent(notes)}`);
+                            }}
+                            title={`Book ${srv.title}`}
+                          >
+                            <span>Book This Service</span>
+                            <ArrowRight size={15} />
+                          </button>
                         </div>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
-
-                {/* Package Quotation Summary Box */}
-                {selectedServicesList.length > 0 && (
-                  <div className="catering-quotation-summary-box" style={{ marginTop: 20 }}>
-                    <div className="quote-calculator-header-block">
-                      <div className="quote-calc-title-group">
-                        <div className="quote-calc-icon-box" style={{ background: 'rgba(63, 182, 104, 0.15)', color: 'var(--accent, #3fb668)' }}>
-                          <Sparkles size={20} />
-                        </div>
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                            <h4 className="quote-calc-title">Custom Package Bundle</h4>
-                            <span className="quote-calc-live-badge" style={{ background: 'rgba(63, 182, 104, 0.15)', color: 'var(--accent, #3fb668)' }}>
-                              {selectedServicesList.length} {selectedServicesList.length === 1 ? 'service selected' : 'services selected'}
-                            </span>
-                          </div>
-                          <p className="quote-calc-sub">
-                            Combine multiple services with milestone escrow security and custom deliverables.
-                          </p>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedServiceIds({})}
-                          className="btn btn-outline btn-sm"
-                          style={{ fontSize: 12, padding: '6px 12px' }}
-                        >
-                          Clear Selection
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="quote-breakdown-card">
-                      <div className="quote-breakdown-left">
-                        <span className="quote-total-label">Total Package Value</span>
-                        <div className="quote-total-price-row">
-                          <span className="quote-grand-currency">₹</span>
-                          <span className="quote-grand-number">{selectedServicesTotal.toLocaleString('en-IN')}</span>
-                        </div>
-                        <span className="quote-total-note">
-                          Includes {selectedServicesList.length} selected services with escrow milestone release
-                        </span>
-                      </div>
-
-                      <div className="quote-breakdown-right">
-                        <button
-                          type="button"
-                          className="btn btn-primary quote-book-btn"
-                          onClick={handleBookSelectedServices}
-                        >
-                          <span>Book Selected Package ({selectedServicesList.length})</span>
-                          <ArrowRight size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
