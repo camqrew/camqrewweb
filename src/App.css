@@ -15388,6 +15388,157 @@ input.admin-palette-input::placeholder,
   }
 }
 
+/* ============================================================
+   ADMIN INACTIVITY AUTO-LOGOUT MODAL
+   ============================================================ */
+.admin-inactivity-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: adminModalFadeIn 0.2s ease-out;
+}
 
+@keyframes adminModalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 
+.admin-inactivity-modal {
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-card, #121518);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 32px 28px 24px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
+[data-theme="light"] .admin-inactivity-modal {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+
+.admin-inactivity-icon-wrap {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f59e0b;
+  margin-bottom: 20px;
+}
+
+.admin-inactivity-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary, #ffffff);
+  margin: 0 0 10px;
+  letter-spacing: -0.02em;
+}
+
+.admin-inactivity-desc {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-secondary, #94a3b8);
+  margin: 0 0 20px;
+}
+
+.admin-inactivity-timer-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  padding: 8px 20px;
+  border-radius: 999px;
+  margin-bottom: 24px;
+}
+
+.admin-inactivity-timer-num {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ef4444;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.admin-inactivity-timer-unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f87171;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-inactivity-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.admin-inactivity-stay-btn {
+  flex: 1.2;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #3fb668 0%, #2ea057 100%);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-inactivity-stay-btn:hover {
+  background: linear-gradient(135deg, #349c58 0%, #268747 100%);
+  transform: translateY(-1px);
+}
+
+.admin-inactivity-logout-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary, #94a3b8);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+[data-theme="light"] .admin-inactivity-logout-btn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+}
+
+.admin-inactivity-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}

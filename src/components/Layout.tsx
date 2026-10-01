@@ -22,10 +22,15 @@ import {
   AlertTriangle,
   CheckCircle2,
   Truck,
-  Loader2
+  Loader2,
+  Clock
 } from 'lucide-react';
 import { supabase } from '../api/supabaseClient';
 import { useAuthStore } from '../store/authStore';
+
+const INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+const WARNING_THRESHOLD_MS = 60 * 1000; // Warning modal starts at 60s remaining
+const ACTIVITY_STORAGE_KEY = 'camqrew_admin_last_activity';
 
 interface LayoutProps {
   theme: 'light' | 'dark';
@@ -42,6 +47,9 @@ export const Layout = ({ theme, toggleTheme }: LayoutProps) => {
 
   // Authentication guard state
   const [authChecking, setAuthChecking] = useState(true);
+
+  // Inactivity warning state (seconds remaining until logout, or null)
+  const [inactivityWarning, setInactivityWarning] = useState<number | null>(null);
 
   // Enforce Admin Authentication Guard
   useEffect(() => {
@@ -204,17 +212,97 @@ export const Layout = ({ theme, toggleTheme }: LayoutProps) => {
     setMobileSidebarOpen(false);
   }, [location.pathname]);
 
-  const handleLogout = async () => {
+  const handleLogout = async (reason?: string | React.MouseEvent) => {
+    const reasonStr = typeof reason === 'string' ? reason : undefined;
     try {
+      localStorage.removeItem(ACTIVITY_STORAGE_KEY);
       await useAuthStore.getState().logout();
       await supabase.auth.signOut();
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
       // Replace history state so browser Back cannot re-enter /admin
-      navigate('/admin/login', { replace: true });
+      const redirectUrl = reasonStr ? `/admin/login?reason=${encodeURIComponent(reasonStr)}` : '/admin/login';
+      navigate(redirectUrl, { replace: true });
     }
   };
+
+  // 5-minute Admin Inactivity Auto-Logout
+  useEffect(() => {
+    if (authChecking) return;
+
+    const initNow = Date.now();
+    localStorage.setItem(ACTIVITY_STORAGE_KEY, initNow.toString());
+
+    let lastWriteTime = initNow;
+    let isTerminating = false;
+
+    const resetActivity = () => {
+      if (isTerminating) return;
+      const now = Date.now();
+      // Throttle writing to localStorage to at most once every 2 seconds
+      if (now - lastWriteTime > 2000) {
+        lastWriteTime = now;
+        localStorage.setItem(ACTIVITY_STORAGE_KEY, now.toString());
+      }
+      setInactivityWarning(null);
+    };
+
+    const performInactivityLogout = async () => {
+      if (isTerminating) return;
+      isTerminating = true;
+      await handleLogout('inactivity');
+    };
+
+    const checkInactivity = () => {
+      if (isTerminating) return;
+      const storedTimeStr = localStorage.getItem(ACTIVITY_STORAGE_KEY);
+      const lastActiveTime = storedTimeStr ? parseInt(storedTimeStr, 10) : lastWriteTime;
+      const elapsed = Date.now() - lastActiveTime;
+      const remainingMs = INACTIVITY_TIMEOUT_MS - elapsed;
+
+      if (remainingMs <= 0) {
+        performInactivityLogout();
+      } else if (remainingMs <= WARNING_THRESHOLD_MS) {
+        setInactivityWarning(Math.max(1, Math.ceil(remainingMs / 1000)));
+      } else {
+        setInactivityWarning(null);
+      }
+    };
+
+    // Events that register user engagement / activity
+    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'wheel'];
+    activityEvents.forEach(evt => window.addEventListener(evt, resetActivity, { passive: true }));
+
+    // Sync across open admin tabs
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === ACTIVITY_STORAGE_KEY && e.newValue) {
+        lastWriteTime = parseInt(e.newValue, 10);
+        checkInactivity();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    // Immediate check when tab returns to foreground
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        checkInactivity();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('focus', handleVisibilityOrFocus);
+
+    // Periodic heartbeat evaluation
+    const intervalId = setInterval(checkInactivity, 1000);
+
+    return () => {
+      clearInterval(intervalId);
+      activityEvents.forEach(evt => window.removeEventListener(evt, resetActivity));
+      window.removeEventListener('storage', handleStorageChange);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+    };
+  }, [authChecking]);
 
   const totalNotifications = pendingVerifications + lowStockCount + activeDisputes;
 
@@ -618,6 +706,46 @@ export const Layout = ({ theme, toggleTheme }: LayoutProps) => {
           <Plus size={24} className="admin-fab-icon" />
         </button>
       </div>
+
+      {/* Inactivity Warning Modal (60s countdown) */}
+      {inactivityWarning !== null && (
+        <div className="admin-inactivity-modal-backdrop">
+          <div className="admin-inactivity-modal" role="dialog" aria-modal="true" aria-labelledby="inactivity-dialog-title">
+            <div className="admin-inactivity-icon-wrap">
+              <Clock size={28} className="admin-inactivity-icon" />
+            </div>
+            <h3 id="inactivity-dialog-title" className="admin-inactivity-title">Session Expiring Soon</h3>
+            <p className="admin-inactivity-desc">
+              You have been inactive for over 4 minutes. For security reasons, your admin session will automatically terminate in:
+            </p>
+            <div className="admin-inactivity-timer-pill">
+              <span className="admin-inactivity-timer-num">{inactivityWarning}</span>
+              <span className="admin-inactivity-timer-unit">seconds</span>
+            </div>
+            <div className="admin-inactivity-actions">
+              <button
+                type="button"
+                className="admin-inactivity-stay-btn"
+                onClick={() => {
+                  const now = Date.now();
+                  localStorage.setItem(ACTIVITY_STORAGE_KEY, now.toString());
+                  setInactivityWarning(null);
+                }}
+              >
+                Stay Signed In
+              </button>
+              <button
+                type="button"
+                className="admin-inactivity-logout-btn"
+                onClick={() => handleLogout()}
+              >
+                <LogOut size={15} />
+                <span>Sign Out Now</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Command Palette Modal (Ctrl+K) */}
       {searchOpen && (

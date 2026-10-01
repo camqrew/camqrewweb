@@ -1,6 +1,6 @@
 import { Logo } from '../components/Logo';
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../api/supabaseClient';
 import { useAuthStore } from '../store/authStore';
 import { 
@@ -17,6 +17,7 @@ import './Login.css';
 
 export const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -61,6 +62,15 @@ export const Login = () => {
       return () => clearTimeout(timer);
     }
   }, [otpTimer]);
+
+  // Check for inactivity logout redirect
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('reason') === 'inactivity') {
+      setError('You have been logged out due to 5 minutes of inactivity for security.');
+      setAuthStep('credentials');
+    }
+  }, [location.search]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
