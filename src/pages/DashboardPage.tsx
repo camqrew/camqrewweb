@@ -2260,15 +2260,14 @@ export const DashboardPage: React.FC = () => {
 
                         {/* Milestone Escrow Status */}
                         <div className="escrow-milestone-strip">
-                          <div className="milestone-step done">
-                            <span className="step-dot" /> 30% Advance Escrow
-                          </div>
-                          <div className={`milestone-step ${b.status === 'confirmed' || b.status === 'completed' ? 'done' : 'pending'}`}>
-                            <span className="step-dot" /> 40% Shoot Wrap
-                          </div>
-                          <div className={`milestone-step ${b.status === 'completed' ? 'done' : 'pending'}`}>
-                            <span className="step-dot" /> 30% Deliverables
-                          </div>
+                          {(b.milestones && b.milestones.length > 0 ? b.milestones : [
+                            { id: '1', title: 'Advance Escrow', status: 'paid' },
+                            { id: '2', title: 'Wrap Escrow', status: b.status === 'completed' ? 'paid' : 'pending' }
+                          ]).map((m, idx) => (
+                            <div key={m.id || idx} className={`milestone-step ${m.status === 'paid' ? 'done' : 'pending'}`}>
+                              <span className="step-dot" /> {m.title}
+                            </div>
+                          ))}
                         </div>
                       </div>
 

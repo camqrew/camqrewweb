@@ -49,6 +49,7 @@ import { productApi } from '../api/productApi';
 import { useCartStore } from '../store/cartStore';
 import type { Product } from '../types/product';
 import { getServiceImage } from '../utils/serviceUtils';
+import { getEscrowMilestoneRules, getEscrowSummaryText } from '../utils/escrowUtils';
 
 export const CreatorProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -80,6 +81,8 @@ export const CreatorProfilePage: React.FC = () => {
   const isMusician = proArchetype.archetype === 'musician' || Boolean(pro?.categories?.some(c => c.toLowerCase().includes('music') || c.toLowerCase().includes('band')));
   const isEmcee = proArchetype.archetype === 'emcee' || Boolean(pro?.categories?.some(c => c.toLowerCase().includes('ceremon') || c.toLowerCase().includes('emcee') || c.toLowerCase().includes('host')));
   const isItemDirectTotal = isBaker || isCrafts;
+  const proEscrowRules = useMemo(() => getEscrowMilestoneRules(pro?.categories), [pro?.categories]);
+  const proEscrowSummary = useMemo(() => getEscrowSummaryText(pro?.categories), [pro?.categories]);
 
   // Catering & Bakery Menu State
   const [selectedMenuCategory, setSelectedMenuCategory] = useState<string>('All');
@@ -971,11 +974,12 @@ export const CreatorProfilePage: React.FC = () => {
                       <span>Camqrew Escrow Protection:</span>
                     </div>
                     <div className="quote-escrow-chips">
-                      <span className="escrow-step-chip">30% Advance Escrow</span>
-                      <span className="escrow-step-arrow">→</span>
-                      <span className="escrow-step-chip">40% Shoot/Event Wrap</span>
-                      <span className="escrow-step-arrow">→</span>
-                      <span className="escrow-step-chip">30% Final Delivery</span>
+                      {proEscrowRules.map((rule, idx) => (
+                        <React.Fragment key={rule.id}>
+                          {idx > 0 && <span className="escrow-step-arrow">→</span>}
+                          <span className="escrow-step-chip">{rule.title}</span>
+                        </React.Fragment>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -1314,7 +1318,7 @@ export const CreatorProfilePage: React.FC = () => {
                 <ShieldCheck size={20} color="var(--accent)" />
                 <div>
                   <strong>Camqrew Escrow Protected</strong>
-                  <p>30% Advance • 40% Wrap • 30% Delivery</p>
+                  <p>{proEscrowSummary}</p>
                 </div>
               </div>
 

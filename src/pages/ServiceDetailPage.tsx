@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { professionalApi } from '../api/professionalApi';
 import type { ProfessionalProfile, ServiceItem } from '../types/professional';
 import { getServiceImage } from '../utils/serviceUtils';
+import { getEscrowMilestoneRules } from '../utils/escrowUtils';
 import { 
   ArrowLeft, 
   ShieldCheck, 
@@ -101,6 +102,13 @@ export const ServiceDetailPage: React.FC = () => {
     if (!creator) return;
     navigate(`/chat?otherUserId=${creator.userId || creator.id}&name=${encodeURIComponent(creator.name)}`);
   };
+
+  const escrowRules = getEscrowMilestoneRules([
+    service?.category || '',
+    ...(creator?.categories || []),
+    service?.title || '',
+    creator?.title || ''
+  ]);
 
   if (loading) {
     return (
@@ -342,29 +350,15 @@ export const ServiceDetailPage: React.FC = () => {
               </div>
 
               <div className="escrow-milestone-steps-grid">
-                <div className="escrow-step-item">
-                  <div className="escrow-step-num">1</div>
-                  <div className="escrow-step-info">
-                    <h4>30% Advance Escrow</h4>
-                    <p>Secured in escrow prior to shoot. Creator commences pre-production and reserves the dates.</p>
+                {escrowRules.map((rule, idx) => (
+                  <div key={rule.id} className="escrow-step-item">
+                    <div className="escrow-step-num">{idx + 1}</div>
+                    <div className="escrow-step-info">
+                      <h4>{rule.title}</h4>
+                      <p>{rule.desc}</p>
+                    </div>
                   </div>
-                </div>
-
-                <div className="escrow-step-item">
-                  <div className="escrow-step-num">2</div>
-                  <div className="escrow-step-info">
-                    <h4>40% Shoot Wrap Escrow</h4>
-                    <p>Released upon physical production wrap or first major project draft delivery.</p>
-                  </div>
-                </div>
-
-                <div className="escrow-step-item">
-                  <div className="escrow-step-num">3</div>
-                  <div className="escrow-step-info">
-                    <h4>30% Final Delivery Escrow</h4>
-                    <p>Released only when you approve the final master deliverables. Zero risk.</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 

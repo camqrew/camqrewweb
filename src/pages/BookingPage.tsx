@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { isCustomAvatar } from '../utils/avatarUtils';
 import { getArchetype } from '../constants/categories';
+import { computeCategoryMilestones } from '../utils/escrowUtils';
 
 const SpecPillButton: React.FC<{
   label: string;
@@ -177,68 +178,12 @@ export const BookingPage: React.FC = () => {
     ? Number(totalParam)
     : (jobBudgetParam ? Number(jobBudgetParam) : ((pro?.ratePerDay || 15000) * daysCount));
 
-  const advanceEscrow = Math.round(totalAmount * 0.3);
-  const wrapEscrow = Math.round(totalAmount * 0.4);
-  const finalEscrow = totalAmount - advanceEscrow - wrapEscrow;
-
   const categoryMilestones = useMemo(() => {
-    switch (archetype) {
-      case 'home_baker':
-        return [
-          { id: '1', title: 'Advance Escrow (30%)', desc: 'Order confirmation & ingredient sourcing', percentage: 30, amount: advanceEscrow },
-          { id: '2', title: 'Bake Ready Escrow (40%)', desc: 'Fresh baking & photo proof shared', percentage: 40, amount: wrapEscrow },
-          { id: '3', title: 'Delivery Wrap Escrow (30%)', desc: 'Safe delivery & client confirmation', percentage: 30, amount: finalEscrow },
-        ];
-      case 'crafts_gifting':
-        return [
-          { id: '1', title: 'Advance Escrow (30%)', desc: 'Order confirmation & craft material sourcing', percentage: 30, amount: advanceEscrow },
-          { id: '2', title: 'Crafting Ready Escrow (40%)', desc: 'Hamper packing, floral arrangement & photo proof shared', percentage: 40, amount: wrapEscrow },
-          { id: '3', title: 'Delivery Wrap Escrow (30%)', desc: 'Safe doorstep delivery & client confirmation', percentage: 30, amount: finalEscrow },
-        ];
-      case 'catering':
-        return [
-          { id: '1', title: 'Advance Escrow (30%)', desc: 'Date lock & raw material procurement', percentage: 30, amount: advanceEscrow },
-          { id: '2', title: 'Setup Escrow (40%)', desc: 'Live buffet & kitchen counters running', percentage: 40, amount: wrapEscrow },
-          { id: '3', title: 'Service Wrap Escrow (30%)', desc: 'Banquet conclusion & final wrap', percentage: 30, amount: finalEscrow },
-        ];
-      case 'modeling_talent':
-        return [
-          { id: '1', title: 'Advance Escrow (30%)', desc: 'Date reservation & fitting rehearsal', percentage: 30, amount: advanceEscrow },
-          { id: '2', title: 'Shoot Wrap Escrow (40%)', desc: 'Call time wrap & looks completed', percentage: 40, amount: wrapEscrow },
-          { id: '3', title: 'Usage Rights Escrow (30%)', desc: 'Deliverables clearance & commercial license', percentage: 30, amount: finalEscrow },
-        ];
-      case 'tech_digital':
-        return [
-          { id: '1', title: 'Advance Escrow (30%)', desc: 'Sprint kickoff & technical architecture', percentage: 30, amount: advanceEscrow },
-          { id: '2', title: 'Core Sprint Escrow (40%)', desc: 'Prototype & core features deployed', percentage: 40, amount: wrapEscrow },
-          { id: '3', title: 'Production Release Escrow (30%)', desc: 'Code handover, QA testing & sign-off', percentage: 30, amount: finalEscrow },
-        ];
-      case 'beauty_bridal':
-        return [
-          { id: '1', title: 'Advance Escrow (30%)', desc: 'Date lock & bridal vanity prep', percentage: 30, amount: advanceEscrow },
-          { id: '2', title: 'Look Ready Escrow (40%)', desc: 'Bridal styling & draping wrap', percentage: 40, amount: wrapEscrow },
-          { id: '3', title: 'Wrap Escrow (30%)', desc: 'Touch-up wrap & photoshoot ready', percentage: 30, amount: finalEscrow },
-        ];
-      case 'event_management':
-        return [
-          { id: '1', title: 'Advance Escrow (30%)', desc: 'Vendor lock & material fabrication', percentage: 30, amount: advanceEscrow },
-          { id: '2', title: 'Setup Wrap Escrow (40%)', desc: 'Stage, sound & venue handover', percentage: 40, amount: wrapEscrow },
-          { id: '3', title: 'Event Wrap Escrow (30%)', desc: 'Event conclusion & vendor clearance', percentage: 30, amount: finalEscrow },
-        ];
-      case 'travels':
-        return [
-          { id: '1', title: 'Advance Escrow (30%)', desc: 'Held now; vehicle fleet lock & route reservation', percentage: 30, amount: advanceEscrow },
-          { id: '2', title: 'Trip Commencement Escrow (40%)', desc: 'Released when vehicle reports & trip begins', percentage: 40, amount: wrapEscrow },
-          { id: '3', title: 'Trip Completion Escrow (30%)', desc: 'Released upon safe completion of route & drop-off', percentage: 30, amount: finalEscrow },
-        ];
-      default:
-        return [
-          { id: '1', title: 'Advance Escrow (30%)', desc: 'Held now; locks creator calendar', percentage: 30, amount: advanceEscrow },
-          { id: '2', title: 'Shoot Wrap Escrow (40%)', desc: 'Released after production wraps', percentage: 40, amount: wrapEscrow },
-          { id: '3', title: 'Deliverables Escrow (30%)', desc: 'Released upon final deliverables approval', percentage: 30, amount: finalEscrow },
-        ];
-    }
-  }, [archetype, advanceEscrow, wrapEscrow, finalEscrow]);
+    return computeCategoryMilestones(
+      [archetype, pro?.title || '', jobTitleParam || '', ...(pro?.categories || [])],
+      totalAmount
+    );
+  }, [archetype, pro?.title, jobTitleParam, pro?.categories, totalAmount]);
 
   // Category Configuration Meta
   const categoryConfig = useMemo(() => {
