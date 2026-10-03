@@ -9,6 +9,9 @@ interface AuthStoreState {
   isAuthenticated: boolean;
   isLoading: boolean;
   activeRole: UserRole;
+  needsRoleSelection: boolean;
+  setNeedsRoleSelection: (val: boolean) => void;
+  selectAccountRole: (role: 'customer' | 'professional') => Promise<void>;
   login: (user: User, token: string) => Promise<void>;
   logout: () => Promise<void>;
   setActiveRole: (role: UserRole) => void;
@@ -20,6 +23,10 @@ const getInitialAuthState = () => {
   try {
     const token = localStorage.getItem('@camqrew_token') || localStorage.getItem('@camcrew_token');
     const userStr = localStorage.getItem('@camqrew_user') || localStorage.getItem('@camcrew_user');
+    const needsRoleSelection = 
+      localStorage.getItem('@camqrew_needs_role_selection') === 'true' || 
+      localStorage.getItem('@camcrew_needs_role_selection') === 'true';
+
     if (token && userStr) {
       const user = JSON.parse(userStr);
       if (user && user.id) {
@@ -29,6 +36,7 @@ const getInitialAuthState = () => {
           isAuthenticated: true,
           isLoading: false,
           activeRole: (user.role as UserRole) || 'customer',
+          needsRoleSelection,
         };
       }
     }
@@ -41,6 +49,7 @@ const getInitialAuthState = () => {
     isAuthenticated: false,
     isLoading: true,
     activeRole: 'customer' as UserRole,
+    needsRoleSelection: false,
   };
 };
 
@@ -52,19 +61,74 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
   isAuthenticated: initialAuth.isAuthenticated,
   isLoading: initialAuth.isLoading,
   activeRole: initialAuth.activeRole,
+  needsRoleSelection: initialAuth.needsRoleSelection,
+
+  setNeedsRoleSelection: (val: boolean) => {
+    set({ needsRoleSelection: val });
+    if (!val) {
+      localStorage.removeItem('@camqrew_needs_role_selection');
+      localStorage.removeItem('@camcrew_needs_role_selection');
+    } else {
+      localStorage.setItem('@camqrew_needs_role_selection', 'true');
+    }
+  },
+
+  selectAccountRole: async (role: 'customer' | 'professional') => {
+    const currentUser = get().user;
+    if (!currentUser) return;
+
+    try {
+      await supabase.from('users').update({ role }).eq('id', currentUser.id);
+    } catch (e) {
+      console.warn('Notice updating role in users table:', e);
+    }
+
+    if (role === 'professional') {
+      try {
+        await supabase.from('professional_profiles').upsert([{
+          id: currentUser.id,
+          userId: currentUser.id,
+          name: currentUser.name,
+          avatar: currentUser.avatar || '',
+          title: 'Visual Storyteller & Creator',
+          city: 'Mumbai',
+          state: 'Maharashtra',
+          ratePerDay: 5000,
+          verified: false,
+          totalEarnings: 0,
+          views: 0,
+          experienceYears: 1,
+        }]);
+      } catch (e) {
+        console.warn('Notice provisioning creator profile:', e);
+      }
+    }
+
+    const updatedUser: User = { ...currentUser, role };
+    set({
+      user: updatedUser,
+      activeRole: role,
+      needsRoleSelection: false,
+    });
+    localStorage.setItem('@camqrew_user', JSON.stringify(updatedUser));
+    localStorage.removeItem('@camqrew_needs_role_selection');
+    localStorage.removeItem('@camcrew_needs_role_selection');
+  },
 
   login: async (user: User, token: string) => {
-    set({ user, token, isAuthenticated: true, activeRole: user.role, isLoading: false });
+    set({ user, token, isAuthenticated: true, activeRole: user.role, isLoading: false, needsRoleSelection: false });
     localStorage.setItem('@camqrew_token', token);
     localStorage.setItem('@camqrew_user', JSON.stringify(user));
   },
 
   logout: async () => {
-    set({ user: null, token: null, isAuthenticated: false, activeRole: 'customer', isLoading: false });
+    set({ user: null, token: null, isAuthenticated: false, activeRole: 'customer', needsRoleSelection: false, isLoading: false });
     localStorage.removeItem('@camqrew_token');
     localStorage.removeItem('@camqrew_user');
     localStorage.removeItem('@camcrew_token');
     localStorage.removeItem('@camcrew_user');
+    localStorage.removeItem('@camqrew_needs_role_selection');
+    localStorage.removeItem('@camcrew_needs_role_selection');
     await supabase.auth.signOut();
   },
 
@@ -136,7 +200,8 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
         };
 
         // Auto-provision user record if first-time OAuth sign-in, or sync Google avatar if missing in DB
-        if (!dbProfile) {
+        const isFirstTimeOAuth = !dbProfile;
+        if (isFirstTimeOAuth) {
           try {
             await supabase.from('users').insert([{
               id: session.user.id,
@@ -149,6 +214,7 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
           } catch (insertErr) {
             console.warn('Profile auto-create notice:', insertErr);
           }
+          localStorage.setItem('@camqrew_needs_role_selection', 'true');
         } else if (oauthAvatar && (!dbProfile.avatar || !isCustomAvatar(dbProfile.avatar))) {
           // Sync Google avatar to database if dbProfile had empty or stock placeholder avatar
           supabase.from('users').update({ avatar: oauthAvatar }).eq('id', session.user.id).then();
@@ -157,11 +223,14 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
           }
         }
 
+        const needsRoleSelection = isFirstTimeOAuth || localStorage.getItem('@camqrew_needs_role_selection') === 'true';
+
         set({
           token: session.access_token,
           user: resolvedUser,
           isAuthenticated: true,
           activeRole: userRole,
+          needsRoleSelection,
           isLoading: false
         });
         localStorage.setItem('@camqrew_token', session.access_token);

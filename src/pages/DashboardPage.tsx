@@ -110,7 +110,7 @@ const EMCEE_STYLE_PRESETS = [
 
 export const DashboardPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, isAuthenticated, isLoading, activeRole, setActiveRole } = useAuthStore();
+  const { user, isAuthenticated, isLoading, activeRole, setActiveRole, setNeedsRoleSelection } = useAuthStore();
   const navigate = useNavigate();
 
   const isPro = user?.role === 'professional';
@@ -1187,13 +1187,14 @@ export const DashboardPage: React.FC = () => {
                 ⇄ Creator Studio
               </button>
             ) : (
-              <Link
-                to="/register?role=professional"
+              <button
+                type="button"
                 className="btn btn-outline btn-sm pro-upgrade-btn"
-                title="Join Camcrew as a creator to offer services and list gear"
+                onClick={() => setNeedsRoleSelection(true)}
+                title="Choose account type or activate Creator Studio"
               >
                 <Film size={14} /> Become a Creator →
-              </Link>
+              </button>
             )}
           </div>
         </div>

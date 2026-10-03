@@ -32,7 +32,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
-  const { user, isAuthenticated, logout, activeRole } = useAuthStore();
+  const { user, isAuthenticated, logout, activeRole, setNeedsRoleSelection } = useAuthStore();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationStore();
   const isPro = isAuthenticated && (user?.role === 'professional' || activeRole === 'professional');
   const cartCount = useCartStore((s) => s.getTotalCount());
@@ -281,14 +281,17 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
                       >
                         <User size={16} /> My Bookings & Orders
                       </Link>
-                      <Link 
-                        to="/register?role=professional" 
+                      <button 
+                        type="button"
                         className="pm-link"
-                        onClick={() => setProfileDropdown(false)}
-                        style={{ color: 'var(--accent)' }}
+                        onClick={() => {
+                          setProfileDropdown(false);
+                          setNeedsRoleSelection(true);
+                        }}
+                        style={{ color: 'var(--accent)', background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', font: 'inherit' }}
                       >
-                        <Briefcase size={16} /> Join as Verified Pro
-                      </Link>
+                        <Briefcase size={16} /> Choose / Switch Account Type
+                      </button>
                     </>
                   )}
 

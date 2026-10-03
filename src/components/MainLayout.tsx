@@ -5,6 +5,7 @@ import { Footer } from './Footer';
 import { CursorBackgroundFollower } from './CursorBackgroundFollower';
 import { GlobalRealtimeAlerts } from './GlobalRealtimeAlerts';
 import { MobileTabBar } from './MobileTabBar';
+import { RoleSelectionModal } from './RoleSelectionModal';
 
 interface MainLayoutProps {
   theme: 'light' | 'dark';
@@ -22,6 +23,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ theme, toggleTheme }) =>
       </main>
       <Footer />
       <MobileTabBar />
+      <RoleSelectionModal />
     </div>
   );
 };
