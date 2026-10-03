@@ -67,7 +67,18 @@ import { CustomSelect } from '../components/CustomSelect';
 import { ProductCard } from '../components/ProductCard';
 import { getArchetype } from '../constants/categories';
 
-type ProTab = 'overview' | 'bookings' | 'sales_rentals' | 'listings' | 'jobboard' | 'availability' | 'earnings' | 'client';
+type ProTab = 
+  | 'overview' 
+  | 'bookings' 
+  | 'sales_rentals' 
+  | 'listings' 
+  | 'jobboard' 
+  | 'availability' 
+  | 'earnings' 
+  | 'client'
+  | 'client_shoots'
+  | 'client_orders'
+  | 'client_jobs';
 
 const MUSIC_TYPE_PRESETS = [
   'Guitarist', 'Acoustic Guitarist', 'Electric Guitarist',
@@ -102,9 +113,13 @@ export const DashboardPage: React.FC = () => {
   const { user, isAuthenticated, isLoading, activeRole, setActiveRole } = useAuthStore();
   const navigate = useNavigate();
 
-  const isProRole = user?.role === 'professional' || activeRole === 'professional';
+  const isPro = user?.role === 'professional';
+  const isProRole = isPro && activeRole !== 'customer';
+  const validCustomerTabs: ProTab[] = ['client', 'client_shoots', 'client_orders', 'client_jobs'];
   const paramTab = searchParams.get('tab') as ProTab | null;
-  const initialTab: ProTab = paramTab || (isProRole ? 'overview' : 'client');
+  const initialTab: ProTab = isProRole
+    ? (paramTab || 'overview')
+    : (paramTab && validCustomerTabs.includes(paramTab) ? paramTab : 'client');
 
   const [activeTab, setActiveTab] = useState<ProTab>(initialTab);
   const [proProfile, setProProfile] = useState<ProfessionalProfile | null>(null);
@@ -212,6 +227,12 @@ export const DashboardPage: React.FC = () => {
   const [userProducts, setUserProducts] = useState<Product[]>([]);
   const [payouts, setPayouts] = useState<PayoutRecord[]>([]);
   const [creatorAccount, setCreatorAccount] = useState<CreatorPayoutDetails | null>(null);
+  
+  const totalCustomerEscrow = useMemo(() => {
+    const shootsTotal = customerBookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+    const ordersTotal = customerOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+    return shootsTotal + ordersTotal;
+  }, [customerBookings, customerOrders]);
   
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -327,9 +348,19 @@ export const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     if (paramTab) {
-      setActiveTab(paramTab);
+      if (isProRole || validCustomerTabs.includes(paramTab)) {
+        setActiveTab(paramTab);
+      } else {
+        setActiveTab('client');
+      }
     }
-  }, [paramTab]);
+  }, [paramTab, isProRole]);
+
+  useEffect(() => {
+    if (!isProRole && !validCustomerTabs.includes(activeTab)) {
+      setActiveTab('client');
+    }
+  }, [isProRole, activeTab]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -1070,188 +1101,317 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* ── TOP HERO HEADER: PRO STUDIO DASHBOARD ── */}
-      <div className="pro-dashboard-header-card card">
-        <div className="pro-header-profile-col">
-          <div className="pro-avatar-wrapper">
-            {isCustomAvatar(user?.avatar || proProfile?.avatar) ? (
-              <img 
-                src={user?.avatar || proProfile?.avatar} 
-                alt={user?.name} 
-                className="pro-header-avatar"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <div className="pro-header-avatar pro-header-avatar-placeholder">
-                <User size={36} />
+      {/* ── TOP HERO HEADER: CUSTOMER / PRO STUDIO ── */}
+      {!isProRole ? (
+        <div className="client-dashboard-header-card card">
+          <div className="client-header-profile-col">
+            <div className="client-avatar-wrapper">
+              {isCustomAvatar(user?.avatar) ? (
+                <img 
+                  src={user?.avatar} 
+                  alt={user?.name} 
+                  className="client-header-avatar"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="client-header-avatar client-header-avatar-placeholder">
+                  <User size={36} />
+                </div>
+              )}
+            </div>
+
+            <div className="client-header-details">
+              <div className="client-badge-row">
+                <span className="client-badge">
+                  <User size={12} /> CLIENT ACCOUNT
+                </span>
+                <span className="client-account-verified">
+                  <ShieldCheck size={13} color="#3fb668" /> Verified Customer
+                </span>
               </div>
-            )}
-            {proProfile?.verified && (
-              <span className="pro-verified-badge" title="Verified Creator">
-                <ShieldCheck size={14} color="#ffffff" />
-              </span>
-            )}
-          </div>
 
-          <div className="pro-header-details">
-            <div className="pro-studio-tag-row">
-              <span className="pro-studio-tag">
-                <span className="live-dot" /> PRO STUDIO DASHBOARD
-              </span>
-              <button 
-                className={`availability-toggle-btn ${isAvailable ? 'is-available' : 'is-busy'}`}
-                onClick={() => setIsAvailable((prev) => !prev)}
-                title="Click to toggle studio availability status"
-              >
-                <span className="status-circle" />
-                {isAvailable ? 'Available for Shoots' : 'Busy / On Shoot'}
-              </button>
-            </div>
+              <h1 className="client-header-name">{user?.name || 'Customer'}</h1>
+              <p className="client-header-email">
+                {user?.email || ''} {user?.phone ? `• 📞 ${user.phone}` : ''}
+              </p>
 
-            <h1 className="pro-header-name">{user?.name || proProfile?.name || 'Creative Studio'}</h1>
-            <p className="pro-header-title">
-              {proProfile?.title || 'Visual Storyteller & Creator'} • 📍 {proProfile?.city || 'Mumbai'}, {proProfile?.state || 'Maharashtra'}
-            </p>
-
-            <div className="pro-meta-pills">
-              <span className="meta-pill rating-pill">
-                <Star size={13} fill="#f59e0b" color="#f59e0b" />
-                <strong>{proProfile?.rating ? proProfile.rating.toFixed(1) : '0.0'}</strong> ({proProfile?.reviewCount || 0} reviews)
-              </span>
-              <span className="meta-pill">
-                Rate: <strong>₹{(proProfile?.ratePerDay || 0).toLocaleString('en-IN')}/day</strong>
-              </span>
-              <span className="meta-pill">
-                Experience: <strong>{proProfile?.experienceYears || 0} Years</strong>
-              </span>
+              <div className="client-meta-pills">
+                <span className="meta-pill">
+                  🎬 Shoots Booked: <strong>{customerBookings.length}</strong>
+                </span>
+                <span className="meta-pill">
+                  📦 Gear Orders: <strong>{customerOrders.length}</strong>
+                </span>
+                <span className="meta-pill">
+                  📢 Posted Jobs: <strong>{clientJobs.length}</strong>
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Header Right Action Buttons */}
-        <div className="pro-header-actions">
-          {user && (
+          {/* Customer Header Right Actions */}
+          <div className="client-header-actions">
             <Link 
-              to={`/creators/${user.id}`} 
+              to="/marketplace" 
               className="btn btn-outline btn-sm"
-              target="_blank"
-              title="View your public booking page as seen by clients"
+              title="Shop or Rent Cameras, Lenses & Accessories"
             >
-              <ExternalLink size={14} /> Public Profile
+              <ShoppingBag size={14} /> Marketplace
             </Link>
-          )}
 
-          {isCaterer ? (
-            <button 
-              className="btn btn-primary btn-sm"
-              onClick={handleOpenAddDish}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            <Link 
+              to="/explore" 
+              className="btn btn-outline btn-sm"
+              title="Explore and book verified Cinematographers, Photographers & Editors"
             >
-              <UtensilsCrossed size={14} /> {isBaker ? '+ Add Bake / Item' : '+ Add Menu Dish'}
-            </button>
-          ) : (
-            <button 
-              className="btn btn-primary btn-sm"
-              onClick={() => setShowListGearModal(true)}
-            >
-              <Package size={14} /> + List Gear
-            </button>
-          )}
+              <Search size={14} /> Explore Creators
+            </Link>
 
-          {/* Quick role switch for testing or multi-role users */}
-          <button 
-            className="btn btn-ghost btn-sm role-switch-btn"
-            onClick={() => {
-              const nextRole = isProRole ? 'customer' : 'professional';
-              setActiveRole(nextRole);
-              showToast(`Switched view to ${nextRole === 'professional' ? 'Creator Mode' : 'Client Mode'}`);
-            }}
-            title="Toggle between Creator Studio and Client View"
-          >
-            {isProRole ? '⇄ Client Mode' : '⇄ Creator Mode'}
-          </button>
+            <Link 
+              to="/jobs/create" 
+              className="btn btn-primary btn-sm"
+              title="Broadcast your shoot requirements to verified creators"
+            >
+              <Plus size={14} /> + Post Broadcast Job
+            </Link>
+
+            {isPro ? (
+              <button 
+                className="btn btn-ghost btn-sm role-switch-btn"
+                onClick={() => {
+                  setActiveRole('professional');
+                  showToast('Switched view to Creator Studio');
+                }}
+                title="Switch back to Pro Creator Studio"
+              >
+                ⇄ Creator Studio
+              </button>
+            ) : (
+              <Link
+                to="/register?role=professional"
+                className="btn btn-outline btn-sm pro-upgrade-btn"
+                title="Join Camcrew as a creator to offer services and list gear"
+              >
+                <Film size={14} /> Become a Creator →
+              </Link>
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        /* PRO STUDIO DASHBOARD HEADER CARD */
+        <div className="pro-dashboard-header-card card">
+          <div className="pro-header-profile-col">
+            <div className="pro-avatar-wrapper">
+              {isCustomAvatar(user?.avatar || proProfile?.avatar) ? (
+                <img 
+                  src={user?.avatar || proProfile?.avatar} 
+                  alt={user?.name} 
+                  className="pro-header-avatar"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="pro-header-avatar pro-header-avatar-placeholder">
+                  <User size={36} />
+                </div>
+              )}
+              {proProfile?.verified && (
+                <span className="pro-verified-badge" title="Verified Creator">
+                  <ShieldCheck size={14} color="#ffffff" />
+                </span>
+              )}
+            </div>
+
+            <div className="pro-header-details">
+              <div className="pro-studio-tag-row">
+                <span className="pro-studio-tag">
+                  <span className="live-dot" /> PRO STUDIO DASHBOARD
+                </span>
+                <button 
+                  className={`availability-toggle-btn ${isAvailable ? 'is-available' : 'is-busy'}`}
+                  onClick={() => setIsAvailable((prev) => !prev)}
+                  title="Click to toggle studio availability status"
+                >
+                  <span className="status-circle" />
+                  {isAvailable ? 'Available for Shoots' : 'Busy / On Shoot'}
+                </button>
+              </div>
+
+              <h1 className="pro-header-name">{user?.name || proProfile?.name || 'Creative Studio'}</h1>
+              <p className="pro-header-title">
+                {proProfile?.title || 'Visual Storyteller & Creator'} • 📍 {proProfile?.city || 'Mumbai'}, {proProfile?.state || 'Maharashtra'}
+              </p>
+
+              <div className="pro-meta-pills">
+                <span className="meta-pill rating-pill">
+                  <Star size={13} fill="#f59e0b" color="#f59e0b" />
+                  <strong>{proProfile?.rating ? proProfile.rating.toFixed(1) : '0.0'}</strong> ({proProfile?.reviewCount || 0} reviews)
+                </span>
+                <span className="meta-pill">
+                  Rate: <strong>₹{(proProfile?.ratePerDay || 0).toLocaleString('en-IN')}/day</strong>
+                </span>
+                <span className="meta-pill">
+                  Experience: <strong>{proProfile?.experienceYears || 0} Years</strong>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Header Right Action Buttons */}
+          <div className="pro-header-actions">
+            {user && (
+              <Link 
+                to={`/creators/${user.id}`} 
+                className="btn btn-outline btn-sm"
+                target="_blank"
+                title="View your public booking page as seen by clients"
+              >
+                <ExternalLink size={14} /> Public Profile
+              </Link>
+            )}
+
+            {isCaterer ? (
+              <button 
+                className="btn btn-primary btn-sm"
+                onClick={handleOpenAddDish}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              >
+                <UtensilsCrossed size={14} /> {isBaker ? '+ Add Bake / Item' : '+ Add Menu Dish'}
+              </button>
+            ) : (
+              <button 
+                className="btn btn-primary btn-sm"
+                onClick={() => setShowListGearModal(true)}
+              >
+                <Package size={14} /> + List Gear
+              </button>
+            )}
+
+            {/* Quick role switch for testing or multi-role users */}
+            <button 
+              className="btn btn-ghost btn-sm role-switch-btn"
+              onClick={() => {
+                setActiveRole('customer');
+                showToast('Switched view to Client Mode');
+              }}
+              title="Toggle between Creator Studio and Client View"
+            >
+              ⇄ Client Mode
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── NAVIGATION TABS BAR ── */}
-      <div className="pro-tabs-container">
-        <button
-          className={`pro-tab-item ${activeTab === 'overview' ? 'active' : ''}`}
-          onClick={() => handleTabChange('overview')}
-        >
-          <LayoutDashboard size={15} /> Overview
-        </button>
+      {!isProRole ? (
+        <div className="client-tabs-container">
+          <button
+            className={`client-tab-item ${activeTab === 'client' ? 'active' : ''}`}
+            onClick={() => handleTabChange('client')}
+          >
+            <LayoutDashboard size={15} /> All Activity ({customerBookings.length + customerOrders.length + clientJobs.length})
+          </button>
 
-        <button
-          className={`pro-tab-item ${activeTab === 'bookings' ? 'active' : ''}`}
-          onClick={() => handleTabChange('bookings')}
-        >
-          <Calendar size={15} /> Service Bookings ({proBookings.length})
-        </button>
+          <button
+            className={`client-tab-item ${activeTab === 'client_shoots' ? 'active' : ''}`}
+            onClick={() => handleTabChange('client_shoots')}
+          >
+            <Calendar size={15} /> Shoots Booked ({customerBookings.length})
+          </button>
 
-        <button
-          className={`pro-tab-item ${activeTab === 'sales_rentals' ? 'active' : ''}`}
-          onClick={() => handleTabChange('sales_rentals')}
-        >
-          <ShoppingBag size={15} /> {isCaterer ? (isCrafts ? 'Gifting Orders' : (isBaker ? 'Bakery Orders' : 'Menu Orders')) : 'Sales & Rentals'}
-        </button>
+          <button
+            className={`client-tab-item ${activeTab === 'client_orders' ? 'active' : ''}`}
+            onClick={() => handleTabChange('client_orders')}
+          >
+            <Package size={15} /> Gear & Orders ({customerOrders.length})
+          </button>
 
-        <button
-          className={`pro-tab-item ${activeTab === 'listings' ? 'active' : ''}`}
-          onClick={() => handleTabChange('listings')}
-        >
-          {isCaterer ? (
-            <>
-              {isCrafts ? <Gift size={15} /> : <UtensilsCrossed size={15} />} {isCrafts ? 'Hampers & Crafts Catalog' : (isBaker ? 'Bakes & Food Menu' : 'Food Menu & Prices')} ({proProfile?.menuItems?.length || 0})
-            </>
-          ) : (
-            <>
-              <Package size={15} /> My Gear Store ({userProducts.length})
-            </>
-          )}
-        </button>
+          <button
+            className={`client-tab-item ${activeTab === 'client_jobs' ? 'active' : ''}`}
+            onClick={() => handleTabChange('client_jobs')}
+          >
+            <Radio size={15} /> Posted Broadcast Jobs ({clientJobs.length})
+          </button>
+        </div>
+      ) : (
+        <div className="pro-tabs-container">
+          <button
+            className={`pro-tab-item ${activeTab === 'overview' ? 'active' : ''}`}
+            onClick={() => handleTabChange('overview')}
+          >
+            <LayoutDashboard size={15} /> Overview
+          </button>
 
-        <button
-          className={`pro-tab-item ${activeTab === 'jobboard' ? 'active' : ''}`}
-          onClick={() => handleTabChange('jobboard')}
-        >
-          <Radio size={15} /> Broadcast Job Board ({proJobBoard.length})
-        </button>
+          <button
+            className={`pro-tab-item ${activeTab === 'bookings' ? 'active' : ''}`}
+            onClick={() => handleTabChange('bookings')}
+          >
+            <Calendar size={15} /> Service Bookings ({proBookings.length})
+          </button>
 
-        <button
-          className={`pro-tab-item ${activeTab === 'availability' ? 'active' : ''}`}
-          onClick={() => handleTabChange('availability')}
-        >
-          <Clock size={15} /> Availability Calendar
-        </button>
+          <button
+            className={`pro-tab-item ${activeTab === 'sales_rentals' ? 'active' : ''}`}
+            onClick={() => handleTabChange('sales_rentals')}
+          >
+            <ShoppingBag size={15} /> {isCaterer ? (isCrafts ? 'Gifting Orders' : (isBaker ? 'Bakery Orders' : 'Menu Orders')) : 'Sales & Rentals'}
+          </button>
 
-        <button
-          className={`pro-tab-item ${activeTab === 'earnings' ? 'active' : ''}`}
-          onClick={() => handleTabChange('earnings')}
-        >
-          <CreditCard size={15} /> Payouts & Earnings
-        </button>
+          <button
+            className={`pro-tab-item ${activeTab === 'listings' ? 'active' : ''}`}
+            onClick={() => handleTabChange('listings')}
+          >
+            {isCaterer ? (
+              <>
+                {isCrafts ? <Gift size={15} /> : <UtensilsCrossed size={15} />} {isCrafts ? 'Hampers & Crafts Catalog' : (isBaker ? 'Bakes & Food Menu' : 'Food Menu & Prices')} ({proProfile?.menuItems?.length || 0})
+              </>
+            ) : (
+              <>
+                <Package size={15} /> My Gear Store ({userProducts.length})
+              </>
+            )}
+          </button>
 
-        <button
-          className={`pro-tab-item client-tab ${activeTab === 'client' ? 'active' : ''}`}
-          onClick={() => handleTabChange('client')}
-        >
-          ⇄ Client Bookings & Orders ({customerBookings.length + customerOrders.length})
-        </button>
-      </div>
+          <button
+            className={`pro-tab-item ${activeTab === 'jobboard' ? 'active' : ''}`}
+            onClick={() => handleTabChange('jobboard')}
+          >
+            <Radio size={15} /> Broadcast Job Board ({proJobBoard.length})
+          </button>
+
+          <button
+            className={`pro-tab-item ${activeTab === 'availability' ? 'active' : ''}`}
+            onClick={() => handleTabChange('availability')}
+          >
+            <Clock size={15} /> Availability Calendar
+          </button>
+
+          <button
+            className={`pro-tab-item ${activeTab === 'earnings' ? 'active' : ''}`}
+            onClick={() => handleTabChange('earnings')}
+          >
+            <CreditCard size={15} /> Payouts & Earnings
+          </button>
+
+          <button
+            className={`pro-tab-item client-tab ${activeTab === 'client' ? 'active' : ''}`}
+            onClick={() => handleTabChange('client')}
+          >
+            ⇄ Client Bookings & Orders ({customerBookings.length + customerOrders.length})
+          </button>
+        </div>
+      )}
 
       {/* ── TAB CONTENT ── */}
       {loading ? (
         <div style={{ padding: 60, textAlign: 'center' }}>
           <Loader2 size={36} className="animate-spin" style={{ color: 'var(--accent)', margin: '0 auto 12px' }} />
-          <p style={{ color: 'var(--text-secondary)' }}>Loading your creator studio dashboard...</p>
+          <p style={{ color: 'var(--text-secondary)' }}>Loading your {isProRole ? 'creator studio' : 'customer'} dashboard...</p>
         </div>
       ) : (
         <>
           {/* ═════════════════════════════════════════════════════════
               TAB 1: STUDIO OVERVIEW (MATCHING MOBILE APP OVERVIEW)
               ═════════════════════════════════════════════════════════ */}
-          {activeTab === 'overview' && (
+          {isProRole && activeTab === 'overview' && (
             <div className="tab-overview-content">
               {/* 4 Stat Cards */}
               <div className="pro-stats-grid">
@@ -2200,7 +2360,7 @@ export const DashboardPage: React.FC = () => {
           {/* ═════════════════════════════════════════════════════════
               TAB 2: SERVICE BOOKINGS
               ═════════════════════════════════════════════════════════ */}
-          {activeTab === 'bookings' && (
+          {isProRole && activeTab === 'bookings' && (
             <div className="tab-bookings-content">
               <div className="tab-section-header">
                 <div>
@@ -2352,7 +2512,7 @@ export const DashboardPage: React.FC = () => {
           {/* ═════════════════════════════════════════════════════════
               TAB 3: SALES & RENTALS (OR MENU ORDERS FOR CATERERS)
               ═════════════════════════════════════════════════════════ */}
-          {activeTab === 'sales_rentals' && (
+          {isProRole && activeTab === 'sales_rentals' && (
             <div className="tab-sales-rentals-content">
               <div className="tab-section-header">
                 <div>
@@ -2445,7 +2605,7 @@ export const DashboardPage: React.FC = () => {
           {/* ═════════════════════════════════════════════════════════
               TAB 4: LISTINGS & GEAR STORE (OR SWIGGY-STYLE FOOD MENU FOR CATERERS)
               ═════════════════════════════════════════════════════════ */}
-          {activeTab === 'listings' && (
+          {isProRole && activeTab === 'listings' && (
             <div className="tab-listings-content">
               {isCaterer ? (
                 /* ─────────────────────────────────────────────────────
@@ -2749,7 +2909,7 @@ export const DashboardPage: React.FC = () => {
           {/* ═════════════════════════════════════════════════════════
               TAB 5: BROADCAST JOB BOARD
               ═════════════════════════════════════════════════════════ */}
-          {activeTab === 'jobboard' && (
+          {isProRole && activeTab === 'jobboard' && (
             <div className="tab-jobboard-content">
               <div className="tab-section-header">
                 <div>
@@ -2807,7 +2967,7 @@ export const DashboardPage: React.FC = () => {
           {/* ═════════════════════════════════════════════════════════
               TAB 6: AVAILABILITY CALENDAR
               ═════════════════════════════════════════════════════════ */}
-          {activeTab === 'availability' && (
+          {isProRole && activeTab === 'availability' && (
             <div className="tab-availability-content">
               <div className="tab-section-header">
                 <div>
@@ -2893,7 +3053,7 @@ export const DashboardPage: React.FC = () => {
           {/* ═════════════════════════════════════════════════════════
               TAB 7: PAYOUTS & EARNINGS
               ═════════════════════════════════════════════════════════ */}
-          {activeTab === 'earnings' && (() => {
+          {isProRole && activeTab === 'earnings' && (() => {
             const clearedBalance = proBookings
               .filter(b => b.status === 'completed')
               .reduce((sum, b) => sum + (b.totalAmount || 0), 0)
@@ -2990,13 +3150,27 @@ export const DashboardPage: React.FC = () => {
           {/* ═════════════════════════════════════════════════════════
               TAB 8: CLIENT VIEW (CUSTOMER BOOKINGS & POSTED JOBS)
               ═════════════════════════════════════════════════════════ */}
-          {activeTab === 'client' && (
+          {(activeTab === 'client' || activeTab === 'client_shoots' || activeTab === 'client_orders' || activeTab === 'client_jobs') && (
             <div className="tab-client-content">
               <div className="tab-section-header">
                 <div>
-                  <h2 className="section-title">Client Bookings & Equipment Orders</h2>
+                  <h2 className="section-title">
+                    {activeTab === 'client_shoots' 
+                      ? 'Shoots You Booked' 
+                      : activeTab === 'client_orders' 
+                      ? 'Equipment & Product Orders' 
+                      : activeTab === 'client_jobs' 
+                      ? 'Your Posted Broadcast Jobs' 
+                      : 'Client Activity & Orders'}
+                  </h2>
                   <p className="section-subtitle">
-                    Gear purchases, rentals, shoots you booked with creators, and broadcast jobs you posted.
+                    {activeTab === 'client_shoots'
+                      ? 'Manage your booked cinematographers, photographers, contracts, call sheets, and proofing vault.'
+                      : activeTab === 'client_orders'
+                      ? 'Track camera, lighting, audio and hamper orders with real-time delivery and escrow protection.'
+                      : activeTab === 'client_jobs'
+                      ? 'Review incoming applications from verified talent and confirm bookings.'
+                      : 'Gear purchases, rentals, shoots you booked with creators, and broadcast jobs you posted.'}
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -3012,10 +3186,57 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Customer Quick Summary Metric Grid (Shown in All Activity Overview) */}
+              {activeTab === 'client' && (
+                <div className="client-summary-grid">
+                  <div className="client-stat-card" onClick={() => handleTabChange('client_shoots')} style={{ cursor: 'pointer' }}>
+                    <div className="client-stat-icon-wrap">
+                      <Calendar size={20} />
+                    </div>
+                    <div>
+                      <p className="client-stat-val">{customerBookings.length}</p>
+                      <p className="client-stat-label">Shoots Booked</p>
+                    </div>
+                  </div>
+
+                  <div className="client-stat-card" onClick={() => handleTabChange('client_orders')} style={{ cursor: 'pointer' }}>
+                    <div className="client-stat-icon-wrap amber">
+                      <Package size={20} />
+                    </div>
+                    <div>
+                      <p className="client-stat-val">{customerOrders.length}</p>
+                      <p className="client-stat-label">Gear Orders</p>
+                    </div>
+                  </div>
+
+                  <div className="client-stat-card" onClick={() => handleTabChange('client_jobs')} style={{ cursor: 'pointer' }}>
+                    <div className="client-stat-icon-wrap blue">
+                      <Radio size={20} />
+                    </div>
+                    <div>
+                      <p className="client-stat-val">{clientJobs.length}</p>
+                      <p className="client-stat-label">Broadcast Jobs</p>
+                    </div>
+                  </div>
+
+                  <div className="client-stat-card">
+                    <div className="client-stat-icon-wrap purple">
+                      <ShieldCheck size={20} />
+                    </div>
+                    <div>
+                      <p className="client-stat-val">₹{totalCustomerEscrow.toLocaleString('en-IN')}</p>
+                      <p className="client-stat-label">100% Escrow Shielded</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Customer gear & product orders */}
-              <h3 className="section-heading" style={{ marginTop: 24, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Package size={18} color="var(--accent)" /> Gear & Product Orders ({customerOrders.length})
-              </h3>
+              {(activeTab === 'client' || activeTab === 'client_orders') && (
+                <div style={{ marginBottom: 32 }}>
+                  <h3 className="section-heading" style={{ marginTop: activeTab === 'client' ? 12 : 0, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Package size={18} color="var(--accent)" /> Gear & Product Orders ({customerOrders.length})
+                  </h3>
 
               {customerOrders.length === 0 ? (
                 <div className="card empty-state-card" style={{ marginBottom: 28 }}>
@@ -3079,115 +3300,125 @@ export const DashboardPage: React.FC = () => {
                   ))}
                 </div>
               )}
+            </div>
+          )}
 
               {/* Customer bookings list */}
-              <h3 className="section-heading" style={{ marginTop: 20, marginBottom: 12 }}>
-                Shoots You Booked ({customerBookings.length})
-              </h3>
+              {(activeTab === 'client' || activeTab === 'client_shoots') && (
+                <div style={{ marginBottom: 32 }}>
+                  <h3 className="section-heading" style={{ marginTop: activeTab === 'client' ? 20 : 0, marginBottom: 12 }}>
+                    Shoots You Booked ({customerBookings.length})
+                  </h3>
 
-              {customerBookings.length === 0 ? (
-                <div className="card empty-state-card" style={{ marginBottom: 28 }}>
-                  <Calendar size={40} color="var(--text-muted)" style={{ margin: '0 auto 12px' }} />
-                  <h4>No bookings as a client yet</h4>
-                  <p>Book local cinematographers, editors, or drone operators with milestone escrow protection.</p>
-                  <Link to="/explore" className="btn btn-primary" style={{ marginTop: 14 }}>Explore Talent</Link>
-                </div>
-              ) : (
-                <div className="bookings-cards-list" style={{ marginBottom: 28 }}>
-                  {customerBookings.map((b) => (
-                    <div key={b.id} className="card pro-booking-card">
-                      <div className="booking-card-main">
-                        <span className={`status-pill status-${b.status}`}>{b.status.toUpperCase()}</span>
-                        <h3 className="booking-service-title">{b.serviceTitle}</h3>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
-                          With <strong>{b.professionalName}</strong> • {b.startDate} ({b.daysCount} days)
-                        </p>
-                        <p style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 4 }}>📍 {b.location}</p>
-                      </div>
-
-                      <div className="booking-card-side">
-                        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Escrow Total</span>
-                        <strong className="payout-val">₹{b.totalAmount.toLocaleString('en-IN')}</strong>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
-                          <button
-                            type="button"
-                            className="btn btn-outline btn-sm contract-action-btn"
-                            onClick={() => {
-                              setSelectedContractBooking(b);
-                              setShowContractModal(true);
-                            }}
-                            title="View and sign legal shoot contract"
-                          >
-                            <FileText size={14} /> Shoot Contract
-                          </button>
-
-                          <button
-                            type="button"
-                            className="btn btn-outline btn-sm"
-                            onClick={() => {
-                              setSelectedVaultBooking(b);
-                              setShowVaultModal(true);
-                            }}
-                            title="Open Camqrew Vault Photo Proofing & Selection Gallery"
-                          >
-                            <Camera size={14} /> Vault (Proofing)
-                          </button>
-
-                          <button
-                            type="button"
-                            className="btn btn-outline btn-sm"
-                            onClick={() => {
-                              setSelectedCallSheetBooking(b);
-                              setShowCallSheetModal(true);
-                            }}
-                            title="View Shoot Day Schedule & Call Sheet"
-                          >
-                            <FileText size={14} /> Call Sheet
-                          </button>
-                          <Link to={`/chat?userId=${b.professionalId}`} className="btn btn-outline btn-sm">
-                            <MessageSquare size={14} /> Message Pro
-                          </Link>
-                        </div>
-                      </div>
+                  {customerBookings.length === 0 ? (
+                    <div className="card empty-state-card" style={{ marginBottom: 28 }}>
+                      <Calendar size={40} color="var(--text-muted)" style={{ margin: '0 auto 12px' }} />
+                      <h4>No bookings as a client yet</h4>
+                      <p>Book local cinematographers, editors, or drone operators with milestone escrow protection.</p>
+                      <Link to="/explore" className="btn btn-primary" style={{ marginTop: 14 }}>Explore Talent</Link>
                     </div>
-                  ))}
+                  ) : (
+                    <div className="bookings-cards-list" style={{ marginBottom: 28 }}>
+                      {customerBookings.map((b) => (
+                        <div key={b.id} className="card pro-booking-card">
+                          <div className="booking-card-main">
+                            <span className={`status-pill status-${b.status}`}>{b.status.toUpperCase()}</span>
+                            <h3 className="booking-service-title">{b.serviceTitle}</h3>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
+                              With <strong>{b.professionalName}</strong> • {b.startDate} ({b.daysCount} days)
+                            </p>
+                            <p style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 4 }}>📍 {b.location}</p>
+                          </div>
+
+                          <div className="booking-card-side">
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Escrow Total</span>
+                            <strong className="payout-val">₹{b.totalAmount.toLocaleString('en-IN')}</strong>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+                              <button
+                                type="button"
+                                className="btn btn-outline btn-sm contract-action-btn"
+                                onClick={() => {
+                                  setSelectedContractBooking(b);
+                                  setShowContractModal(true);
+                                }}
+                                title="View and sign legal shoot contract"
+                              >
+                                <FileText size={14} /> Shoot Contract
+                              </button>
+
+                              <button
+                                type="button"
+                                className="btn btn-outline btn-sm"
+                                onClick={() => {
+                                  setSelectedVaultBooking(b);
+                                  setShowVaultModal(true);
+                                }}
+                                title="Open Camqrew Vault Photo Proofing & Selection Gallery"
+                              >
+                                <Camera size={14} /> Vault (Proofing)
+                              </button>
+
+                              <button
+                                type="button"
+                                className="btn btn-outline btn-sm"
+                                onClick={() => {
+                                  setSelectedCallSheetBooking(b);
+                                  setShowCallSheetModal(true);
+                                }}
+                                title="View Shoot Day Schedule & Call Sheet"
+                              >
+                                <FileText size={14} /> Call Sheet
+                              </button>
+                              <Link to={`/chat?userId=${b.professionalId}`} className="btn btn-outline btn-sm">
+                                <MessageSquare size={14} /> Message Pro
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Broadcast jobs posted by user */}
-              <h3 className="section-heading" style={{ marginBottom: 12 }}>
-                Your Posted Broadcast Jobs ({clientJobs.length})
-              </h3>
+              {(activeTab === 'client' || activeTab === 'client_jobs') && (
+                <div style={{ marginBottom: 20 }}>
+                  <h3 className="section-heading" style={{ marginTop: activeTab === 'client' ? 20 : 0, marginBottom: 12 }}>
+                    Your Posted Broadcast Jobs ({clientJobs.length})
+                  </h3>
 
-              {clientJobs.length === 0 ? (
-                <div className="card empty-state-card">
-                  <Radio size={40} color="var(--text-muted)" style={{ margin: '0 auto 12px' }} />
-                  <h4>No broadcast jobs posted</h4>
-                  <p>Need a crew urgently? Broadcast your shoot requirements to verified creators.</p>
-                  <Link to="/jobs/create" className="btn btn-primary" style={{ marginTop: 14 }}>Post Broadcast Job</Link>
-                </div>
-              ) : (
-                <div className="jobs-leads-list">
-                  {clientJobs.map((job) => (
-                    <div key={job.id} className="card pro-job-lead-card">
-                      <div>
-                        <span className={`status-pill status-${job.status}`}>{job.status.toUpperCase()}</span>
-                        <h3 className="lead-title" style={{ marginTop: 6 }}>{job.title}</h3>
-                        <p className="lead-loc"><MapPin size={13} /> {job.location}</p>
-                        <p className="lead-desc">{job.requirements}</p>
-                      </div>
-
-                      <div className="lead-action-col">
-                        <span className="budget-label">Budget</span>
-                        <strong className="budget-val">₹{job.budget?.toLocaleString('en-IN')}</strong>
-                        {job.status === 'reviewing' && (
-                          <Link to={`/jobs/review/${job.id}`} className="btn btn-primary btn-sm" style={{ marginTop: 8 }}>
-                            Review Applicant →
-                          </Link>
-                        )}
-                      </div>
+                  {clientJobs.length === 0 ? (
+                    <div className="card empty-state-card">
+                      <Radio size={40} color="var(--text-muted)" style={{ margin: '0 auto 12px' }} />
+                      <h4>No broadcast jobs posted</h4>
+                      <p>Need a crew urgently? Broadcast your shoot requirements to verified creators.</p>
+                      <Link to="/jobs/create" className="btn btn-primary" style={{ marginTop: 14 }}>Post Broadcast Job</Link>
                     </div>
-                  ))}
+                  ) : (
+                    <div className="jobs-leads-list">
+                      {clientJobs.map((job) => (
+                        <div key={job.id} className="card pro-job-lead-card">
+                          <div>
+                            <span className={`status-pill status-${job.status}`}>{job.status.toUpperCase()}</span>
+                            <h3 className="lead-title" style={{ marginTop: 6 }}>{job.title}</h3>
+                            <p className="lead-loc"><MapPin size={13} /> {job.location}</p>
+                            <p className="lead-desc">{job.requirements}</p>
+                          </div>
+
+                          <div className="lead-action-col">
+                            <span className="budget-label">Budget</span>
+                            <strong className="budget-val">₹{job.budget?.toLocaleString('en-IN')}</strong>
+                            {job.status === 'reviewing' && (
+                              <Link to={`/jobs/review/${job.id}`} className="btn btn-primary btn-sm" style={{ marginTop: 8 }}>
+                                Review Applicant →
+                              </Link>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -3725,7 +3956,7 @@ export const DashboardPage: React.FC = () => {
           isOpen={showVaultModal}
           booking={selectedVaultBooking}
           currentUserId={user?.id}
-          isClientView={activeTab === 'client'}
+          isClientView={!isProRole || activeTab.startsWith('client')}
           onClose={() => {
             setShowVaultModal(false);
             setSelectedVaultBooking(null);
