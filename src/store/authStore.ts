@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { User, UserRole } from '../types/auth';
 import { supabase } from '../api/supabaseClient';
+import { isCustomAvatar } from '../utils/avatarUtils';
 
 interface AuthStoreState {
   user: User | null;
@@ -109,20 +110,32 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
         const userRole = (dbProfile?.role || session.user.user_metadata?.role || intendedRole || parsedUser?.role || 'customer') as UserRole;
         const meta = session.user.user_metadata || {};
 
+        // Extract Google / OAuth avatar from all possible metadata and identity locations
+        const oauthAvatar = 
+          meta.avatar_url || 
+          meta.picture || 
+          session.user.identities?.[0]?.identity_data?.avatar_url || 
+          session.user.identities?.[0]?.identity_data?.picture || 
+          '';
+
+        const finalAvatar = isCustomAvatar(dbProfile?.avatar)
+          ? dbProfile!.avatar
+          : (oauthAvatar || (isCustomAvatar(parsedUser?.avatar) ? parsedUser!.avatar : ''));
+
         const resolvedUser: User = {
           id: session.user.id,
           name: dbProfile?.name || meta.name || meta.full_name || parsedUser?.name || session.user.email?.split('@')[0] || 'User',
           email: session.user.email || parsedUser?.email || '',
           phone: dbProfile?.phone || session.user.phone || meta.phone || parsedUser?.phone || '',
           role: userRole,
-          avatar: dbProfile?.avatar || meta.avatar_url || meta.picture || parsedUser?.avatar || '',
+          avatar: finalAvatar,
           subscription_tier: dbProfile?.subscription_tier || 'free',
           subscription_status: dbProfile?.subscription_status || 'inactive',
           subscription_end_date: dbProfile?.subscription_end_date,
           createdAt: dbProfile?.created_at || new Date().toISOString(),
         };
 
-        // Auto-provision user record if first-time OAuth sign-in
+        // Auto-provision user record if first-time OAuth sign-in, or sync Google avatar if missing in DB
         if (!dbProfile) {
           try {
             await supabase.from('users').insert([{
@@ -135,6 +148,12 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
             }]);
           } catch (insertErr) {
             console.warn('Profile auto-create notice:', insertErr);
+          }
+        } else if (oauthAvatar && (!dbProfile.avatar || !isCustomAvatar(dbProfile.avatar))) {
+          // Sync Google avatar to database if dbProfile had empty or stock placeholder avatar
+          supabase.from('users').update({ avatar: oauthAvatar }).eq('id', session.user.id).then();
+          if (dbProfile.role === 'professional') {
+            supabase.from('professional_profiles').update({ avatar: oauthAvatar }).eq('id', session.user.id).then();
           }
         }
 

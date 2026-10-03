@@ -219,7 +219,7 @@ export const Navbar: React.FC<NavbarProps> = ({ theme, toggleTheme }) => {
                 aria-haspopup="true"
               >
                 {isCustomAvatar(user.avatar) ? (
-                  <img src={user.avatar} alt={user.name} className="nav-avatar" />
+                  <img src={user.avatar} alt={user.name} className="nav-avatar" referrerPolicy="no-referrer" />
                 ) : (
                   <div className="nav-avatar nav-avatar-placeholder">
                     <User size={15} />

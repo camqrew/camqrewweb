@@ -1079,6 +1079,7 @@ export const DashboardPage: React.FC = () => {
                 src={user?.avatar || proProfile?.avatar} 
                 alt={user?.name} 
                 className="pro-header-avatar"
+                referrerPolicy="no-referrer"
               />
             ) : (
               <div className="pro-header-avatar pro-header-avatar-placeholder">
