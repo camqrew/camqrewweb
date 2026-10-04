@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { isCustomAvatar } from '../utils/avatarUtils';
 import { 
@@ -28,11 +28,15 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
 }) => {
   const { user, needsRoleSelection, setNeedsRoleSelection, selectAccountRole } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedRole, setSelectedRole] = useState<'customer' | 'professional'>('customer');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // If user is currently on /login or /register, let AuthPage handle the inline onboarding flow
+  const isAuthRoute = location.pathname.startsWith('/login') || location.pathname.startsWith('/register');
+
   // If isOpen is not provided, follow needsRoleSelection from auth store
-  const showModal = isOpen !== undefined ? isOpen : needsRoleSelection;
+  const showModal = (isOpen !== undefined ? isOpen : needsRoleSelection) && !isAuthRoute;
 
   if (!showModal || !user) {
     return null;
