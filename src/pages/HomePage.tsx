@@ -4,6 +4,7 @@ import { professionalApi } from '../api/professionalApi';
 import type { ProfessionalProfile } from '../types/professional';
 import { ProCard } from '../components/ProCard';
 import { CustomSelect } from '../components/CustomSelect';
+import { SEOHead } from '../components/SEOHead';
 import { INDIA_LOCATIONS } from '../constants/locations';
 import { 
   Search, 
@@ -164,6 +165,12 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="home-page">
+      <SEOHead 
+        title="Camqrew - Creative Marketplace & Production Crews"
+        description="Hire verified photographers, cinematographers, drone pilots, and rent cinema gear anywhere in India with milestone escrow protection."
+        url="https://camqrew.in/"
+        type="website"
+      />
       <section className="hero-section">
         <div className="hero-container">
           <div className="hero-badge">

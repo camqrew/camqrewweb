@@ -21,7 +21,9 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
     const defaultImage = 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200';
     const currentUrl = url || (typeof window !== 'undefined' ? window.location.href : 'https://camqrew.in');
 
-    const effectiveTitle = title ? `${title} | Camqrew` : defaultTitle;
+    const effectiveTitle = title 
+      ? (title.includes('Camqrew') || title.includes('Camcrew') ? title : `${title} | Camqrew`) 
+      : defaultTitle;
     const effectiveDesc = description || defaultDesc;
     const effectiveImage = image || defaultImage;
 
