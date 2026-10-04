@@ -255,13 +255,13 @@
 .admin-input-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   text-align: left;
 }
 
 .admin-input-label {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   color: #a1a9b3; /* textSecondary from mobile app */
   letter-spacing: 0.01em;
 }
