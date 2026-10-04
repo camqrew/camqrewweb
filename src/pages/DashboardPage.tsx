@@ -110,7 +110,7 @@ const EMCEE_STYLE_PRESETS = [
 
 export const DashboardPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, isAuthenticated, isLoading, activeRole, setActiveRole, needsRoleSelection } = useAuthStore();
+  const { user, isAuthenticated, isLoading, activeRole, setActiveRole } = useAuthStore();
   const navigate = useNavigate();
 
   const isPro = user?.role === 'professional';
@@ -344,11 +344,9 @@ export const DashboardPage: React.FC = () => {
     if (!isLoading) {
       if (!isAuthenticated || !user) {
         navigate('/login?redirect=/dashboard', { replace: true });
-      } else if (needsRoleSelection) {
-        navigate('/login', { replace: true });
       }
     }
-  }, [isLoading, isAuthenticated, user, needsRoleSelection, navigate]);
+  }, [isLoading, isAuthenticated, user, navigate]);
 
   useEffect(() => {
     if (paramTab) {

@@ -85,10 +85,10 @@ export const AuthPage: React.FC = () => {
 
   // If user already authenticated and completed onboarding, redirect to dashboard
   useEffect(() => {
-    if (!isLoading && isAuthenticated && user && !needsRoleSelection && currentScreen === 'screen1_auth') {
+    if (!isLoading && isAuthenticated && user && currentScreen === 'screen1_auth') {
       navigate(redirectUrl, { replace: true });
     }
-  }, [isLoading, isAuthenticated, user, needsRoleSelection, currentScreen, redirectUrl, navigate]);
+  }, [isLoading, isAuthenticated, user, currentScreen, redirectUrl, navigate]);
 
   // If user signed in via OAuth and needs role selection, immediately open Screen 2
   useEffect(() => {

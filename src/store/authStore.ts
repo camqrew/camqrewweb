@@ -157,21 +157,17 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
           createdAt: dbProfile?.created_at || new Date().toISOString(),
         };
 
-        const isNewOAuth = !dbProfile;
-        const needsRole = isNewOAuth || localStorage.getItem('@camcrew_needs_role') === 'true';
-
         // Auto-provision user record if first-time OAuth sign-in, or sync Google avatar if missing in DB
         if (!dbProfile) {
           try {
-            await supabase.from('users').insert([{
+            await supabase.from('users').upsert([{
               id: session.user.id,
               name: resolvedUser.name,
               email: resolvedUser.email,
               phone: resolvedUser.phone,
               role: userRole,
               avatar: resolvedUser.avatar || null,
-            }]);
-            localStorage.setItem('@camcrew_needs_role', 'true');
+            }], { onConflict: 'id' });
           } catch (insertErr) {
             console.warn('Profile auto-create notice:', insertErr);
           }
@@ -183,12 +179,17 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
           }
         }
 
+        // Clean up any old role selection flags so user goes directly to dashboard
+        localStorage.removeItem('@camcrew_needs_role');
+        localStorage.removeItem('@camqrew_needs_role_selection');
+        localStorage.removeItem('@camcrew_needs_role_selection');
+
         set({
           token: session.access_token,
           user: resolvedUser,
           isAuthenticated: true,
           activeRole: userRole,
-          needsRoleSelection: needsRole,
+          needsRoleSelection: false,
           isLoading: false
         });
         localStorage.setItem('@camqrew_token', session.access_token);
