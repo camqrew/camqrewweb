@@ -35,11 +35,27 @@ export const AuthPage: React.FC = () => {
   const isRegisterParam = searchParams.get('mode') === 'register' || window.location.pathname.includes('register');
   const redirectUrl = searchParams.get('redirect') || ((user?.role === 'professional' || activeRole === 'professional') ? '/dashboard?tab=overview' : '/dashboard');
 
-  // Check if returning from an OAuth callback
-  const isOAuthCallback = typeof window !== 'undefined' && (
+  // Extract OAuth error if redirected with error query or hash fragment
+  const hashString = typeof window !== 'undefined' ? window.location.hash.replace(/^#/, '') : '';
+  const hashParams = new URLSearchParams(hashString);
+  const rawOAuthError = 
+    searchParams.get('error_description') || 
+    searchParams.get('error') || 
+    hashParams.get('error_description') || 
+    hashParams.get('error');
+
+  const oauthErrorMsg = rawOAuthError
+    ? decodeURIComponent(rawOAuthError.replace(/\+/g, ' '))
+    : null;
+
+  // Check if returning from an OAuth callback (only when no error was returned)
+  const isOAuthCallback = typeof window !== 'undefined' && !oauthErrorMsg && (
     window.location.hash.includes('access_token') || 
     window.location.search.includes('code=')
   );
+
+  // Safety timeout in case OAuth / session verification takes too long
+  const [authTimedOut, setAuthTimedOut] = useState(false);
 
   // Main flow screen: 'screen1_auth' | 'screen2_role' | 'forgot_password'
   const [currentScreen, setCurrentScreen] = useState<'screen1_auth' | 'screen2_role' | 'forgot_password'>('screen1_auth');
@@ -113,6 +129,28 @@ export const AuthPage: React.FC = () => {
       return () => clearTimeout(t);
     }
   }, [otpTimer]);
+
+  // Handle OAuth errors returned in URL query or hash
+  useEffect(() => {
+    if (oauthErrorMsg) {
+      setError(oauthErrorMsg);
+      // Clean query and hash without reloading
+      if (typeof window !== 'undefined') {
+        const cleanPath = window.location.pathname + (isRegisterParam ? '?mode=register' : '');
+        window.history.replaceState({}, '', cleanPath);
+      }
+    }
+  }, [oauthErrorMsg, isRegisterParam]);
+
+  // Safety fallback: if OAuth callback or session check takes more than 6 seconds, stop spinner
+  useEffect(() => {
+    if (isOAuthCallback || (isLoading && !user && !oauthErrorMsg)) {
+      const timer = setTimeout(() => {
+        setAuthTimedOut(true);
+      }, 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [isOAuthCallback, isLoading, user, oauthErrorMsg]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Screen 1: Handlers
@@ -367,7 +405,7 @@ export const AuthPage: React.FC = () => {
     );
   };
 
-  if (isOAuthCallback || (isLoading && !user)) {
+  if (!oauthErrorMsg && !authTimedOut && (isOAuthCallback || (isLoading && !user))) {
     return (
       <div className="auth-flow-viewport">
         <div className="auth-centered-wrapper" style={{ justifyContent: 'center', minHeight: '60vh' }}>
