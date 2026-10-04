@@ -475,8 +475,8 @@ export const AuthPage: React.FC = () => {
                       <label className="auth-label">Mobile Number</label>
                       <div className="auth-phone-input-row">
                         <div className="auth-country-code-pill">
-                          <span className="auth-country-abbr">IN</span>
-                          <span className="auth-country-dial">+91</span>
+                          <span className="auth-country-code-prefix">IN</span>
+                          <span className="auth-country-code-val">+91</span>
                         </div>
                         <div className="auth-input-container">
                           <span className="auth-input-icon-adornment">
@@ -608,7 +608,7 @@ export const AuthPage: React.FC = () => {
 
                 <button
                   type="button"
-                  className={`auth-sso-card-btn ${method === 'phone' ? 'active-method' : ''}`}
+                  className={`auth-sso-card-btn ${method === 'phone' ? 'is-phone-active' : ''}`}
                   onClick={() => {
                     setMethod(method === 'email' ? 'phone' : 'email');
                     setError('');
@@ -623,8 +623,8 @@ export const AuthPage: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <Mail size={16} className="auth-sso-email-icon" />
-                      <span>Email</span>
+                      <Mail size={15} className="auth-email-toggle-icon" />
+                      <span className="auth-email-toggle-text">Email</span>
                     </>
                   )}
                 </button>
