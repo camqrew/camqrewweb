@@ -403,7 +403,7 @@ export const AuthPage: React.FC = () => {
           name: fullName.trim(),
           email: profileEmail.trim() || email.trim(),
           phone: cleanPhone || '9876543210',
-          password: password || 'camcrewPass123!',
+          password: password || 'camqrewPass123!',
         });
         await login(res.user, res.token);
       } else {
@@ -411,7 +411,7 @@ export const AuthPage: React.FC = () => {
           name: selectedRoleType === 'business' ? (companyName.trim() || fullName.trim()) : fullName.trim(),
           email: profileEmail.trim() || email.trim(),
           phone: cleanPhone || '9876543210',
-          password: password || 'camcrewPass123!',
+          password: password || 'camqrewPass123!',
           title: selectedRoleType === 'business'
             ? `${companyName.trim() || fullName.trim()} • Production Studio & Rental`
             : (proTitle.trim() || 'Visual Storyteller & Creator'),
@@ -481,7 +481,7 @@ export const AuthPage: React.FC = () => {
                 <p className="auth-subtitle">
                   {authMode === 'login'
                     ? 'Enter your credentials to access your account'
-                    : 'Get started in under two minutes with Camcrew'}
+                    : 'Get started in under two minutes with Camqrew'}
                 </p>
               </div>
 

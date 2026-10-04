@@ -1199,7 +1199,7 @@ export const DashboardPage: React.FC = () => {
               <Link
                 to="/register?role=professional"
                 className="btn btn-outline btn-sm pro-upgrade-btn"
-                title="Join Camcrew as a creator to offer services and list gear"
+                title="Join Camqrew as a creator to offer services and list gear"
               >
                 <Film size={14} /> Become a Creator →
               </Link>

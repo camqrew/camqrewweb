@@ -22,7 +22,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
     const currentUrl = url || (typeof window !== 'undefined' ? window.location.href : 'https://camqrew.in');
 
     const effectiveTitle = title 
-      ? (title.includes('Camqrew') || title.includes('Camcrew') ? title : `${title} | Camqrew`) 
+      ? (title.includes('Camqrew') ? title : `${title} | Camqrew`) 
       : defaultTitle;
     const effectiveDesc = description || defaultDesc;
     const effectiveImage = image || defaultImage;

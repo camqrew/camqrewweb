@@ -16,7 +16,7 @@ export const Logo: React.FC<LogoProps> = ({
     <span className={'camcrew-brand-logo ' + className} style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
       {/* Light-theme logo (dark graphics for light backgrounds) */}
       <img
-        src="/camcrew-logo-dark.png"
+        src="/camqrew-logo-dark.png"
         alt="Camqrew"
         className="logo-img logo-for-light"
         style={{
@@ -29,7 +29,7 @@ export const Logo: React.FC<LogoProps> = ({
       />
       {/* Dark-theme logo (white graphics for dark backgrounds) */}
       <img
-        src="/camcrew-logo-white.png"
+        src="/camqrew-logo-white.png"
         alt="Camqrew"
         className="logo-img logo-for-dark"
         style={{

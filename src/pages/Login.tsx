@@ -298,7 +298,7 @@ export const Login = () => {
                       id="reset-email"
                       type="email"
                       className="admin-text-input"
-                      placeholder="admin@camcrew.in"
+                      placeholder="admin@camqrew.in"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={resetLoading}
