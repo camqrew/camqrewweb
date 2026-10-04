@@ -19,9 +19,6 @@ import {
   ArrowRight,
   ArrowLeft,
   CheckCircle2,
-  ShieldCheck,
-  Film,
-  Sparkles,
   Eye,
   EyeOff,
   Loader2,
@@ -392,11 +389,6 @@ export const AuthPage: React.FC = () => {
               </span>
             </Link>
 
-            <div className="auth-branding-badge">
-              <Sparkles size={13} />
-              <span>India’s Creative Production Network</span>
-            </div>
-
             <h1 className="auth-branding-headline">
               Where Top Creators, <span className="gradient-text">Studios & Gear</span> Connect.
             </h1>
@@ -404,56 +396,6 @@ export const AuthPage: React.FC = () => {
             <p className="auth-branding-subtext">
               Hire verified cinematographers, photographers & editors, or power your freelance career with guaranteed milestone escrow.
             </p>
-
-            <div className="auth-branding-features">
-              <div className="auth-branding-feature-item">
-                <div className="auth-feature-icon-box">
-                  <ShieldCheck size={20} />
-                </div>
-                <div className="auth-feature-text-block">
-                  <h4>100% Escrow Milestone Protection</h4>
-                  <p>Funds remain securely safeguarded until shoot milestones and wrap deliverables are approved.</p>
-                </div>
-              </div>
-
-              <div className="auth-branding-feature-item">
-                <div className="auth-feature-icon-box">
-                  <Camera size={20} />
-                </div>
-                <div className="auth-feature-text-block">
-                  <h4>Verified Creative Talent Roster</h4>
-                  <p>Curated cinematographers, drone pilots, editors, caterers and sound artists with transparent day rates.</p>
-                </div>
-              </div>
-
-              <div className="auth-branding-feature-item">
-                <div className="auth-feature-icon-box">
-                  <Film size={20} />
-                </div>
-                <div className="auth-feature-text-block">
-                  <h4>Cinema-Grade Gear & Studio Rentals</h4>
-                  <p>Rent ARRI, Sony, RED bodies, cinema lenses, lighting packages, and sound rigs anywhere in India.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Social Proof Testimonial Card */}
-          <div className="auth-branding-testimonial">
-            <p className="auth-testimonial-quote">
-              “Camcrew transformed how we staff our multi-city commercial shoots. We booked a certified drone pilot and gaffer within two hours in Bangalore, with seamless escrow payouts.”
-            </p>
-            <div className="auth-testimonial-author">
-              <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop"
-                alt="Aditi Sen"
-                className="auth-testimonial-avatar"
-              />
-              <div>
-                <div className="auth-testimonial-name">Aditi Sen</div>
-                <div className="auth-testimonial-role">Executive Producer, Dharma Spectrum Studios</div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -484,8 +426,8 @@ export const AuthPage: React.FC = () => {
                 </h2>
                 <p className="auth-subtitle">
                   {authMode === 'login'
-                    ? 'Enter your credentials to access your dashboard & bookings'
-                    : 'Get started in under two minutes with India’s creative network'}
+                    ? 'Enter your credentials to access your account'
+                    : 'Get started in under two minutes with Camcrew'}
                 </p>
               </div>
 
@@ -677,85 +619,74 @@ export const AuthPage: React.FC = () => {
 
               {/* Bottom Alternative Methods Divider */}
               <div className="auth-divider">
-                <span>or continue with</span>
+                <span>or</span>
               </div>
 
-              {/* Bottom Options Cluster: Mobile OTP, Google Auth, Apple Auth */}
-              <div className="auth-bottom-options">
-                {method === 'email' ? (
-                  <button
-                    type="button"
-                    className="auth-bottom-method-btn"
-                    onClick={() => { setMethod('phone'); setError(''); setOtpSent(false); }}
-                  >
-                    <div className="auth-bottom-method-btn-content">
-                      <div className="auth-bottom-method-icon-wrap">
-                        <Phone size={15} />
-                      </div>
-                      <span>{authMode === 'login' ? 'Sign In with Mobile OTP' : 'Sign Up with Mobile OTP'}</span>
-                    </div>
-                    <ArrowRight size={15} color="var(--auth-text-muted)" />
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="auth-bottom-method-btn"
-                    onClick={() => { setMethod('email'); setError(''); }}
-                  >
-                    <div className="auth-bottom-method-btn-content">
-                      <div className="auth-bottom-method-icon-wrap">
-                        <Mail size={15} />
-                      </div>
-                      <span>{authMode === 'login' ? 'Sign In with Email & Password' : 'Sign Up with Email & Password'}</span>
-                    </div>
-                    <ArrowRight size={15} color="var(--auth-text-muted)" />
-                  </button>
-                )}
+              {/* Classy Minimal SSO Buttons */}
+              <div className="auth-sso-row">
+                <button
+                  type="button"
+                  className="auth-sso-card-btn"
+                  onClick={() => handleOAuthLogin('google')}
+                  disabled={oauthLoading !== null}
+                  title="Continue with Google"
+                >
+                  {oauthLoading === 'google' ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <>
+                      <GoogleIcon size={17} />
+                      <span>Google</span>
+                    </>
+                  )}
+                </button>
 
-                <div className="auth-social-bottom-row">
-                  <button
-                    type="button"
-                    className="auth-social-cta-btn"
-                    onClick={() => handleOAuthLogin('google')}
-                    disabled={oauthLoading !== null}
-                  >
-                    {oauthLoading === 'google' ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <>
-                        <GoogleIcon size={18} />
-                        <span>Google Auth</span>
-                      </>
-                    )}
-                  </button>
+                <button
+                  type="button"
+                  className="auth-sso-card-btn"
+                  onClick={() => handleOAuthLogin('apple')}
+                  disabled={oauthLoading !== null}
+                  title="Continue with Apple"
+                >
+                  {oauthLoading === 'apple' ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <>
+                      <AppleIcon size={17} />
+                      <span>Apple</span>
+                    </>
+                  )}
+                </button>
 
-                  <button
-                    type="button"
-                    className="auth-social-cta-btn"
-                    onClick={() => handleOAuthLogin('apple')}
-                    disabled={oauthLoading !== null}
-                  >
-                    {oauthLoading === 'apple' ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <>
-                        <AppleIcon size={18} />
-                        <span>Apple Auth</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className={`auth-sso-card-btn ${method === 'phone' ? 'active-method' : ''}`}
+                  onClick={() => {
+                    setMethod(method === 'email' ? 'phone' : 'email');
+                    setError('');
+                    setOtpSent(false);
+                  }}
+                  title={method === 'email' ? 'Sign in with Mobile OTP' : 'Sign in with Email'}
+                >
+                  {method === 'email' ? (
+                    <>
+                      <Phone size={15} />
+                      <span>Mobile OTP</span>
+                    </>
+                  ) : (
+                    <>
+                      <Mail size={15} />
+                      <span>Email</span>
+                    </>
+                  )}
+                </button>
               </div>
 
-              <div style={{ marginTop: 24, textAlign: 'center', fontSize: 12.5, color: 'var(--auth-text-muted)' }}>
+              <div className="auth-legal-notice">
                 By continuing, you agree to our{' '}
-                <Link to="/legal" style={{ color: 'var(--auth-text-secondary)', textDecoration: 'underline' }}>
-                  Terms of Service
-                </Link>{' '}
+                <Link to="/legal">Terms of Service</Link>{' '}
                 and{' '}
-                <Link to="/legal" style={{ color: 'var(--auth-text-secondary)', textDecoration: 'underline' }}>
-                  Privacy Policy
-                </Link>.
+                <Link to="/legal">Privacy Policy</Link>.
               </div>
             </div>
           )}
