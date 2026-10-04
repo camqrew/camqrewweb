@@ -722,14 +722,14 @@ export const AuthPage: React.FC = () => {
               </div>
 
               {/* Header */}
-              <div className="auth-header" style={{ textAlign: 'left', marginBottom: 24 }}>
+              <div className="auth-header" style={{ textAlign: 'left', marginBottom: 20 }}>
                 <h2 className="auth-title">Choose your account type</h2>
                 <p className="auth-subtitle">
-                  Select how you plan to use Camcrew. You can collaborate and switch workspaces anytime from your account settings.
+                  Select how you plan to use Camcrew. You can switch workspaces anytime.
                 </p>
               </div>
 
-              {/* 3 Clickable Account Type Cards */}
+              {/* 3 Minimal Account Type Cards */}
               <div className="role-cards-grid">
                 
                 {/* 1. Client / Personal */}
@@ -740,32 +740,16 @@ export const AuthPage: React.FC = () => {
                   tabIndex={0}
                 >
                   <div className="role-card-icon-box">
-                    <User size={24} />
+                    <User size={22} />
                   </div>
                   <div className="role-card-details">
-                    <div className="role-card-top-header">
-                      <div className="role-card-title-group">
-                        <h3 className="role-card-title">Personal / Client</h3>
-                        <span className="role-card-badge">Hire Crew</span>
-                      </div>
-                      <div className="role-card-radio-circle">
-                        {selectedRoleType === 'customer' && <Check size={14} strokeWidth={3} />}
-                      </div>
-                    </div>
+                    <h3 className="role-card-title">Personal / Client</h3>
                     <p className="role-card-desc">
-                      For individuals, brands, and agencies looking to book top creative talent and rent production equipment with escrow protection.
+                      Book creative talent and rent equipment with escrow protection
                     </p>
-                    <div className="role-card-features-row">
-                      <span className="role-card-feature-pill">
-                        <CheckCircle2 size={13} color="var(--auth-accent)" /> Hire Photographers & Filmmakers
-                      </span>
-                      <span className="role-card-feature-pill">
-                        <CheckCircle2 size={13} color="var(--auth-accent)" /> 100% Escrow Milestone Safety
-                      </span>
-                      <span className="role-card-feature-pill">
-                        <CheckCircle2 size={13} color="var(--auth-accent)" /> Rent Cinema Cameras & Gear
-                      </span>
-                    </div>
+                  </div>
+                  <div className="role-card-radio-circle">
+                    {selectedRoleType === 'customer' && <Check size={13} strokeWidth={3} />}
                   </div>
                 </div>
 
@@ -777,32 +761,16 @@ export const AuthPage: React.FC = () => {
                   tabIndex={0}
                 >
                   <div className="role-card-icon-box">
-                    <Camera size={24} />
+                    <Camera size={22} />
                   </div>
                   <div className="role-card-details">
-                    <div className="role-card-top-header">
-                      <div className="role-card-title-group">
-                        <h3 className="role-card-title">Creator / Freelancer</h3>
-                        <span className="role-card-badge">Get Booked</span>
-                      </div>
-                      <div className="role-card-radio-circle">
-                        {selectedRoleType === 'professional' && <Check size={14} strokeWidth={3} />}
-                      </div>
-                    </div>
+                    <h3 className="role-card-title">Creator / Freelancer</h3>
                     <p className="role-card-desc">
-                      For filmmakers, photographers, editors, drone pilots, and creative pros offering services and looking for verified client bookings.
+                      Showcase your portfolio, set your daily rates, and get booked
                     </p>
-                    <div className="role-card-features-row">
-                      <span className="role-card-feature-pill">
-                        <CheckCircle2 size={13} color="var(--auth-accent)" /> Verified Pro Profile & Showcase
-                      </span>
-                      <span className="role-card-feature-pill">
-                        <CheckCircle2 size={13} color="var(--auth-accent)" /> Set Your Own Daily Rates
-                      </span>
-                      <span className="role-card-feature-pill">
-                        <CheckCircle2 size={13} color="var(--auth-accent)" /> Guaranteed Escrow Direct Payouts
-                      </span>
-                    </div>
+                  </div>
+                  <div className="role-card-radio-circle">
+                    {selectedRoleType === 'professional' && <Check size={13} strokeWidth={3} />}
                   </div>
                 </div>
 
@@ -814,32 +782,16 @@ export const AuthPage: React.FC = () => {
                   tabIndex={0}
                 >
                   <div className="role-card-icon-box">
-                    <Building2 size={24} />
+                    <Building2 size={22} />
                   </div>
                   <div className="role-card-details">
-                    <div className="role-card-top-header">
-                      <div className="role-card-title-group">
-                        <h3 className="role-card-title">Studio / Production House</h3>
-                        <span className="role-card-badge">Scale Business</span>
-                      </div>
-                      <div className="role-card-radio-circle">
-                        {selectedRoleType === 'business' && <Check size={14} strokeWidth={3} />}
-                      </div>
-                    </div>
+                    <h3 className="role-card-title">Studio / Production House</h3>
                     <p className="role-card-desc">
-                      For production houses, media agencies, studios, and rental companies managing multi-member teams and client productions.
+                      Manage team roster, client productions, and gear rental fleet
                     </p>
-                    <div className="role-card-features-row">
-                      <span className="role-card-feature-pill">
-                        <CheckCircle2 size={13} color="var(--auth-accent)" /> Crew Roster & Team Management
-                      </span>
-                      <span className="role-card-feature-pill">
-                        <CheckCircle2 size={13} color="var(--auth-accent)" /> GST Invoicing & Agency Contracts
-                      </span>
-                      <span className="role-card-feature-pill">
-                        <CheckCircle2 size={13} color="var(--auth-accent)" /> List Equipment Fleet for Rent
-                      </span>
-                    </div>
+                  </div>
+                  <div className="role-card-radio-circle">
+                    {selectedRoleType === 'business' && <Check size={13} strokeWidth={3} />}
                   </div>
                 </div>
 
@@ -1129,17 +1081,15 @@ export const AuthPage: React.FC = () => {
                   {/* Role Specific Fields: CLIENT */}
                   {selectedRoleType === 'customer' && (
                     <div className="auth-field-block">
-                      <label className="auth-label">What types of shoots or gear are you looking for?</label>
+                      <label className="auth-label">What are you looking for?</label>
                       <div className="preset-chips-row">
                         {[
-                          'Weddings & Pre-weddings',
-                          'Commercial & Brand Shoots',
+                          'Weddings & Events',
+                          'Commercial & Ads',
                           'Music Videos',
-                          'Fashion & Lookbooks',
-                          'Corporate & Conferences',
-                          'Camera & Lighting Rentals',
-                          'Sound & Podcast Recording',
-                          'Drone Aerial Shoots'
+                          'Fashion & Portfolios',
+                          'Equipment Rentals',
+                          'Drone Shoots'
                         ].map(interest => (
                           <button
                             key={interest}

@@ -155,7 +155,7 @@
 }
 
 .auth-form-card.wide-card {
-  max-width: 620px;
+  max-width: 540px;
 }
 
 /* Card Header */
@@ -559,7 +559,7 @@
    SCREEN 2: ACCOUNT TYPE SELECTION (STEP 1 OF 2)
    ───────────────────────────────────────────────────────────────────────── */
 .onboarding-progress-block {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .onboarding-step-label-row {
@@ -571,12 +571,12 @@
   font-weight: 700;
   color: var(--auth-accent);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
 }
 
 .onboarding-progress-track {
   width: 100%;
-  height: 6px;
+  height: 5px;
   background: var(--auth-surface);
   border-radius: 999px;
   overflow: hidden;
@@ -594,42 +594,40 @@
 .role-cards-grid {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-bottom: 28px;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .role-selection-card {
   position: relative;
   display: flex;
-  align-items: flex-start;
-  gap: 18px;
-  padding: 20px 22px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
   background: var(--auth-surface);
-  border: 2px solid transparent !important;
+  border: 1.5px solid transparent !important;
   border-radius: 14px;
   cursor: pointer;
-  transition: all 0.22s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
   text-align: left;
 }
 
 .role-selection-card:hover {
   background: var(--auth-surface-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
 }
 
 .role-selection-card.selected {
   background: var(--auth-accent-soft);
-  border: 2px solid var(--auth-accent) !important;
-  box-shadow: 0 8px 24px rgba(63, 182, 104, 0.15);
+  border-color: var(--auth-accent) !important;
 }
 
 .role-card-icon-box {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
-  background: var(--auth-card-hover);
+  background: var(--auth-input-bg);
   border: none !important;
   display: flex;
   align-items: center;
@@ -647,49 +645,32 @@
 
 .role-card-details {
   flex: 1;
-}
-
-.role-card-top-header {
+  min-width: 0;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.role-card-title-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .role-card-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--auth-text-primary);
   margin: 0;
+  line-height: 1.3;
 }
 
-.role-card-badge {
-  font-size: 10.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--auth-surface-hover);
+.role-card-desc {
+  font-size: 12.5px;
+  line-height: 1.4;
   color: var(--auth-text-secondary);
-}
-
-.role-selection-card.selected .role-card-badge {
-  background: rgba(63, 182, 104, 0.2);
-  color: var(--auth-accent);
+  margin: 0;
 }
 
 .role-card-radio-circle {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: 2px solid var(--auth-text-muted);
+  border: 1.5px solid var(--auth-text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -704,31 +685,6 @@
   color: #ffffff;
 }
 
-.role-card-desc {
-  font-size: 13.5px;
-  line-height: 1.5;
-  color: var(--auth-text-secondary);
-  margin: 0 0 10px 0;
-}
-
-.role-card-features-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.role-card-feature-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  color: var(--auth-text-muted);
-}
-
-.role-selection-card.selected .role-card-feature-pill {
-  color: var(--auth-text-primary);
-}
-
 /* ─────────────────────────────────────────────────────────────────────────
    SCREEN 3: ADDITIONAL DETAILS (STEP 2 OF 2)
    ───────────────────────────────────────────────────────────────────────── */
@@ -736,28 +692,83 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .onboarding-two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 12px;
+}
+
+/* Location Selector Grid in Auth */
+.onboarding-form-grid .location-selector {
+  width: 100%;
+}
+
+.onboarding-form-grid .location-selector .location-stacked-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.onboarding-form-grid .location-selector .location-stacked-grid .select-box-wrapper.full-span {
+  grid-column: span 1;
+}
+
+.onboarding-form-grid .custom-select-trigger {
+  height: 48px;
+  border-radius: 12px;
+  background: var(--auth-input-bg);
+  border: none !important;
+  color: var(--auth-input-color);
+  font-size: 13.5px;
+  padding: 0 14px;
+}
+
+.onboarding-form-grid .custom-select-trigger:hover:not(:disabled) {
+  background: var(--auth-input-bg-hover);
+}
+
+.onboarding-form-grid .custom-select-trigger:focus {
+  outline: none !important;
+  border: none !important;
 }
 
 .onboarding-action-row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  width: 100%;
+  margin-top: 6px;
 }
 
 .onboarding-action-row .auth-secondary-btn {
-  flex: 0 0 auto;
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 12px;
+  background: var(--auth-surface);
+  border: none !important;
+  color: var(--auth-text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.onboarding-action-row .auth-secondary-btn:hover {
+  background: var(--auth-surface-hover);
 }
 
 .onboarding-action-row .auth-primary-submit-btn {
   flex: 1;
+  height: 48px;
   margin-top: 0;
+  border-radius: 12px;
 }
 
 /* Preset Chips for Day Rate or Interests */
@@ -769,25 +780,27 @@
 }
 
 .preset-chip-btn {
-  padding: 6px 12px;
+  padding: 7px 14px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
-  background: var(--auth-surface);
-  border: 1px solid var(--auth-border-subtle);
+  background: var(--auth-input-bg);
+  border: none !important;
   color: var(--auth-text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .preset-chip-btn:hover {
-  background: var(--auth-surface-hover);
+  background: var(--auth-input-bg-hover);
   color: var(--auth-text-primary);
 }
 
 .preset-chip-btn.active {
   background: var(--auth-accent-soft);
-  border-color: var(--auth-accent);
   color: var(--auth-accent);
   font-weight: 700;
 }
@@ -844,5 +857,9 @@
   .role-card-icon-box {
     width: 40px;
     height: 40px;
+  }
+
+  .onboarding-form-grid .location-selector .location-stacked-grid {
+    grid-template-columns: 1fr;
   }
 }
