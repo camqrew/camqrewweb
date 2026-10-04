@@ -20,6 +20,21 @@ interface AuthStoreState {
 
 const getInitialAuthState = () => {
   try {
+    const isOAuthCallback = typeof window !== 'undefined' && (
+      window.location.hash.includes('access_token') || 
+      window.location.search.includes('code=')
+    );
+    if (isOAuthCallback) {
+      return {
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: true,
+        activeRole: 'customer' as UserRole,
+        needsRoleSelection: false,
+      };
+    }
+
     const token = localStorage.getItem('@camqrew_token') || localStorage.getItem('@camcrew_token');
     const userStr = localStorage.getItem('@camqrew_user') || localStorage.getItem('@camcrew_user');
     if (token && userStr) {
@@ -157,41 +172,45 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
           createdAt: dbProfile?.created_at || new Date().toISOString(),
         };
 
-        // Auto-provision user record if first-time OAuth sign-in, or sync Google avatar if missing in DB
-        if (!dbProfile) {
-          try {
-            await supabase.from('users').upsert([{
-              id: session.user.id,
-              name: resolvedUser.name,
-              email: resolvedUser.email,
-              phone: resolvedUser.phone,
-              role: userRole,
-              avatar: resolvedUser.avatar || null,
-            }], { onConflict: 'id' });
-          } catch (insertErr) {
-            console.warn('Profile auto-create notice:', insertErr);
+        // A user is a first-time user if they don't exist in `users` table yet,
+        // or if they haven't completed their onboarding details (missing required phone number)
+        const isFirstTimeUser = !dbProfile || !dbProfile.phone || dbProfile.phone.trim() === '';
+
+        if (isFirstTimeUser) {
+          // If first-time OAuth sign-in, flag that they need to complete role selection & details
+          localStorage.setItem('@camcrew_needs_role', 'true');
+
+          set({
+            token: session.access_token,
+            user: resolvedUser,
+            isAuthenticated: true,
+            activeRole: userRole,
+            needsRoleSelection: true,
+            isLoading: false
+          });
+        } else {
+          // Already registered user: sync Google avatar if needed, clear role flag, and go to dashboard
+          if (oauthAvatar && (!dbProfile.avatar || !isCustomAvatar(dbProfile.avatar))) {
+            supabase.from('users').update({ avatar: oauthAvatar }).eq('id', session.user.id).then();
+            if (dbProfile.role === 'professional') {
+              supabase.from('professional_profiles').update({ avatar: oauthAvatar }).eq('id', session.user.id).then();
+            }
           }
-        } else if (oauthAvatar && (!dbProfile.avatar || !isCustomAvatar(dbProfile.avatar))) {
-          // Sync Google avatar to database if dbProfile had empty or stock placeholder avatar
-          supabase.from('users').update({ avatar: oauthAvatar }).eq('id', session.user.id).then();
-          if (dbProfile.role === 'professional') {
-            supabase.from('professional_profiles').update({ avatar: oauthAvatar }).eq('id', session.user.id).then();
-          }
+
+          localStorage.removeItem('@camcrew_needs_role');
+          localStorage.removeItem('@camqrew_needs_role_selection');
+          localStorage.removeItem('@camcrew_needs_role_selection');
+
+          set({
+            token: session.access_token,
+            user: resolvedUser,
+            isAuthenticated: true,
+            activeRole: (dbProfile.role as UserRole) || userRole,
+            needsRoleSelection: false,
+            isLoading: false
+          });
         }
 
-        // Clean up any old role selection flags so user goes directly to dashboard
-        localStorage.removeItem('@camcrew_needs_role');
-        localStorage.removeItem('@camqrew_needs_role_selection');
-        localStorage.removeItem('@camcrew_needs_role_selection');
-
-        set({
-          token: session.access_token,
-          user: resolvedUser,
-          isAuthenticated: true,
-          activeRole: userRole,
-          needsRoleSelection: false,
-          isLoading: false
-        });
         localStorage.setItem('@camqrew_token', session.access_token);
         localStorage.setItem('@camqrew_user', JSON.stringify(resolvedUser));
         localStorage.removeItem('@camqrew_intended_role');

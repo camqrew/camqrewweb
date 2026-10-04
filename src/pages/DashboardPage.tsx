@@ -110,8 +110,13 @@ const EMCEE_STYLE_PRESETS = [
 
 export const DashboardPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, isAuthenticated, isLoading, activeRole, setActiveRole } = useAuthStore();
+  const { user, isAuthenticated, isLoading, activeRole, setActiveRole, needsRoleSelection } = useAuthStore();
   const navigate = useNavigate();
+
+  const isOAuthCallback = typeof window !== 'undefined' && (
+    window.location.hash.includes('access_token') || 
+    window.location.search.includes('code=')
+  );
 
   const isPro = user?.role === 'professional';
   const isProRole = isPro && activeRole !== 'customer';
@@ -341,12 +346,14 @@ export const DashboardPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && !isOAuthCallback) {
       if (!isAuthenticated || !user) {
         navigate('/login?redirect=/dashboard', { replace: true });
+      } else if (needsRoleSelection) {
+        navigate('/login', { replace: true });
       }
     }
-  }, [isLoading, isAuthenticated, user, navigate]);
+  }, [isLoading, isOAuthCallback, isAuthenticated, user, needsRoleSelection, navigate]);
 
   useEffect(() => {
     if (paramTab) {
@@ -1084,7 +1091,7 @@ export const DashboardPage: React.FC = () => {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  if (isLoading || (!isAuthenticated && !user)) {
+  if (isLoading || isOAuthCallback || (!isAuthenticated && !user)) {
     return (
       <div className="container" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
         <Loader2 size={36} className="animate-spin" color="var(--accent, #3fb668)" />

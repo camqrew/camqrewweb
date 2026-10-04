@@ -30,10 +30,16 @@ export type OnboardingRoleType = 'customer' | 'professional' | 'business';
 export const AuthPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, isAuthenticated, isLoading, activeRole, needsRoleSelection, login, selectAccountRole } = useAuthStore();
+  const { user, isAuthenticated, isLoading, activeRole, needsRoleSelection, login, selectAccountRole, updateUser } = useAuthStore();
 
   const isRegisterParam = searchParams.get('mode') === 'register' || window.location.pathname.includes('register');
   const redirectUrl = searchParams.get('redirect') || ((user?.role === 'professional' || activeRole === 'professional') ? '/dashboard?tab=overview' : '/dashboard');
+
+  // Check if returning from an OAuth callback
+  const isOAuthCallback = typeof window !== 'undefined' && (
+    window.location.hash.includes('access_token') || 
+    window.location.search.includes('code=')
+  );
 
   // Main flow screen: 'screen1_auth' | 'screen2_role' | 'forgot_password'
   const [currentScreen, setCurrentScreen] = useState<'screen1_auth' | 'screen2_role' | 'forgot_password'>('screen1_auth');
@@ -84,10 +90,11 @@ export const AuthPage: React.FC = () => {
 
   // If user already authenticated and completed onboarding, redirect to dashboard
   useEffect(() => {
-    if (!isLoading && isAuthenticated && user && currentScreen === 'screen1_auth') {
-      navigate(redirectUrl, { replace: true });
+    if (!isLoading && !isOAuthCallback && isAuthenticated && user && !needsRoleSelection && currentScreen === 'screen1_auth') {
+      const targetUrl = (user.role === 'professional' || activeRole === 'professional') ? '/dashboard?tab=overview' : '/dashboard';
+      navigate(targetUrl, { replace: true });
     }
-  }, [isLoading, isAuthenticated, user, currentScreen, redirectUrl, navigate]);
+  }, [isLoading, isOAuthCallback, isAuthenticated, user, needsRoleSelection, currentScreen, activeRole, navigate]);
 
   // If user signed in via OAuth and needs role selection, immediately open Screen 2
   useEffect(() => {
@@ -264,11 +271,26 @@ export const AuthPage: React.FC = () => {
       if (user && user.id && !user.id.startsWith('new-') && !user.id.startsWith('demo-')) {
         await selectAccountRole(resolvedRole);
 
-        // Update profile in users table
-        await supabase.from('users').update({
-          name: fullName.trim() || companyName.trim() || user.name,
-          phone: cleanPhone ? `+91 ${cleanPhone}` : user.phone,
-        }).eq('id', user.id);
+        const updatedPhone = cleanPhone ? `+91 ${cleanPhone}` : (user.phone || '+91 9876543210');
+        const updatedName = fullName.trim() || companyName.trim() || user.name;
+
+        // Upsert profile in users table so first-time Google users get full record
+        await supabase.from('users').upsert([{
+          id: user.id,
+          name: updatedName,
+          email: user.email || profileEmail.trim(),
+          phone: updatedPhone,
+          role: resolvedRole,
+          avatar: user.avatar || null,
+        }], { onConflict: 'id' });
+
+        // Update in-memory authStore user state
+        updateUser({
+          name: updatedName,
+          phone: updatedPhone,
+          role: resolvedRole,
+        });
+        localStorage.removeItem('@camcrew_needs_role');
 
         // If creator or studio, update professional_profiles
         if (resolvedRole === 'professional') {
@@ -344,6 +366,24 @@ export const AuthPage: React.FC = () => {
       prev.includes(interest) ? prev.filter(i => i !== interest) : [...prev, interest]
     );
   };
+
+  if (isOAuthCallback || (isLoading && !user)) {
+    return (
+      <div className="auth-flow-viewport">
+        <div className="auth-centered-wrapper" style={{ justifyContent: 'center', minHeight: '60vh' }}>
+          <div className="auth-form-card" style={{ textAlign: 'center', padding: '40px 24px', maxWidth: 400 }}>
+            <Loader2 size={36} className="animate-spin" color="var(--auth-accent, #3fb668)" style={{ margin: '0 auto 16px auto' }} />
+            <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 6px 0', color: 'var(--auth-text-primary)' }}>
+              Verifying your account...
+            </h3>
+            <p style={{ fontSize: 13, color: 'var(--auth-text-secondary)', margin: 0 }}>
+              Please wait while we connect your profile.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-flow-viewport">
