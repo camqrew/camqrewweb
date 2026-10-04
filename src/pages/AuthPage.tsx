@@ -358,60 +358,23 @@ export const AuthPage: React.FC = () => {
 
   return (
     <div className="auth-flow-viewport">
-      <div className="auth-split-wrapper">
+      <div className="auth-centered-wrapper">
         
-        {/* =========================================================
-            LEFT COLUMN: DESKTOP BRANDING & CREATIVE SHOWCASE
-            ========================================================= */}
-        <div className="auth-branding-pane">
-          <div className="auth-branding-backdrop">
-            <img
-              src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?q=80&w=1600&auto=format&fit=crop"
-              alt="Camcrew Cinema & Production"
-              className="auth-branding-backdrop-img"
-            />
-            <div className="auth-branding-overlay" />
-          </div>
-
-          <div className="auth-branding-content">
-            <Link to="/" className="auth-branding-logo-link">
-              <img
-                src="/camcrew-logo.png"
-                alt="Camcrew"
-                className="auth-branding-logo-img"
-                onError={(e) => {
-                  // Fallback logo text if png not found
-                  (e.target as HTMLElement).style.display = 'none';
-                }}
-              />
-              <span style={{ fontSize: 24, fontWeight: 900, letterSpacing: '-0.02em', color: '#ffffff' }}>
-                CAM<span style={{ color: '#3fb668' }}>CREW</span>
-              </span>
-            </Link>
-
-            <h1 className="auth-branding-headline">
-              Where Top Creators, <span className="gradient-text">Studios & Gear</span> Connect.
-            </h1>
-
-            <p className="auth-branding-subtext">
-              Hire verified cinematographers, photographers & editors, or power your freelance career with guaranteed milestone escrow.
-            </p>
-          </div>
-        </div>
-
-        {/* =========================================================
-            RIGHT COLUMN: AUTH & ONBOARDING FORMS
-            ========================================================= */}
-        <div className="auth-form-pane">
-          
-          {/* Mobile minimal header */}
-          <div className="auth-mobile-header">
-            <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 22, fontWeight: 900, color: 'var(--auth-text-primary)' }}>
-                CAM<span style={{ color: '#3fb668' }}>CREW</span>
-              </span>
-            </Link>
-          </div>
+        {/* Centered Brand Logo */}
+        <Link to="/" className="auth-brand-logo-centered">
+          <img
+            src="/camcrew-logo.png"
+            alt="Camcrew"
+            className="auth-brand-logo-img"
+            onError={(e) => {
+              // Fallback logo text if png not found
+              (e.target as HTMLElement).style.display = 'none';
+            }}
+          />
+          <span style={{ fontSize: 26, fontWeight: 900, letterSpacing: '-0.02em', color: '#ffffff' }}>
+            CAM<span style={{ color: '#3fb668' }}>CREW</span>
+          </span>
+        </Link>
 
           {/* ─────────────────────────────────────────────────────────────
               SCREEN 1: THE MAIN AUTHENTICATION HUB
@@ -1238,7 +1201,6 @@ export const AuthPage: React.FC = () => {
             </div>
           )}
 
-        </div>
       </div>
     </div>
   );

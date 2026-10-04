@@ -63,214 +63,39 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   SPLIT SCREEN LAYOUT (DESKTOP)
+   CENTERED AUTH LAYOUT
    ───────────────────────────────────────────────────────────────────────── */
-.auth-split-wrapper {
+.auth-centered-wrapper {
   flex: 1;
-  display: flex;
-  width: 100%;
-  min-height: 100vh;
-}
-
-/* Left Hero Branding Pane */
-.auth-branding-pane {
-  flex: 1;
-  position: relative;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
-  padding: 56px 48px;
-  background-color: #06080a;
-  overflow: hidden;
-  border-right: 1px solid var(--auth-border);
-}
-
-.auth-branding-backdrop {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.auth-branding-backdrop-img {
+  padding: 48px 20px;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  filter: contrast(1.15) brightness(0.45);
-  transform: scale(1.03);
-  transition: transform 10s ease-out;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
-.auth-flow-viewport:hover .auth-branding-backdrop-img {
-  transform: scale(1.06);
-}
-
-.auth-branding-overlay {
-  position: absolute;
-  inset: 0;
-  background: 
-    radial-gradient(circle at 20% 20%, rgba(63, 182, 104, 0.12) 0%, transparent 50%),
-    linear-gradient(135deg, rgba(6, 8, 10, 0.94) 0%, rgba(13, 16, 19, 0.8) 50%, rgba(6, 8, 10, 0.95) 100%);
-}
-
-.auth-branding-content {
-  position: relative;
-  z-index: 1;
-  max-width: 520px;
-}
-
-.auth-branding-logo-link {
+.auth-brand-logo-centered {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   text-decoration: none;
-  margin-bottom: 48px;
+  margin-bottom: 28px;
+  transition: transform 0.2s ease;
 }
 
-.auth-branding-logo-img {
+.auth-brand-logo-centered:hover {
+  transform: scale(1.02);
+}
+
+.auth-brand-logo-img {
   height: 38px;
   width: auto;
   object-fit: contain;
 }
 
-.auth-branding-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  background: rgba(63, 182, 104, 0.12);
-  border: 1px solid rgba(63, 182, 104, 0.3);
-  border-radius: 999px;
-  color: #3fb668;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 24px;
-}
-
-.auth-branding-headline {
-  font-size: 40px;
-  line-height: 1.15;
-  font-weight: 800;
-  color: #ffffff;
-  letter-spacing: -0.02em;
-  margin: 0 0 18px 0;
-}
-
-.auth-branding-headline .gradient-text {
-  background: linear-gradient(135deg, #ffffff 40%, #3fb668 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.auth-branding-subtext {
-  font-size: 16px;
-  line-height: 1.6;
-  color: #94a3b8;
-  margin: 0 0 36px 0;
-}
-
-/* Feature Badges List */
-.auth-branding-features {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 48px;
-}
-
-.auth-branding-feature-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-}
-
-.auth-feature-icon-box {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #3fb668;
-  flex-shrink: 0;
-}
-
-.auth-feature-text-block h4 {
-  font-size: 14px;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0 0 2px 0;
-}
-
-.auth-feature-text-block p {
-  font-size: 13px;
-  color: #94a3b8;
-  margin: 0;
-}
-
-/* Testimonial Quote */
-.auth-branding-testimonial {
-  position: relative;
-  z-index: 1;
-  background: rgba(18, 22, 26, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--auth-radius-md);
-  padding: 20px 24px;
-  max-width: 520px;
-}
-
-.auth-testimonial-quote {
-  font-size: 13.5px;
-  line-height: 1.5;
-  color: #e2e8f0;
-  margin: 0 0 14px 0;
-  font-style: italic;
-}
-
-.auth-testimonial-author {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.auth-testimonial-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1.5px solid #3fb668;
-}
-
-.auth-testimonial-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.auth-testimonial-role {
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-/* ─────────────────────────────────────────────────────────────────────────
-   RIGHT PANE / FORM CONTAINER
-   ───────────────────────────────────────────────────────────────────────── */
-.auth-form-pane {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 32px;
-  background-color: var(--auth-bg);
-  overflow-y: auto;
-}
 
 .auth-form-card {
   width: 100%;
@@ -1005,27 +830,10 @@
 /* ─────────────────────────────────────────────────────────────────────────
    RESPONSIVE BREAKPOINTS
    ───────────────────────────────────────────────────────────────────────── */
-@media (max-width: 1024px) {
-  .auth-branding-pane {
-    display: none;
-  }
-
-  .auth-form-pane {
-    padding: 32px 20px;
-    justify-content: flex-start;
-  }
-
-  .auth-mobile-header {
-    display: block;
-  }
-
-  .auth-form-card {
-    padding: 28px 24px;
-    box-shadow: none;
-  }
-}
-
 @media (max-width: 640px) {
+  .auth-centered-wrapper {
+    padding: 32px 16px;
+  }
   .onboarding-two-col {
     grid-template-columns: 1fr;
   }
