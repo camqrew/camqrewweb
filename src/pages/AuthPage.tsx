@@ -475,8 +475,8 @@ export const AuthPage: React.FC = () => {
                       <label className="auth-label">Mobile Number</label>
                       <div className="auth-phone-input-row">
                         <div className="auth-country-code-pill">
-                          <span>🇮🇳</span>
-                          <span>+91</span>
+                          <span className="auth-country-abbr">IN</span>
+                          <span className="auth-country-dial">+91</span>
                         </div>
                         <div className="auth-input-container">
                           <span className="auth-input-icon-adornment">
@@ -567,7 +567,7 @@ export const AuthPage: React.FC = () => {
 
               {/* Bottom Alternative Methods Divider */}
               <div className="auth-divider">
-                <span>or</span>
+                <span>OR</span>
               </div>
 
               {/* Classy Minimal SSO Buttons */}
@@ -623,7 +623,7 @@ export const AuthPage: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <Mail size={15} />
+                      <Mail size={16} className="auth-sso-email-icon" />
                       <span>Email</span>
                     </>
                   )}
