@@ -2,17 +2,17 @@
 @import url('https://fonts.cdnfonts.com/css/google-sans');
 
 :root {
-  /* CAMCREW APP THEME (Dark) */
+  /* CAMCREW APP THEME (Dark) - Strictly Dark Grey and Green */
   color-scheme: dark;
-  --bg-main: #0B0F12;
-  --bg-surface: #13171A;
-  --bg-card: #1C2025;
-  --bg-elevated: #2A2F35;
-  --surface-elevated: #2A2F35;
+  --bg-main: #0e0e10;
+  --bg-surface: #141416;
+  --bg-card: #1c1c1f;
+  --bg-elevated: #26262a;
+  --surface-elevated: #26262a;
   
   --text-primary: #ffffff;
-  --text-secondary: #a1a9b3;
-  --text-muted: #6c747d;
+  --text-secondary: #a3a3a8;
+  --text-muted: #737377;
   
   --accent: #3fb668;
   --accent-hover: #35a359;
@@ -24,10 +24,10 @@
   --success: #22c55e;
   --warning: #f59e0b;
 
-  --input-bg: rgba(255, 255, 255, 0.06);
+  --input-bg: rgba(255, 255, 255, 0.055);
   --input-bg-focus: rgba(255, 255, 255, 0.095);
-  --input-placeholder: #8b949e;
-  --input-icon: #8b949e;
+  --input-placeholder: #737377;
+  --input-icon: #737377;
 
   --font-sans: 'Google Sans', 'Google Sans Text', 'Product Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }

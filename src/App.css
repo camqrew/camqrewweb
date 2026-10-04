@@ -276,11 +276,11 @@
   z-index: -1;
   background: linear-gradient(
     to bottom,
-    rgba(11, 15, 18, 0.98) 0%,
-    rgba(11, 15, 18, 0.90) 42%,
-    rgba(11, 15, 18, 0.60) 70%,
-    rgba(11, 15, 18, 0.20) 88%,
-    rgba(11, 15, 18, 0) 100%
+    rgba(14, 14, 16, 0.98) 0%,
+    rgba(14, 14, 16, 0.90) 42%,
+    rgba(14, 14, 16, 0.60) 70%,
+    rgba(14, 14, 16, 0.20) 88%,
+    rgba(14, 14, 16, 0) 100%
   );
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -551,7 +551,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--bg-main, #0b0f12);
+  border: 1.5px solid var(--bg-main, #0e0e10);
 }
 
 .user-pill-btn {
@@ -1576,7 +1576,7 @@
 }
 
 .popover-select-input option {
-  background-color: #1c2025 !important;
+  background-color: #1c1c1f !important;
   color: #ffffff !important;
   padding: 8px 12px;
 }
@@ -2816,7 +2816,7 @@
 }
 
 .custom-select-field option {
-  background-color: #1c2025 !important;
+  background-color: #1c1c1f !important;
   color: #ffffff !important;
   padding: 10px 14px;
 }
@@ -3491,7 +3491,7 @@
 
 .datepicker-day-cell.is-selected {
   background: var(--accent, #3fb668) !important;
-  color: #0b0f12 !important;
+  color: #0e0e10 !important;
   font-weight: 700 !important;
   box-shadow: none;
 }
@@ -3914,7 +3914,7 @@
 
 .segmented-gear-switch {
   display: inline-flex;
-  background: rgba(11, 15, 18, 0.9);
+  background: rgba(14, 14, 16, 0.9);
   border: none;
   border-radius: 12px;
   padding: 4px;
@@ -6701,7 +6701,7 @@
 .client-tab-item.active {
   background: var(--accent, #3fb668);
   border-color: var(--accent, #3fb668);
-  color: #0b0f12;
+  color: #0e0e10;
   box-shadow: 0 2px 10px rgba(63, 182, 104, 0.3);
 }
 
@@ -6756,8 +6756,8 @@
 }
 
 .client-stat-icon-wrap.blue {
-  background: rgba(59, 130, 246, 0.12);
-  color: #3b82f6;
+  background: rgba(63, 182, 104, 0.12);
+  color: #3fb668;
 }
 
 .client-stat-icon-wrap.purple {
@@ -6997,7 +6997,7 @@
 .pro-tab-item.active {
   background: var(--accent, #3fb668);
   border-color: var(--accent, #3fb668);
-  color: #0b0f12;
+  color: #0e0e10;
   box-shadow: none;
 }
 
@@ -7026,7 +7026,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  background: #14181d;
+  background: #1c1c1f;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -7053,8 +7053,8 @@
 }
 
 .stat-icon-wrap.blue {
-  background: rgba(0, 219, 233, 0.14);
-  color: #00dbe9;
+  background: rgba(63, 182, 104, 0.14);
+  color: var(--accent, #3fb668);
 }
 
 .stat-icon-wrap.purple {
@@ -7283,7 +7283,7 @@
 }
 
 .action-icon.emerald { background: rgba(63, 182, 104, 0.14); color: var(--accent, #3fb668); }
-.action-icon.blue { background: rgba(0, 219, 233, 0.14); color: #00dbe9; }
+.action-icon.blue { background: rgba(63, 182, 104, 0.14); color: var(--accent, #3fb668); }
 .action-icon.purple { background: rgba(182, 0, 248, 0.14); color: #b600f8; }
 .action-icon.amber { background: rgba(245, 158, 11, 0.14); color: #f59e0b; }
 
@@ -7600,7 +7600,7 @@
   position: relative;
   width: 100%;
   height: 150px;
-  background: #0b0f12;
+  background: #0e0e10;
 }
 
 .gear-img {
@@ -7621,8 +7621,8 @@
 }
 
 .gear-type-badge.rental {
-  background: #00dbe9;
-  color: #0b0f12;
+  background: var(--accent, #3fb668);
+  color: #0e0e10;
 }
 
 .gear-type-badge.sale {
@@ -8226,9 +8226,9 @@
 }
 
 .toast-icon-wrapper.badge-booking {
-  background: rgba(59, 130, 246, 0.18);
-  color: #3b82f6;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(63, 182, 104, 0.18);
+  color: #3fb668;
+  border: 1px solid rgba(63, 182, 104, 0.3);
 }
 
 .toast-icon-wrapper.badge-general {
@@ -13114,8 +13114,8 @@
 }
 
 .dish-pill.dish-pill-prep {
-  background: rgba(59, 130, 246, 0.12);
-  color: #3b82f6;
+  background: rgba(63, 182, 104, 0.12);
+  color: #3fb668;
   border: none !important;
 }
 
@@ -13399,12 +13399,12 @@
   transition: all 0.2s ease;
   border: none !important;
   outline: none !important;
-  background: var(--bg-surface, #13171a);
-  color: var(--text-secondary, #a1a9b3);
+  background: var(--bg-surface, #141416);
+  color: var(--text-secondary, #a3a3a8);
 }
 
 .menu-cat-pill:hover {
-  background: var(--bg-elevated, #2a2f35);
+  background: var(--bg-elevated, #26262a);
   color: var(--text-primary, #ffffff);
 }
 
@@ -13993,7 +13993,7 @@
    Stroke-free, fully responsive, dark & light theme compatible
    ========================================================================== */
 .category-spec-box {
-  background: var(--bg-card, #1c2025);
+  background: var(--bg-card, #1c1c1f);
   padding: 18px 20px;
   border-radius: 16px;
   margin-bottom: 20px;
@@ -15195,7 +15195,7 @@ button:focus,
 }
 
 .role-progress-fill.customer {
-  background: #3b82f6;
+  background: #3fb668;
 }
 
 .role-progress-fill.pro {
@@ -16306,7 +16306,7 @@ input.admin-input-clean::placeholder,
 
 .admin-fab-trigger.active {
   transform: rotate(45deg);
-  background: #2a2f35;
+  background: #26262a;
 }
 
 .admin-fab-menu {

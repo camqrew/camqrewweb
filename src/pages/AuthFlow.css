@@ -5,16 +5,16 @@
    ========================================================================== */
 
 :root {
-  --auth-bg: var(--bg-main, #0B0F12);
+  --auth-bg: var(--bg-main, #0e0e10);
   --auth-surface: rgba(255, 255, 255, 0.055);
-  --auth-card: #14181D;
+  --auth-card: #1c1c1f;
   --auth-card-hover: rgba(255, 255, 255, 0.08);
   --auth-border: transparent;
   --auth-border-hover: transparent;
   --auth-border-focus: transparent;
   --auth-text-primary: var(--text-primary, #ffffff);
-  --auth-text-secondary: var(--text-secondary, #a1a9b3);
-  --auth-text-muted: var(--text-muted, #6c747d);
+  --auth-text-secondary: var(--text-secondary, #a3a3a8);
+  --auth-text-muted: var(--text-muted, #737377);
   --auth-accent: var(--accent, #3fb668);
   --auth-accent-hover: var(--accent-hover, #35a359);
   --auth-accent-active: #2b824a;
@@ -79,7 +79,7 @@
 .auth-form-card {
   width: 100%;
   max-width: 430px;
-  background: #14181D;
+  background: #1c1c1f;
   border: none !important;
   border-radius: 20px;
   padding: 34px 28px;
@@ -120,7 +120,7 @@
 
 .auth-subtitle {
   font-size: 13.5px;
-  color: #94a3b8;
+  color: #a3a3a8;
   line-height: 1.5;
   margin: 0;
 }
@@ -146,7 +146,7 @@
   border-radius: 9px;
   background: transparent;
   border: none !important;
-  color: #94a3b8;
+  color: #a3a3a8;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -160,7 +160,7 @@
 }
 
 .auth-segment-btn.active {
-  background: #252B33;
+  background: #26262a;
   color: #ffffff;
   font-weight: 700;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -290,11 +290,11 @@
   margin-top: 22px;
   text-align: center;
   font-size: 12px;
-  color: #64748b;
+  color: #737377;
 }
 
 .auth-legal-notice a {
-  color: #94a3b8;
+  color: #a3a3a8;
   text-decoration: underline;
   transition: color 0.15s ease;
 }
@@ -320,7 +320,7 @@
   align-items: center;
   text-align: center;
   margin: 20px 0;
-  color: #64748b;
+  color: #737377;
 }
 
 .auth-divider::before,
@@ -338,7 +338,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #64748b;
+  color: #737377;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -358,7 +358,7 @@
 .auth-label {
   font-size: 13px;
   font-weight: 600;
-  color: #cbd5e1;
+  color: #d4d4d8;
   display: block;
 }
 
@@ -384,7 +384,7 @@
 .auth-input-icon-adornment {
   position: absolute;
   left: 14px;
-  color: #64748b;
+  color: #737377;
   pointer-events: none;
   display: flex;
   align-items: center;
@@ -421,7 +421,7 @@
 }
 
 .auth-input::placeholder {
-  color: #64748b;
+  color: #737377;
 }
 
 .auth-password-toggle-btn {
@@ -429,7 +429,7 @@
   right: 12px;
   background: transparent;
   border: none !important;
-  color: #64748b;
+  color: #737377;
   cursor: pointer;
   padding: 6px;
   display: flex;

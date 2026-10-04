@@ -436,8 +436,8 @@ export const CreatorProfilePage: React.FC = () => {
                     </h4>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {pro.languages.map((lang) => (
-                        <span key={lang} className="gear-item-card" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 20, background: 'rgba(59, 130, 246, 0.08)', borderColor: 'rgba(59, 130, 246, 0.25)' }}>
-                          <Globe size={14} color="#3b82f6" />
+                        <span key={lang} className="gear-item-card" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 20, background: 'rgba(63, 182, 104, 0.08)', borderColor: 'rgba(63, 182, 104, 0.25)' }}>
+                          <Globe size={14} color="#3fb668" />
                           <strong style={{ fontSize: 13, color: 'var(--text-primary)' }}>{lang}</strong>
                         </span>
                       ))}

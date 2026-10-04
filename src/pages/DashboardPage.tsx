@@ -2038,7 +2038,7 @@ export const DashboardPage: React.FC = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
                       <div>
                         <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <Globe size={15} color="#3b82f6" />
+                          <Globe size={15} color="#3fb668" />
                           Languages Spoken & Hosted
                         </h4>
                         <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
@@ -2066,9 +2066,9 @@ export const DashboardPage: React.FC = () => {
                               fontWeight: isSelected ? 700 : 500,
                               cursor: 'pointer',
                               transition: 'all 0.15s ease',
-                              border: isSelected ? '1px solid #3b82f6' : '1px solid rgba(255,255,255,0.12)',
-                              background: isSelected ? 'rgba(59, 130, 246, 0.18)' : 'rgba(255,255,255,0.04)',
-                              color: isSelected ? '#60a5fa' : 'var(--text-primary)',
+                              border: isSelected ? '1px solid #3fb668' : '1px solid rgba(255,255,255,0.12)',
+                              background: isSelected ? 'rgba(63, 182, 104, 0.18)' : 'rgba(255,255,255,0.04)',
+                              color: isSelected ? '#3fb668' : 'var(--text-primary)',
                             }}
                           >
                             <span>{isSelected ? '✓' : '+'}</span>
@@ -2242,7 +2242,7 @@ export const DashboardPage: React.FC = () => {
                                     </span>
                                   )}
                                   {dish.prepTime && (
-                                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(59, 130, 246, 0.12)', color: '#3b82f6', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(63, 182, 104, 0.12)', color: '#3fb668', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
                                       <Clock size={10} /> Prep: {dish.prepTime}
                                     </span>
                                   )}
@@ -2774,9 +2774,9 @@ export const DashboardPage: React.FC = () => {
                                       <span 
                                         className="swiggy-tag-pill prep" 
                                         style={{ 
-                                          background: 'rgba(59, 130, 246, 0.12)', 
-                                          color: '#3b82f6', 
-                                          borderColor: 'rgba(59, 130, 246, 0.25)', 
+                                          background: 'rgba(63, 182, 104, 0.12)', 
+                                          color: '#3fb668', 
+                                          borderColor: 'rgba(63, 182, 104, 0.25)', 
                                           fontWeight: 700, 
                                           display: 'inline-flex', 
                                           alignItems: 'center', 
