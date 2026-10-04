@@ -360,21 +360,6 @@ export const AuthPage: React.FC = () => {
     <div className="auth-flow-viewport">
       <div className="auth-centered-wrapper">
         
-        {/* Centered Brand Logo */}
-        <Link to="/" className="auth-brand-logo-centered">
-          <img
-            src="/camcrew-logo.png"
-            alt="Camcrew"
-            className="auth-brand-logo-img"
-            onError={(e) => {
-              // Fallback logo text if png not found
-              (e.target as HTMLElement).style.display = 'none';
-            }}
-          />
-          <span style={{ fontSize: 26, fontWeight: 900, letterSpacing: '-0.02em', color: '#ffffff' }}>
-            CAM<span style={{ color: '#3fb668' }}>CREW</span>
-          </span>
-        </Link>
 
           {/* ─────────────────────────────────────────────────────────────
               SCREEN 1: THE MAIN AUTHENTICATION HUB

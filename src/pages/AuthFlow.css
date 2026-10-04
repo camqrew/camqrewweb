@@ -5,18 +5,18 @@
    ========================================================================== */
 
 :root {
-  --auth-bg: #06080a;
-  --auth-surface: #0d1013;
-  --auth-card: #12161a;
-  --auth-card-hover: #171c22;
-  --auth-border: #22272e;
-  --auth-border-hover: #2d333b;
+  --auth-bg: var(--bg-main, #0B0F12);
+  --auth-surface: var(--bg-surface, #13171A);
+  --auth-card: var(--bg-card, #1C2025);
+  --auth-card-hover: var(--bg-elevated, #2A2F35);
+  --auth-border: rgba(255, 255, 255, 0.08);
+  --auth-border-hover: rgba(255, 255, 255, 0.16);
   --auth-border-focus: #3fb668;
-  --auth-text-primary: #ffffff;
-  --auth-text-secondary: #94a3b8;
-  --auth-text-muted: #64748b;
-  --auth-accent: #3fb668;
-  --auth-accent-hover: #359f5a;
+  --auth-text-primary: var(--text-primary, #ffffff);
+  --auth-text-secondary: var(--text-secondary, #a1a9b3);
+  --auth-text-muted: var(--text-muted, #6c747d);
+  --auth-accent: var(--accent, #3fb668);
+  --auth-accent-hover: var(--accent-hover, #35a359);
   --auth-accent-active: #2b824a;
   --auth-accent-soft: rgba(63, 182, 104, 0.12);
   --auth-accent-border: rgba(63, 182, 104, 0.3);
@@ -24,24 +24,24 @@
   --auth-radius-md: 12px;
   --auth-radius-lg: 16px;
   --auth-radius-xl: 20px;
-  --auth-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --auth-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+  --auth-font: var(--font-sans, 'Google Sans', sans-serif);
+  --auth-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.5);
   --auth-glow: 0 0 24px rgba(63, 182, 104, 0.15);
 }
 
 [data-theme="light"] {
-  --auth-bg: #f8fafc;
-  --auth-surface: #f1f5f9;
-  --auth-card: #ffffff;
-  --auth-card-hover: #f8fafc;
+  --auth-bg: var(--bg-main, #f9fafb);
+  --auth-surface: var(--bg-surface, #ffffff);
+  --auth-card: var(--bg-card, #ffffff);
+  --auth-card-hover: var(--bg-elevated, #f3f4f6);
   --auth-border: #e2e8f0;
   --auth-border-hover: #cbd5e1;
   --auth-border-focus: #2da45a;
-  --auth-text-primary: #0f172a;
-  --auth-text-secondary: #475569;
-  --auth-text-muted: #64748b;
-  --auth-accent: #2da45a;
-  --auth-accent-hover: #248849;
+  --auth-text-primary: var(--text-primary, #111827);
+  --auth-text-secondary: var(--text-secondary, #4b5563);
+  --auth-text-muted: var(--text-muted, #9ca3af);
+  --auth-accent: var(--accent, #3fb668);
+  --auth-accent-hover: var(--accent-hover, #35a359);
   --auth-accent-active: #1d703b;
   --auth-accent-soft: rgba(45, 164, 90, 0.1);
   --auth-accent-border: rgba(45, 164, 90, 0.25);
@@ -51,9 +51,9 @@
 
 /* Base Wrapper */
 .auth-flow-viewport {
-  min-height: 100vh;
+  min-height: calc(100vh - var(--navbar-height, 72px) - 100px);
   width: 100%;
-  background-color: var(--auth-bg);
+  background: transparent;
   font-family: var(--auth-font);
   color: var(--auth-text-primary);
   display: flex;
@@ -70,41 +70,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 48px 20px;
+  justify-content: flex-start;
+  padding: 24px 20px 64px 20px;
   width: 100%;
-  min-height: 100vh;
   box-sizing: border-box;
 }
 
-.auth-brand-logo-centered {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  margin-bottom: 28px;
-  transition: transform 0.2s ease;
-}
-
-.auth-brand-logo-centered:hover {
-  transform: scale(1.02);
-}
-
-.auth-brand-logo-img {
-  height: 38px;
-  width: auto;
-  object-fit: contain;
-}
-
-
 .auth-form-card {
   width: 100%;
-  max-width: 450px;
+  max-width: 440px;
   background: var(--auth-card);
   border: 1px solid var(--auth-border);
   border-radius: 20px;
-  padding: 36px 32px;
-  box-shadow: 0 20px 48px -10px rgba(0, 0, 0, 0.45);
+  padding: 34px 30px;
+  box-shadow: var(--auth-shadow);
   transition: all 0.25s ease;
 }
 
