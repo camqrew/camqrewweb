@@ -54,9 +54,6 @@ export const AuthPage: React.FC = () => {
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpTimer, setOtpTimer] = useState(0);
-  const [emailOtp, setEmailOtp] = useState('');
-  const [emailOtpSent, setEmailOtpSent] = useState(false);
-  const [emailOtpTimer, setEmailOtpTimer] = useState(0);
 
   // Screen 2: Account Type Selection
   const [selectedRoleType, setSelectedRoleType] = useState<OnboardingRoleType | null>(null);
@@ -107,20 +104,12 @@ export const AuthPage: React.FC = () => {
   }, [isLoading, isAuthenticated, user, needsRoleSelection]);
 
   // Countdown timer for OTP
-  // Countdown timer for Mobile and Email OTP
   useEffect(() => {
     if (otpTimer > 0) {
       const t = setTimeout(() => setOtpTimer(prev => prev - 1), 1000);
       return () => clearTimeout(t);
     }
   }, [otpTimer]);
-
-  useEffect(() => {
-    if (emailOtpTimer > 0) {
-      const t = setTimeout(() => setEmailOtpTimer(prev => prev - 1), 1000);
-      return () => clearTimeout(t);
-    }
-  }, [emailOtpTimer]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Screen 1: Handlers
@@ -156,8 +145,7 @@ export const AuthPage: React.FC = () => {
 
     // If in Email mode
     if (method === 'email') {
-      const cleanEmail = email.trim().toLowerCase();
-      if (!cleanEmail) {
+      if (!email.trim()) {
         setError('Please enter your email address.');
         return;
       }
@@ -167,10 +155,9 @@ export const AuthPage: React.FC = () => {
       }
 
       if (authMode === 'login') {
-        // Registered User: Direct to Dashboard
         setLoading(true);
         try {
-          const res = await authApi.login(cleanEmail, password);
+          const res = await authApi.login(email.trim().toLowerCase(), password);
           await login(res.user, res.token);
           navigate(redirectUrl);
         } catch (err: any) {
@@ -179,75 +166,9 @@ export const AuthPage: React.FC = () => {
           setLoading(false);
         }
       } else {
-        // First Time User: Register Account after email verification -> Account Selection and Registration
-        if (!emailOtpSent) {
-          setLoading(true);
-          try {
-            // Check if email already registered in public users table
-            const { data: existingUser } = await supabase
-              .from('users')
-              .select('id')
-              .eq('email', cleanEmail)
-              .maybeSingle();
-
-            if (existingUser) {
-              setError('This email is already registered. Please click "Sign In" above.');
-              return;
-            }
-
-            // Send email verification code
-            try {
-              await supabase.auth.signInWithOtp({ email: cleanEmail });
-            } catch (otpErr) {
-              console.warn('Supabase email OTP notice:', otpErr);
-            }
-
-            setEmailOtpSent(true);
-            setEmailOtpTimer(30);
-            setSuccessNotice(`Verification code sent to ${cleanEmail}. (Testing code: 123456)`);
-          } catch (err: any) {
-            setError(err.message || 'Failed to dispatch email verification code.');
-          } finally {
-            setLoading(false);
-          }
-        } else {
-          // Verify Email Code
-          if (!emailOtp.trim()) {
-            setError('Please enter the 6-digit email verification code.');
-            return;
-          }
-
-          setLoading(true);
-          try {
-            let isCodeValid = emailOtp.trim() === '123456';
-            if (!isCodeValid) {
-              try {
-                const { data, error: vErr } = await supabase.auth.verifyOtp({
-                  email: cleanEmail,
-                  token: emailOtp.trim(),
-                  type: 'email'
-                });
-                if (!vErr && data?.session) {
-                  isCodeValid = true;
-                }
-              } catch {}
-            }
-
-            if (!isCodeValid) {
-              setError('Invalid verification code. Please enter 123456.');
-              return;
-            }
-
-            // Email successfully verified -> Advance to Account Selection and Registration
-            setProfileEmail(cleanEmail);
-            setSuccessNotice('Email verified! Please choose your account type.');
-            setCurrentScreen('screen2_role');
-          } catch (err: any) {
-            setError(err.message || 'Email verification failed.');
-          } finally {
-            setLoading(false);
-          }
-        }
+        // Sign up flow: Transition to Screen 2
+        setProfileEmail(email.trim().toLowerCase());
+        setCurrentScreen('screen2_role');
       }
     } else {
       // Mobile OTP mode
@@ -260,23 +181,10 @@ export const AuthPage: React.FC = () => {
       if (!otpSent) {
         setLoading(true);
         try {
-          if (authMode === 'signup') {
-            const { data: existingPhone } = await supabase
-              .from('users')
-              .select('id')
-              .or(`phone.eq.${cleanPhone},phone.eq.+91${cleanPhone}`)
-              .maybeSingle();
-
-            if (existingPhone) {
-              setError('This mobile number is already registered. Please click "Sign In" above.');
-              return;
-            }
-          }
-
           await authApi.sendOTP(cleanPhone);
           setOtpSent(true);
           setOtpTimer(30);
-          setSuccessNotice(`Verification code sent to +91 ${cleanPhone}. (Testing code: 123456)`);
+          setSuccessNotice(`Verification code sent to +91 ${cleanPhone}. (Testing dummy OTP: 123456)`);
         } catch (err: any) {
           setError(err.message || 'Failed to dispatch SMS OTP.');
         } finally {
@@ -293,13 +201,11 @@ export const AuthPage: React.FC = () => {
         try {
           const res = await authApi.verifyOTP(cleanPhone, otp.trim());
           if (authMode === 'login' && res.user && !res.user.id.startsWith('new-')) {
-            // Registered User: Direct to Dashboard
             await login(res.user, res.token);
             navigate(redirectUrl);
           } else {
-            // First time login or signup: Advance to Account Selection and Registration
+            // New user or signup -> Screen 2
             setProfilePhone(`+91 ${cleanPhone}`);
-            setSuccessNotice('Mobile verified! Please choose your account type.');
             setCurrentScreen('screen2_role');
           }
         } catch (err: any) {
@@ -588,88 +494,16 @@ export const AuthPage: React.FC = () => {
                 <button
                   type="button"
                   className={`auth-segment-btn ${authMode === 'login' ? 'active' : ''}`}
-                  onClick={() => {
-                    setAuthMode('login');
-                    setError('');
-                    setSuccessNotice('');
-                    setEmailOtpSent(false);
-                    setOtpSent(false);
-                  }}
+                  onClick={() => { setAuthMode('login'); setError(''); setSuccessNotice(''); }}
                 >
                   Sign In
                 </button>
                 <button
                   type="button"
                   className={`auth-segment-btn ${authMode === 'signup' ? 'active' : ''}`}
-                  onClick={() => {
-                    setAuthMode('signup');
-                    setError('');
-                    setSuccessNotice('');
-                    setEmailOtpSent(false);
-                    setOtpSent(false);
-                  }}
+                  onClick={() => { setAuthMode('signup'); setError(''); setSuccessNotice(''); }}
                 >
                   Create Account
-                </button>
-              </div>
-
-              {/* Social Authentication (SSO) Stack */}
-              <div className="auth-social-stack">
-                <button
-                  type="button"
-                  className="auth-social-cta-btn"
-                  onClick={() => handleOAuthLogin('google')}
-                  disabled={oauthLoading !== null}
-                >
-                  {oauthLoading === 'google' ? (
-                    <Loader2 size={18} className="animate-spin" />
-                  ) : (
-                    <>
-                      <GoogleIcon size={19} />
-                      <span>{authMode === 'login' ? 'Continue with Google' : 'Sign up with Google'}</span>
-                    </>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  className="auth-social-cta-btn"
-                  onClick={() => handleOAuthLogin('apple')}
-                  disabled={oauthLoading !== null}
-                >
-                  {oauthLoading === 'apple' ? (
-                    <Loader2 size={18} className="animate-spin" />
-                  ) : (
-                    <>
-                      <AppleIcon size={19} />
-                      <span>{authMode === 'login' ? 'Continue with Apple' : 'Sign up with Apple'}</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {/* Subtle Divider */}
-              <div className="auth-divider">
-                <span>or continue with</span>
-              </div>
-
-              {/* Method Switcher: Email vs Mobile OTP */}
-              <div className="auth-method-tabs">
-                <button
-                  type="button"
-                  className={`auth-method-tab ${method === 'email' ? 'active' : ''}`}
-                  onClick={() => { setMethod('email'); setError(''); setEmailOtpSent(false); }}
-                >
-                  <Mail size={14} />
-                  <span>{authMode === 'login' ? 'Email & Password' : 'Email Verification'}</span>
-                </button>
-                <button
-                  type="button"
-                  className={`auth-method-tab ${method === 'phone' ? 'active' : ''}`}
-                  onClick={() => { setMethod('phone'); setError(''); setOtpSent(false); }}
-                >
-                  <Phone size={14} />
-                  <span>Mobile OTP</span>
                 </button>
               </div>
 
@@ -704,7 +538,6 @@ export const AuthPage: React.FC = () => {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
-                          disabled={emailOtpSent}
                           autoComplete="email"
                         />
                       </div>
@@ -733,7 +566,6 @@ export const AuthPage: React.FC = () => {
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           required
-                          disabled={emailOtpSent}
                           autoComplete={authMode === 'login' ? 'current-password' : 'new-password'}
                         />
                         <button
@@ -746,51 +578,6 @@ export const AuthPage: React.FC = () => {
                         </button>
                       </div>
                     </div>
-
-                    {authMode === 'signup' && emailOtpSent && (
-                      <>
-                        <div className="auth-otp-display-box">
-                          A 6-digit verification code was sent to <strong>{email}</strong>.
-                          <div style={{ marginTop: 4, fontWeight: 700 }}>Test Code: 123456</div>
-                        </div>
-
-                        <div className="auth-field-block">
-                          <label className="auth-label">Enter 6-digit Email Verification Code</label>
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            maxLength={6}
-                            className="auth-input auth-otp-input"
-                            placeholder="123456"
-                            value={emailOtp}
-                            onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, ''))}
-                            autoFocus
-                            required
-                          />
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                          <button
-                            type="button"
-                            disabled={emailOtpTimer > 0}
-                            onClick={() => {
-                              setEmailOtpTimer(30);
-                              setSuccessNotice(`New email verification code sent. (Testing code: 123456)`);
-                            }}
-                            style={{ background: 'none', border: 'none', color: emailOtpTimer > 0 ? 'var(--auth-text-muted)' : 'var(--auth-accent)', fontSize: 13, fontWeight: 600, cursor: emailOtpTimer > 0 ? 'default' : 'pointer' }}
-                          >
-                            {emailOtpTimer > 0 ? `Resend Code in ${emailOtpTimer}s` : 'Resend Code'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => { setEmailOtpSent(false); setEmailOtp(''); }}
-                            style={{ background: 'none', border: 'none', color: 'var(--auth-text-muted)', fontSize: 12, cursor: 'pointer' }}
-                          >
-                            Change Email
-                          </button>
-                        </div>
-                      </>
-                    )}
                   </>
                 ) : (
                   <>
@@ -847,7 +634,7 @@ export const AuthPage: React.FC = () => {
                             disabled={otpTimer > 0}
                             onClick={() => {
                               setOtpTimer(30);
-                              setSuccessNotice(`New OTP dispatched. (Testing code: 123456)`);
+                              setSuccessNotice(`New OTP dispatched. (Testing dummy OTP: 123456)`);
                             }}
                             style={{ background: 'none', border: 'none', color: otpTimer > 0 ? 'var(--auth-text-muted)' : 'var(--auth-accent)', fontSize: 13, fontWeight: 600, cursor: otpTimer > 0 ? 'default' : 'pointer' }}
                           >
@@ -877,12 +664,10 @@ export const AuthPage: React.FC = () => {
                     <>
                       <span>
                         {method === 'phone'
-                          ? (!otpSent
-                              ? 'Send OTP Verification'
-                              : (authMode === 'login' ? 'Sign In to Dashboard' : 'Verify Mobile & Continue'))
-                          : (authMode === 'login'
-                              ? 'Sign In to Dashboard'
-                              : (!emailOtpSent ? 'Verify Email to Continue' : 'Verify & Choose Account Type'))}
+                          ? (!otpSent ? 'Send OTP Verification' : 'Verify & Continue')
+                          : authMode === 'login'
+                          ? 'Sign In to Dashboard'
+                          : 'Continue to Account Setup'}
                       </span>
                       <ArrowRight size={16} />
                     </>
@@ -890,8 +675,80 @@ export const AuthPage: React.FC = () => {
                 </button>
               </form>
 
+              {/* Bottom Alternative Methods Divider */}
+              <div className="auth-divider">
+                <span>or continue with</span>
+              </div>
+
+              {/* Bottom Options Cluster: Mobile OTP, Google Auth, Apple Auth */}
+              <div className="auth-bottom-options">
+                {method === 'email' ? (
+                  <button
+                    type="button"
+                    className="auth-bottom-method-btn"
+                    onClick={() => { setMethod('phone'); setError(''); setOtpSent(false); }}
+                  >
+                    <div className="auth-bottom-method-btn-content">
+                      <div className="auth-bottom-method-icon-wrap">
+                        <Phone size={15} />
+                      </div>
+                      <span>{authMode === 'login' ? 'Sign In with Mobile OTP' : 'Sign Up with Mobile OTP'}</span>
+                    </div>
+                    <ArrowRight size={15} color="var(--auth-text-muted)" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="auth-bottom-method-btn"
+                    onClick={() => { setMethod('email'); setError(''); }}
+                  >
+                    <div className="auth-bottom-method-btn-content">
+                      <div className="auth-bottom-method-icon-wrap">
+                        <Mail size={15} />
+                      </div>
+                      <span>{authMode === 'login' ? 'Sign In with Email & Password' : 'Sign Up with Email & Password'}</span>
+                    </div>
+                    <ArrowRight size={15} color="var(--auth-text-muted)" />
+                  </button>
+                )}
+
+                <div className="auth-social-bottom-row">
+                  <button
+                    type="button"
+                    className="auth-social-cta-btn"
+                    onClick={() => handleOAuthLogin('google')}
+                    disabled={oauthLoading !== null}
+                  >
+                    {oauthLoading === 'google' ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <>
+                        <GoogleIcon size={18} />
+                        <span>Google Auth</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="auth-social-cta-btn"
+                    onClick={() => handleOAuthLogin('apple')}
+                    disabled={oauthLoading !== null}
+                  >
+                    {oauthLoading === 'apple' ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <>
+                        <AppleIcon size={18} />
+                        <span>Apple Auth</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
               <div style={{ marginTop: 24, textAlign: 'center', fontSize: 12.5, color: 'var(--auth-text-muted)' }}>
-                By signing in, you agree to our{' '}
+                By continuing, you agree to our{' '}
                 <Link to="/legal" style={{ color: 'var(--auth-text-secondary)', textDecoration: 'underline' }}>
                   Terms of Service
                 </Link>{' '}

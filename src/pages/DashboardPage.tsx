@@ -110,7 +110,7 @@ const EMCEE_STYLE_PRESETS = [
 
 export const DashboardPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, isAuthenticated, isLoading, activeRole, setActiveRole, setNeedsRoleSelection } = useAuthStore();
+  const { user, isAuthenticated, isLoading, activeRole, setActiveRole, needsRoleSelection } = useAuthStore();
   const navigate = useNavigate();
 
   const isPro = user?.role === 'professional';
@@ -341,10 +341,14 @@ export const DashboardPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && !user) {
-      navigate('/login?redirect=/dashboard', { replace: true });
+    if (!isLoading) {
+      if (!isAuthenticated || !user) {
+        navigate('/login?redirect=/dashboard', { replace: true });
+      } else if (needsRoleSelection) {
+        navigate('/login', { replace: true });
+      }
     }
-  }, [isLoading, isAuthenticated, user, navigate]);
+  }, [isLoading, isAuthenticated, user, needsRoleSelection, navigate]);
 
   useEffect(() => {
     if (paramTab) {
@@ -1187,14 +1191,13 @@ export const DashboardPage: React.FC = () => {
                 ⇄ Creator Studio
               </button>
             ) : (
-              <button
-                type="button"
+              <Link
+                to="/register?role=professional"
                 className="btn btn-outline btn-sm pro-upgrade-btn"
-                onClick={() => setNeedsRoleSelection(true)}
-                title="Choose account type or activate Creator Studio"
+                title="Join Camcrew as a creator to offer services and list gear"
               >
                 <Film size={14} /> Become a Creator →
-              </button>
+              </Link>
             )}
           </div>
         </div>
