@@ -207,9 +207,30 @@ export const AuthPage: React.FC = () => {
           setLoading(false);
         }
       } else {
-        // Sign up flow: Transition to Screen 2
-        setProfileEmail(email.trim().toLowerCase());
-        setCurrentScreen('screen2_role');
+        // Sign up flow: Verify email does not already exist
+        const cleanEmail = email.trim().toLowerCase();
+        setLoading(true);
+        try {
+          const { data: existingUser } = await supabase
+            .from('users')
+            .select('id, email')
+            .eq('email', cleanEmail)
+            .maybeSingle();
+
+          if (existingUser) {
+            setError('This email address is already registered. Please sign in instead.');
+            return;
+          }
+
+          setProfileEmail(cleanEmail);
+          setCurrentScreen('screen2_role');
+        } catch (err: any) {
+          console.warn('Email check notice:', err);
+          setProfileEmail(cleanEmail);
+          setCurrentScreen('screen2_role');
+        } finally {
+          setLoading(false);
+        }
       }
     } else {
       // Mobile OTP mode
@@ -222,6 +243,21 @@ export const AuthPage: React.FC = () => {
       if (!otpSent) {
         setLoading(true);
         try {
+          // If in signup mode, check if phone already registered before sending OTP
+          if (authMode === 'signup') {
+            const { data: existingPhone } = await supabase
+              .from('users')
+              .select('id')
+              .or(`phone.eq.${cleanPhone},phone.eq.+91${cleanPhone}`)
+              .maybeSingle();
+
+            if (existingPhone) {
+              setError('This mobile number is already registered. Please sign in instead.');
+              setLoading(false);
+              return;
+            }
+          }
+
           await authApi.sendOTP(cleanPhone);
           setOtpSent(true);
           setOtpTimer(30);
@@ -244,6 +280,9 @@ export const AuthPage: React.FC = () => {
           if (authMode === 'login' && res.user && !res.user.id.startsWith('new-')) {
             await login(res.user, res.token);
             navigate(redirectUrl);
+          } else if (authMode === 'signup' && res.user && !res.user.id.startsWith('new-')) {
+            setError('This mobile number is already registered. Please sign in instead.');
+            return;
           } else {
             // New user or signup -> Screen 2
             setProfilePhone(`+91 ${cleanPhone}`);
@@ -468,7 +507,32 @@ export const AuthPage: React.FC = () => {
               {error && (
                 <div className="auth-alert-notice auth-alert-danger">
                   <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
-                  <span>{error}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
+                    <span>{error}</span>
+                    {error.toLowerCase().includes('already registered') && authMode === 'signup' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthMode('login');
+                          setError('');
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          textAlign: 'left',
+                          color: 'var(--auth-accent, #3fb668)',
+                          fontWeight: 700,
+                          fontSize: 12,
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          alignSelf: 'flex-start'
+                        }}
+                      >
+                        Switch to Sign In →
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
               {successNotice && (

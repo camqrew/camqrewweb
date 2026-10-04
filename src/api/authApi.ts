@@ -140,29 +140,54 @@ export const authApi = {
   },
 
   registerCustomer: async (data: { name: string; email: string; phone: string; password: string }): Promise<{ token: string; user: User }> => {
-    const { data: existingPhone } = await supabase
+    const cleanEmail = data.email.trim().toLowerCase();
+    const cleanPhone = data.phone?.trim();
+
+    // 1. Check if email already exists in users table
+    const { data: existingEmail } = await supabase
       .from('users')
       .select('id')
-      .eq('phone', data.phone)
-      .single();
-    if (existingPhone) {
-      throw new Error('This phone number is already registered. Please Sign In instead.');
+      .eq('email', cleanEmail)
+      .maybeSingle();
+    if (existingEmail) {
+      throw new Error('This email address is already registered. Please Sign In instead.');
+    }
+
+    // 2. Check if phone already exists
+    if (cleanPhone) {
+      const { data: existingPhone } = await supabase
+        .from('users')
+        .select('id')
+        .eq('phone', cleanPhone)
+        .maybeSingle();
+      if (existingPhone) {
+        throw new Error('This phone number is already registered. Please Sign In instead.');
+      }
     }
 
     const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: data.email.trim().toLowerCase(),
+      email: cleanEmail,
       password: data.password,
       options: {
         data: {
           name: data.name,
-          phone: data.phone,
+          phone: cleanPhone || '',
           role: 'customer'
         }
       }
     });
 
-    if (authError || !authData.user) {
-      throw new Error(authError?.message || 'Registration failed.');
+    if (authError) {
+      throw new Error(authError.message || 'Registration failed.');
+    }
+
+    // Supabase anti-enumeration safeguard: if email exists, signUp returns user with empty identities
+    if (authData.user && authData.user.identities && authData.user.identities.length === 0) {
+      throw new Error('This email address is already registered. Please Sign In instead.');
+    }
+
+    if (!authData.user) {
+      throw new Error('Registration failed.');
     }
 
     return {
@@ -170,8 +195,8 @@ export const authApi = {
       user: {
         id: authData.user.id,
         name: data.name,
-        email: data.email,
-        phone: data.phone,
+        email: cleanEmail,
+        phone: cleanPhone || '',
         role: 'customer',
         avatar: '',
         subscription_tier: 'free',
@@ -182,29 +207,54 @@ export const authApi = {
   },
 
   registerProfessional: async (data: any): Promise<{ token: string; user: User }> => {
-    const { data: existingPhone } = await supabase
+    const cleanEmail = data.email.trim().toLowerCase();
+    const cleanPhone = data.phone?.trim();
+
+    // 1. Check if email already exists in users table
+    const { data: existingEmail } = await supabase
       .from('users')
       .select('id')
-      .eq('phone', data.phone)
-      .single();
-    if (existingPhone) {
-      throw new Error('This phone number is already registered. Please Sign In instead.');
+      .eq('email', cleanEmail)
+      .maybeSingle();
+    if (existingEmail) {
+      throw new Error('This email address is already registered. Please Sign In instead.');
+    }
+
+    // 2. Check if phone already exists
+    if (cleanPhone) {
+      const { data: existingPhone } = await supabase
+        .from('users')
+        .select('id')
+        .eq('phone', cleanPhone)
+        .maybeSingle();
+      if (existingPhone) {
+        throw new Error('This phone number is already registered. Please Sign In instead.');
+      }
     }
 
     const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: data.email.trim().toLowerCase(),
+      email: cleanEmail,
       password: data.password,
       options: {
         data: {
           name: data.name,
-          phone: data.phone,
+          phone: cleanPhone || '',
           role: 'professional'
         }
       }
     });
 
-    if (authError || !authData.user) {
-      throw new Error(authError?.message || 'Professional Registration failed.');
+    if (authError) {
+      throw new Error(authError.message || 'Professional Registration failed.');
+    }
+
+    // Supabase anti-enumeration safeguard: if email exists, signUp returns user with empty identities
+    if (authData.user && authData.user.identities && authData.user.identities.length === 0) {
+      throw new Error('This email address is already registered. Please Sign In instead.');
+    }
+
+    if (!authData.user) {
+      throw new Error('Professional Registration failed.');
     }
 
     await supabase.from('professional_profiles').insert([{
