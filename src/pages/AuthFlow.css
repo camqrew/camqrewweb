@@ -563,253 +563,216 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   SCREEN 2: ACCOUNT TYPE SELECTION (STEP 1 OF 2)
+   COMBINED ONBOARDING: ROLE SELECTION & PROFILE SETUP (COMPACT & STROKE-FREE)
    ───────────────────────────────────────────────────────────────────────── */
-.onboarding-progress-block {
-  margin-bottom: 24px;
-}
-
-.onboarding-step-label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--auth-accent);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.onboarding-progress-track {
-  width: 100%;
-  height: 5px;
-  background: var(--auth-surface);
-  border-radius: 999px;
-  overflow: hidden;
+.auth-form-card.compact-onboarding-card {
+  max-width: 490px;
+  padding: 22px 20px;
+  border-radius: 18px;
   border: none !important;
 }
 
-.onboarding-progress-fill {
-  height: 100%;
-  background: var(--auth-accent);
-  border-radius: 999px;
-  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+/* 3 Compact Role Selection Cards (Strictly No Strokes) */
+.role-compact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 4px;
 }
 
-/* 3 Role Selection Cards Grid */
-.role-cards-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.role-selection-card {
+.role-compact-card {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 18px;
+  gap: 8px;
+  padding: 8px 10px;
   background: var(--auth-surface);
-  border: 1.5px solid transparent !important;
-  border-radius: 14px;
+  border: none !important;
+  outline: none !important;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
   text-align: left;
 }
 
-.role-selection-card:hover {
+.role-compact-card:hover {
   background: var(--auth-surface-hover);
-  transform: translateY(-1px);
 }
 
-.role-selection-card.selected {
+.role-compact-card.selected {
   background: var(--auth-accent-soft);
-  border-color: var(--auth-accent) !important;
+  border: none !important;
 }
 
-.role-card-icon-box {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+.role-compact-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   background: var(--auth-input-bg);
   border: none !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--auth-text-primary);
+  color: var(--auth-text-muted);
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
 }
 
-.role-selection-card.selected .role-card-icon-box {
+.role-compact-card.selected .role-compact-icon {
   background: var(--auth-accent);
   color: #ffffff;
   border: none !important;
 }
 
-.role-card-details {
-  flex: 1;
-  min-width: 0;
+.role-compact-info {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  min-width: 0;
 }
 
-.role-card-title {
-  font-size: 15px;
+.role-compact-title {
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--auth-text-primary);
   margin: 0;
-  line-height: 1.3;
+  line-height: 1.2;
 }
 
-.role-card-desc {
-  font-size: 12.5px;
-  line-height: 1.4;
-  color: var(--auth-text-secondary);
+.role-compact-card.selected .role-compact-title {
+  color: var(--auth-accent);
+}
+
+.role-compact-sub {
+  font-size: 10px;
+  color: var(--auth-text-muted);
   margin: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.role-card-radio-circle {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 1.5px solid var(--auth-text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.role-selection-card.selected .role-card-radio-circle {
-  border-color: var(--auth-accent);
-  background: var(--auth-accent);
-  color: #ffffff;
-}
-
-/* ─────────────────────────────────────────────────────────────────────────
-   SCREEN 3: ADDITIONAL DETAILS (STEP 2 OF 2)
-   ───────────────────────────────────────────────────────────────────────── */
-.onboarding-form-grid {
+/* Compact Form Grid & Reduced Sizing */
+.onboarding-compact-grid {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 11px;
+  margin-top: 2px;
 }
 
-.onboarding-two-col {
+.onboarding-compact-grid .auth-field-block {
+  margin-bottom: 0;
+}
+
+.onboarding-compact-grid .auth-label {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--auth-label);
+  margin-bottom: 5px;
+}
+
+.onboarding-compact-grid .onboarding-two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-/* Location Selector Grid in Auth */
-.onboarding-form-grid .location-selector {
-  width: 100%;
-}
-
-.onboarding-form-grid .location-selector .location-stacked-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 
-.onboarding-form-grid .location-selector .location-stacked-grid .select-box-wrapper.full-span {
-  grid-column: span 1;
+/* Compact Inputs & Dropdowns (No Strokes) */
+.auth-input.compact {
+  height: 42px;
+  font-size: 13.5px;
+  border-radius: 10px;
+  border: none !important;
+  outline: none !important;
+  padding: 0 12px 0 38px;
 }
 
-.onboarding-form-grid .custom-select-trigger {
-  height: 48px;
-  border-radius: 12px;
+.auth-input.no-icon.compact {
+  padding-left: 12px;
+}
+
+.onboarding-compact-grid .auth-input-icon-adornment {
+  left: 12px;
+}
+
+.onboarding-compact-grid .custom-select-trigger {
+  height: 42px;
+  font-size: 13px;
+  border-radius: 10px;
   background: var(--auth-input-bg);
   border: none !important;
   color: var(--auth-input-color);
-  font-size: 13.5px;
-  padding: 0 14px;
+  padding: 0 12px;
 }
 
-.onboarding-form-grid .custom-select-trigger:hover:not(:disabled) {
+.onboarding-compact-grid .custom-select-trigger:hover:not(:disabled) {
   background: var(--auth-input-bg-hover);
 }
 
-.onboarding-form-grid .custom-select-trigger:focus {
+.onboarding-compact-grid .custom-select-trigger:focus {
   outline: none !important;
   border: none !important;
 }
 
-.onboarding-action-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+/* Location Selector Grid in Compact Onboarding */
+.onboarding-compact-grid .location-selector {
   width: 100%;
+}
+
+.onboarding-compact-grid .location-selector .location-stacked-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.onboarding-compact-grid .location-selector .location-stacked-grid .select-box-wrapper.full-span {
+  grid-column: span 1;
+}
+
+/* Compact Chips (Stroke-Free) */
+.compact-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
   margin-top: 6px;
 }
 
-.onboarding-action-row .auth-secondary-btn {
-  height: 48px;
-  padding: 0 20px;
-  border-radius: 12px;
-  background: var(--auth-surface);
-  border: none !important;
-  color: var(--auth-text-primary);
-  font-size: 14px;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.onboarding-action-row .auth-secondary-btn:hover {
-  background: var(--auth-surface-hover);
-}
-
-.onboarding-action-row .auth-primary-submit-btn {
-  flex: 1;
-  height: 48px;
-  margin-top: 0;
-  border-radius: 12px;
-}
-
-/* Preset Chips for Day Rate or Interests */
-.preset-chips-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.preset-chip-btn {
-  padding: 7px 14px;
+.compact-chips .preset-chip-btn {
+  padding: 5px 11px;
+  font-size: 11.5px;
+  font-weight: 500;
   border-radius: 999px;
-  font-size: 12.5px;
-  font-weight: 600;
   background: var(--auth-input-bg);
   border: none !important;
   color: var(--auth-text-secondary);
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 
-.preset-chip-btn:hover {
+.compact-chips .preset-chip-btn:hover {
   background: var(--auth-input-bg-hover);
   color: var(--auth-text-primary);
 }
 
-.preset-chip-btn.active {
+.compact-chips .preset-chip-btn.active {
   background: var(--auth-accent-soft);
   color: var(--auth-accent);
   font-weight: 700;
+  border: none !important;
+}
+
+/* Compact Submit CTA */
+.auth-primary-submit-btn.compact-submit {
+  height: 44px;
+  font-size: 13.5px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none !important;
+  margin-top: 14px;
 }
 
 /* Alert Notification Boxes */
@@ -843,30 +806,38 @@
   .auth-centered-wrapper {
     padding: 20px 16px 40px 16px;
   }
-  .onboarding-two-col {
+  .onboarding-two-col,
+  .onboarding-compact-grid .onboarding-two-col {
     grid-template-columns: 1fr;
   }
 
   .auth-form-card {
-    padding: 26px 20px;
-    border-radius: 20px;
+    padding: 24px 18px;
+    border-radius: 18px;
   }
 
   .auth-title {
-    font-size: 22px;
+    font-size: 20px;
   }
 
-  .role-selection-card {
-    padding: 16px;
-    gap: 14px;
-  }
-
-  .role-card-icon-box {
-    width: 40px;
-    height: 40px;
-  }
-
-  .onboarding-form-grid .location-selector .location-stacked-grid {
+  .onboarding-compact-grid .location-selector .location-stacked-grid {
     grid-template-columns: 1fr;
+  }
+
+  .role-compact-grid {
+    gap: 6px;
+  }
+
+  .role-compact-card {
+    padding: 7px 6px;
+    gap: 6px;
+  }
+
+  .role-compact-title {
+    font-size: 11.5px;
+  }
+
+  .role-compact-sub {
+    font-size: 9.5px;
   }
 }

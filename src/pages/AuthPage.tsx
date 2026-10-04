@@ -22,7 +22,6 @@ import {
   Eye,
   EyeOff,
   Loader2,
-  Check,
   AlertCircle
 } from 'lucide-react';
 
@@ -36,8 +35,8 @@ export const AuthPage: React.FC = () => {
   const isRegisterParam = searchParams.get('mode') === 'register' || window.location.pathname.includes('register');
   const redirectUrl = searchParams.get('redirect') || ((user?.role === 'professional' || activeRole === 'professional') ? '/dashboard?tab=overview' : '/dashboard');
 
-  // Main flow screen: 'screen1_auth' | 'screen2_role' | 'screen3_details' | 'forgot_password'
-  const [currentScreen, setCurrentScreen] = useState<'screen1_auth' | 'screen2_role' | 'screen3_details' | 'forgot_password'>('screen1_auth');
+  // Main flow screen: 'screen1_auth' | 'screen2_role' | 'forgot_password'
+  const [currentScreen, setCurrentScreen] = useState<'screen1_auth' | 'screen2_role' | 'forgot_password'>('screen1_auth');
 
   // Screen 1: Auth Hub state
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(isRegisterParam ? 'signup' : 'login');
@@ -52,8 +51,8 @@ export const AuthPage: React.FC = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [otpTimer, setOtpTimer] = useState(0);
 
-  // Screen 2: Account Type Selection
-  const [selectedRoleType, setSelectedRoleType] = useState<OnboardingRoleType | null>(null);
+  // Screen 2: Account Type Selection (default: customer)
+  const [selectedRoleType, setSelectedRoleType] = useState<OnboardingRoleType>('customer');
 
   // Screen 3: Additional Details
   const [fullName, setFullName] = useState('');
@@ -234,17 +233,7 @@ export const AuthPage: React.FC = () => {
   };
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Screen 2: Handlers
-  // ─────────────────────────────────────────────────────────────────────────
-  const handleRoleContinue = () => {
-    if (!selectedRoleType) return;
-    setError('');
-    setSuccessNotice('');
-    setCurrentScreen('screen3_details');
-  };
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // Screen 3: Complete Setup Handlers
+  // Combined Onboarding: Complete Setup Handlers
   // ─────────────────────────────────────────────────────────────────────────
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -705,165 +694,93 @@ export const AuthPage: React.FC = () => {
           )}
 
           {/* ─────────────────────────────────────────────────────────────
-              SCREEN 2: POST-SIGNUP ONBOARDING - ACCOUNT TYPE SELECTION
+              SCREEN 2: COMBINED POST-SIGNUP ONBOARDING (ROLE & DETAILS)
              ───────────────────────────────────────────────────────────── */}
           {currentScreen === 'screen2_role' && (
-            <div className="auth-form-card wide-card">
+            <div className="auth-form-card compact-onboarding-card">
               
-              {/* Progress Indicator: Step 1 of 2 */}
-              <div className="onboarding-progress-block">
-                <div className="onboarding-step-label-row">
-                  <span>Step 1 of 2</span>
-                  <span>50% Complete</span>
-                </div>
-                <div className="onboarding-progress-track">
-                  <div className="onboarding-progress-fill" style={{ width: '50%' }} />
-                </div>
-              </div>
-
               {/* Header */}
-              <div className="auth-header" style={{ textAlign: 'left', marginBottom: 20 }}>
-                <h2 className="auth-title">Choose your account type</h2>
-                <p className="auth-subtitle">
-                  Select how you plan to use Camcrew. You can switch workspaces anytime.
-                </p>
-              </div>
-
-              {/* 3 Minimal Account Type Cards */}
-              <div className="role-cards-grid">
-                
-                {/* 1. Client / Personal */}
-                <div
-                  className={`role-selection-card ${selectedRoleType === 'customer' ? 'selected' : ''}`}
-                  onClick={() => setSelectedRoleType('customer')}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className="role-card-icon-box">
-                    <User size={22} />
-                  </div>
-                  <div className="role-card-details">
-                    <h3 className="role-card-title">Personal / Client</h3>
-                    <p className="role-card-desc">
-                      Book creative talent and rent equipment with escrow protection
-                    </p>
-                  </div>
-                  <div className="role-card-radio-circle">
-                    {selectedRoleType === 'customer' && <Check size={13} strokeWidth={3} />}
-                  </div>
-                </div>
-
-                {/* 2. Creator / Professional */}
-                <div
-                  className={`role-selection-card ${selectedRoleType === 'professional' ? 'selected' : ''}`}
-                  onClick={() => setSelectedRoleType('professional')}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className="role-card-icon-box">
-                    <Camera size={22} />
-                  </div>
-                  <div className="role-card-details">
-                    <h3 className="role-card-title">Creator / Freelancer</h3>
-                    <p className="role-card-desc">
-                      Showcase your portfolio, set your daily rates, and get booked
-                    </p>
-                  </div>
-                  <div className="role-card-radio-circle">
-                    {selectedRoleType === 'professional' && <Check size={13} strokeWidth={3} />}
-                  </div>
-                </div>
-
-                {/* 3. Studio / Business */}
-                <div
-                  className={`role-selection-card ${selectedRoleType === 'business' ? 'selected' : ''}`}
-                  onClick={() => setSelectedRoleType('business')}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className="role-card-icon-box">
-                    <Building2 size={22} />
-                  </div>
-                  <div className="role-card-details">
-                    <h3 className="role-card-title">Studio / Production House</h3>
-                    <p className="role-card-desc">
-                      Manage team roster, client productions, and gear rental fleet
-                    </p>
-                  </div>
-                  <div className="role-card-radio-circle">
-                    {selectedRoleType === 'business' && <Check size={13} strokeWidth={3} />}
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Action Button: Disabled until role selected */}
-              <button
-                type="button"
-                className="auth-primary-submit-btn"
-                disabled={!selectedRoleType}
-                onClick={handleRoleContinue}
-              >
-                <span>Continue to Details (Step 2 of 2)</span>
-                <ArrowRight size={16} />
-              </button>
-            </div>
-          )}
-
-          {/* ─────────────────────────────────────────────────────────────
-              SCREEN 3: POST-SIGNUP ONBOARDING - ADDITIONAL DETAILS
-             ───────────────────────────────────────────────────────────── */}
-          {currentScreen === 'screen3_details' && (
-            <div className="auth-form-card wide-card">
-              
-              {/* Progress Indicator: Step 2 of 2 */}
-              <div className="onboarding-progress-block">
-                <div className="onboarding-step-label-row">
-                  <span>Step 2 of 2</span>
-                  <span>Final Step • 100%</span>
-                </div>
-                <div className="onboarding-progress-track">
-                  <div className="onboarding-progress-fill" style={{ width: '100%' }} />
-                </div>
-              </div>
-
-              {/* Dynamic Header based on Role */}
-              <div className="auth-header" style={{ textAlign: 'left', marginBottom: 24 }}>
-                <h2 className="auth-title">
-                  {selectedRoleType === 'customer'
-                    ? 'Complete Your Client Profile'
-                    : selectedRoleType === 'business'
-                    ? 'Setup Your Studio Details'
-                    : 'Setup Your Creative Pro Profile'}
-                </h2>
-                <p className="auth-subtitle">
-                  {selectedRoleType === 'customer'
-                    ? 'Tell us your contact details and shoot interests to personalize your experience.'
-                    : selectedRoleType === 'business'
-                    ? 'Provide your production company details, services, and operating home base.'
-                    : 'Specify your craft headline, daily rate, and locality so clients can book you directly.'}
+              <div className="auth-header" style={{ textAlign: 'left', marginBottom: 16 }}>
+                <h2 className="auth-title" style={{ fontSize: 20, marginBottom: 4 }}>Complete Your Profile</h2>
+                <p className="auth-subtitle" style={{ fontSize: 12.5 }}>
+                  Choose your account type and fill in your details to get started.
                 </p>
               </div>
 
               {error && (
-                <div className="auth-alert-notice auth-alert-danger">
-                  <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                <div className="auth-alert-notice auth-alert-danger" style={{ padding: '8px 12px', fontSize: 12.5, marginBottom: 14 }}>
+                  <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
                   <span>{error}</span>
                 </div>
               )}
 
               <form onSubmit={handleFinalSubmit}>
-                <div className="onboarding-form-grid">
+                {/* 1. Account Type Compact Selector (Stroke-Free) */}
+                <div className="auth-field-block" style={{ marginBottom: 14 }}>
+                  <label className="auth-label">Account Type</label>
+                  <div className="role-compact-grid">
+                    {/* 1. Client */}
+                    <div
+                      className={`role-compact-card ${selectedRoleType === 'customer' ? 'selected' : ''}`}
+                      onClick={() => setSelectedRoleType('customer')}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <div className="role-compact-icon">
+                        <User size={15} />
+                      </div>
+                      <div className="role-compact-info">
+                        <span className="role-compact-title">Client</span>
+                        <span className="role-compact-sub">Book & Rent</span>
+                      </div>
+                    </div>
+
+                    {/* 2. Creator */}
+                    <div
+                      className={`role-compact-card ${selectedRoleType === 'professional' ? 'selected' : ''}`}
+                      onClick={() => setSelectedRoleType('professional')}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <div className="role-compact-icon">
+                        <Camera size={15} />
+                      </div>
+                      <div className="role-compact-info">
+                        <span className="role-compact-title">Creator</span>
+                        <span className="role-compact-sub">Get Booked</span>
+                      </div>
+                    </div>
+
+                    {/* 3. Studio */}
+                    <div
+                      className={`role-compact-card ${selectedRoleType === 'business' ? 'selected' : ''}`}
+                      onClick={() => setSelectedRoleType('business')}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <div className="role-compact-icon">
+                        <Building2 size={15} />
+                      </div>
+                      <div className="role-compact-info">
+                        <span className="role-compact-title">Studio</span>
+                        <span className="role-compact-sub">Fleet & Crew</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Compact Form Fields Grid */}
+                <div className="onboarding-compact-grid">
                   
                   {/* Name Fields */}
                   {selectedRoleType === 'business' ? (
                     <div className="onboarding-two-col">
                       <div className="auth-field-block">
-                        <label className="auth-label">Production House / Studio Name *</label>
+                        <label className="auth-label">Studio Name *</label>
                         <input
                           type="text"
-                          className="auth-input no-icon"
-                          placeholder="e.g. Apex Cinema Works Studios"
+                          className="auth-input no-icon compact"
+                          placeholder="e.g. Apex Cinema Works"
                           value={companyName}
                           onChange={(e) => setCompanyName(e.target.value)}
                           required
@@ -871,10 +788,10 @@ export const AuthPage: React.FC = () => {
                         />
                       </div>
                       <div className="auth-field-block">
-                        <label className="auth-label">Contact Person Name *</label>
+                        <label className="auth-label">Contact Person *</label>
                         <input
                           type="text"
-                          className="auth-input no-icon"
+                          className="auth-input no-icon compact"
                           placeholder="e.g. Rohit Malhotra"
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
@@ -887,11 +804,11 @@ export const AuthPage: React.FC = () => {
                       <label className="auth-label">Full Name *</label>
                       <div className="auth-input-container">
                         <span className="auth-input-icon-adornment">
-                          <User size={16} />
+                          <User size={15} />
                         </span>
                         <input
                           type="text"
-                          className="auth-input"
+                          className="auth-input compact"
                           placeholder="e.g. Rahul Verma"
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
@@ -908,11 +825,11 @@ export const AuthPage: React.FC = () => {
                       <label className="auth-label">Email Address *</label>
                       <div className="auth-input-container">
                         <span className="auth-input-icon-adornment">
-                          <Mail size={16} />
+                          <Mail size={15} />
                         </span>
                         <input
                           type="email"
-                          className="auth-input"
+                          className="auth-input compact"
                           placeholder="name@example.com"
                           value={profileEmail || email}
                           onChange={(e) => setProfileEmail(e.target.value)}
@@ -922,14 +839,14 @@ export const AuthPage: React.FC = () => {
                     </div>
 
                     <div className="auth-field-block">
-                      <label className="auth-label">Mobile Number (WhatsApp) *</label>
+                      <label className="auth-label">Mobile (WhatsApp) *</label>
                       <div className="auth-input-container">
                         <span className="auth-input-icon-adornment">
-                          <Phone size={16} />
+                          <Phone size={15} />
                         </span>
                         <input
                           type="tel"
-                          className="auth-input"
+                          className="auth-input compact"
                           placeholder="+91 98765 43210"
                           value={profilePhone || phoneNumber}
                           onChange={(e) => setProfilePhone(e.target.value)}
@@ -955,7 +872,7 @@ export const AuthPage: React.FC = () => {
                     <>
                       <div className="onboarding-two-col">
                         <div className="auth-field-block">
-                          <label className="auth-label">Primary Craft / Category *</label>
+                          <label className="auth-label">Primary Craft *</label>
                           <CustomSelect
                             value={selectedCategory}
                             onChange={(val) => setSelectedCategory(val)}
@@ -963,39 +880,31 @@ export const AuthPage: React.FC = () => {
                               value: cat.name,
                               label: cat.name,
                             }))}
-                            placeholder="Select primary category"
+                            placeholder="Select craft"
                           />
                         </div>
 
                         <div className="auth-field-block">
-                          <label className="auth-label">Years of Experience</label>
+                          <label className="auth-label">Experience</label>
                           <CustomSelect
                             value={experienceYears}
                             onChange={(val) => setExperienceYears(val)}
                             options={[
-                              { value: '1', label: '1 - 2 years (Emerging)' },
-                              { value: '3', label: '3 - 5 years (Professional)' },
-                              { value: '6', label: '6 - 10 years (Senior Pro)' },
-                              { value: '10', label: '10+ years (Master / Lead)' },
+                              { value: '1', label: '1 - 2 yrs' },
+                              { value: '3', label: '3 - 5 yrs' },
+                              { value: '6', label: '6 - 10 yrs' },
+                              { value: '10', label: '10+ yrs' },
                             ]}
                           />
                         </div>
                       </div>
 
                       <div className="auth-field-block">
-                        <label className="auth-label">Professional Headline / Title *</label>
+                        <label className="auth-label">Professional Headline *</label>
                         <input
                           type="text"
-                          className="auth-input no-icon"
-                          placeholder={
-                            selectedCategory === 'Photographers'
-                              ? 'e.g. Commercial & Fashion Photographer'
-                              : selectedCategory === 'Cinematographers'
-                              ? 'e.g. Cinema DP & Drone Camera Operator'
-                              : selectedCategory === 'Video Editors'
-                              ? 'e.g. Narrative Film & Commercial Colorist'
-                              : 'e.g. Creative Specialist & Director'
-                          }
+                          className="auth-input no-icon compact"
+                          placeholder="e.g. Commercial & Fashion Photographer"
                           value={proTitle}
                           onChange={(e) => setProTitle(e.target.value)}
                           required
@@ -1005,17 +914,17 @@ export const AuthPage: React.FC = () => {
                       <div className="auth-field-block">
                         <div className="auth-field-header">
                           <label className="auth-label">{proArchetype.rateLabel} (Standard ₹) *</label>
-                          <span style={{ fontSize: 12, color: 'var(--auth-text-muted)' }}>per standard 8h day</span>
+                          <span style={{ fontSize: 11, color: 'var(--auth-text-muted)' }}>per 8h day</span>
                         </div>
                         <input
                           type="number"
-                          className="auth-input no-icon"
+                          className="auth-input no-icon compact"
                           placeholder="e.g. 8000"
                           value={ratePerDay}
                           onChange={(e) => setRatePerDay(e.target.value)}
                           required
                         />
-                        <div className="preset-chips-row">
+                        <div className="preset-chips-row compact-chips">
                           {[5000, 8000, 12000, 18000, 25000].map(val => (
                             <button
                               key={val}
@@ -1036,22 +945,22 @@ export const AuthPage: React.FC = () => {
                     <>
                       <div className="onboarding-two-col">
                         <div className="auth-field-block">
-                          <label className="auth-label">Primary Production Specialty</label>
+                          <label className="auth-label">Studio Specialty</label>
                           <CustomSelect
                             value={studioSpecialty}
                             onChange={(val) => setStudioSpecialty(val)}
                             options={[
                               { value: 'Commercials & Ad Films', label: 'Commercials & Ad Films' },
                               { value: 'OTT & Feature Films', label: 'OTT & Feature Films' },
-                              { value: 'Weddings & High-End Events', label: 'Weddings & High-End Events' },
-                              { value: 'Camera & Lighting Rental House', label: 'Camera & Lighting Rental House' },
-                              { value: 'Post-Production & VFX Studio', label: 'Post-Production & VFX Studio' },
+                              { value: 'Weddings & High-End Events', label: 'Weddings & Events' },
+                              { value: 'Camera & Lighting Rental House', label: 'Gear Rental House' },
+                              { value: 'Post-Production & VFX Studio', label: 'Post-Production & VFX' },
                             ]}
                           />
                         </div>
 
                         <div className="auth-field-block">
-                          <label className="auth-label">Team / Crew Capacity</label>
+                          <label className="auth-label">Crew Capacity</label>
                           <CustomSelect
                             value={teamSize}
                             onChange={(val) => setTeamSize(val)}
@@ -1059,17 +968,17 @@ export const AuthPage: React.FC = () => {
                               { value: '1-5 crew members', label: '1 - 5 crew members' },
                               { value: '6-15 crew members', label: '6 - 15 crew members' },
                               { value: '16-30 crew members', label: '16 - 30 crew members' },
-                              { value: '30+ crew members', label: '30+ crew members (Enterprise)' },
+                              { value: '30+ crew members', label: '30+ crew members' },
                             ]}
                           />
                         </div>
                       </div>
 
                       <div className="auth-field-block">
-                        <label className="auth-label">GSTIN / Company Tax ID (Optional)</label>
+                        <label className="auth-label">GSTIN / Tax ID (Optional)</label>
                         <input
                           type="text"
-                          className="auth-input no-icon"
+                          className="auth-input no-icon compact"
                           placeholder="e.g. 27ABCDE1234F1Z5"
                           value={gstin}
                           onChange={(e) => setGstin(e.target.value.toUpperCase())}
@@ -1082,7 +991,7 @@ export const AuthPage: React.FC = () => {
                   {selectedRoleType === 'customer' && (
                     <div className="auth-field-block">
                       <label className="auth-label">What are you looking for?</label>
-                      <div className="preset-chips-row">
+                      <div className="preset-chips-row compact-chips">
                         {[
                           'Weddings & Events',
                           'Commercial & Ads',
@@ -1106,32 +1015,21 @@ export const AuthPage: React.FC = () => {
 
                 </div>
 
-                {/* Back and Complete Setup Button Group */}
-                <div className="onboarding-action-row">
-                  <button
-                    type="button"
-                    className="auth-secondary-btn"
-                    onClick={() => { setCurrentScreen('screen2_role'); setError(''); }}
-                  >
-                    <ArrowLeft size={16} />
-                    <span>Back</span>
-                  </button>
-
-                  <button
-                    type="submit"
-                    className="auth-primary-submit-btn"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <Loader2 size={18} className="animate-spin" />
-                    ) : (
-                      <>
-                        <span>Complete Setup & Go to Dashboard</span>
-                        <ArrowRight size={16} />
-                      </>
-                    )}
-                  </button>
-                </div>
+                {/* Submit Action */}
+                <button
+                  type="submit"
+                  className="auth-primary-submit-btn compact-submit"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <>
+                      <span>Complete Setup & Go to Dashboard</span>
+                      <ArrowRight size={15} />
+                    </>
+                  )}
+                </button>
               </form>
             </div>
           )}
