@@ -1,11 +1,16 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { Helmet } from 'react-helmet-async';
 
-interface SEOHeadProps {
+export interface SEOHeadProps {
   title?: string;
   description?: string;
   image?: string;
   url?: string;
   type?: string;
+  canonical?: string;
+  keywords?: string;
+  noindex?: boolean;
+  schema?: Record<string, any>;
 }
 
 export const SEOHead: React.FC<SEOHeadProps> = ({
@@ -13,62 +18,63 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
   description,
   image,
   url,
-  type = 'profile',
+  type = 'website',
+  canonical,
+  keywords,
+  noindex = false,
+  schema,
 }) => {
-  useEffect(() => {
-    const defaultTitle = 'Camqrew - Creative Marketplace & Production Crews';
-    const defaultDesc = 'Hire verified photographers, cinematographers, drone pilots, and rent cinema gear anywhere in India with milestone escrow protection.';
-    const defaultImage = 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200';
-    const currentUrl = url || (typeof window !== 'undefined' ? window.location.href : 'https://camqrew.in');
+  const defaultTitle = 'Camqrew - Creative Marketplace & Production Crews';
+  const defaultDesc = 'Hire verified photographers, cinematographers, drone pilots, and rent cinema gear anywhere in India with milestone escrow protection.';
+  const defaultImage = 'https://camqrew.in/og-image.jpg';
 
-    const effectiveTitle = title 
-      ? (title.includes('Camqrew') ? title : `${title} | Camqrew`) 
-      : defaultTitle;
-    const effectiveDesc = description || defaultDesc;
-    const effectiveImage = image || defaultImage;
+  const siteUrl = 'https://camqrew.in';
+  const currentUrl = url || (typeof window !== 'undefined' ? window.location.href : siteUrl);
+  const canonicalUrl = canonical || (currentUrl.split('?')[0]);
 
-    // 1. Update document title
-    document.title = effectiveTitle;
+  const effectiveTitle = title 
+    ? (title.includes('Camqrew') ? title : `${title} | Camqrew`) 
+    : defaultTitle;
+  const effectiveDesc = description || defaultDesc;
+  const effectiveImage = image || defaultImage;
 
-    // Helper to set or create meta tag
-    const setMetaTag = (attribute: 'property' | 'name', name: string, content: string) => {
-      let element = document.querySelector(`meta[${attribute}="${name}"]`);
-      if (!element) {
-        element = document.createElement('meta');
-        element.setAttribute(attribute, name);
-        document.head.appendChild(element);
-      }
-      element.setAttribute('content', content);
-    };
+  return (
+    <Helmet>
+      {/* Title & Core Meta */}
+      <title>{effectiveTitle}</title>
+      <meta name="description" content={effectiveDesc} />
+      {keywords && <meta name="keywords" content={keywords} />}
+      <link rel="canonical" href={canonicalUrl} />
 
-    // 2. Set Open Graph tags
-    setMetaTag('property', 'og:title', effectiveTitle);
-    setMetaTag('property', 'og:description', effectiveDesc);
-    setMetaTag('property', 'og:image', effectiveImage);
-    setMetaTag('property', 'og:url', currentUrl);
-    setMetaTag('property', 'og:type', type);
+      {/* Crawl Control */}
+      {noindex ? (
+        <meta name="robots" content="noindex, nofollow" />
+      ) : (
+        <meta name="robots" content="index, follow" />
+      )}
 
-    // 3. Set Twitter Card tags
-    setMetaTag('name', 'twitter:title', effectiveTitle);
-    setMetaTag('name', 'twitter:description', effectiveDesc);
-    setMetaTag('name', 'twitter:image', effectiveImage);
+      {/* Open Graph Tags */}
+      <meta property="og:site_name" content="Camqrew" />
+      <meta property="og:title" content={effectiveTitle} />
+      <meta property="og:description" content={effectiveDesc} />
+      <meta property="og:image" content={effectiveImage} />
+      <meta property="og:image:secure_url" content={effectiveImage} />
+      <meta property="og:url" content={canonicalUrl} />
+      <meta property="og:type" content={type} />
 
-    // Also update standard description
-    setMetaTag('name', 'description', effectiveDesc);
+      {/* Twitter Cards */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:site" content="@camqrew" />
+      <meta name="twitter:title" content={effectiveTitle} />
+      <meta name="twitter:description" content={effectiveDesc} />
+      <meta name="twitter:image" content={effectiveImage} />
 
-    return () => {
-      // Revert to defaults on cleanup
-      document.title = defaultTitle;
-      setMetaTag('property', 'og:title', defaultTitle);
-      setMetaTag('property', 'og:description', defaultDesc);
-      setMetaTag('property', 'og:image', defaultImage);
-      setMetaTag('property', 'og:type', 'website');
-      setMetaTag('name', 'twitter:title', defaultTitle);
-      setMetaTag('name', 'twitter:description', defaultDesc);
-      setMetaTag('name', 'twitter:image', defaultImage);
-      setMetaTag('name', 'description', defaultDesc);
-    };
-  }, [title, description, image, url, type]);
-
-  return null;
+      {/* Optional Structured Data JSON-LD */}
+      {schema && (
+        <script type="application/ld+json">
+          {JSON.stringify(schema)}
+        </script>
+      )}
+    </Helmet>
+  );
 };

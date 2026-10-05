@@ -7,6 +7,7 @@ import { LocationSelector } from '../components/LocationSelector';
 import { GoogleIcon, AppleIcon } from '../components/SocialAuthButtons';
 import { CustomSelect } from '../components/CustomSelect';
 import { getArchetype, PROFESSIONAL_CATEGORIES } from '../constants/categories';
+import { SEOHead } from '../components/SEOHead';
 import './AuthFlow.css';
 
 import {
@@ -464,6 +465,11 @@ export const AuthPage: React.FC = () => {
 
   return (
     <div className="auth-flow-viewport">
+      <SEOHead
+        title={isRegisterParam ? "Sign Up & Join Camqrew" : "Sign In to Camqrew"}
+        description="Sign in or register for Camqrew to book verified cinematographers, photographers, drone pilots, or rent cinema equipment."
+        noindex={true}
+      />
       <div className="auth-centered-wrapper">
         
 

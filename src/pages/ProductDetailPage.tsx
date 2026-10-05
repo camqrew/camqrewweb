@@ -7,6 +7,7 @@ import { useAuthStore } from '../store/authStore';
 import { CustomDatePicker } from '../components/CustomDatePicker';
 import { ProductCard } from '../components/ProductCard';
 import { ImageLightboxModal } from '../components/ImageLightboxModal';
+import { SEOHead } from '../components/SEOHead';
 import { 
   ArrowLeft, 
   Star, 
@@ -208,8 +209,37 @@ export const ProductDetailPage: React.FC = () => {
     badgeClass = 'badge-used';
   }
 
+  const productTitle = `${product.name} - ${isRental ? 'Rent' : 'Buy'} Cinema Gear`;
+  const productDesc = product.description 
+    ? `${product.description.slice(0, 150)}... Available on Camqrew with milestone escrow protection.`
+    : `Rent or buy ${product.name} with verified escrow protection on Camqrew.`;
+  const productImg = product.image || product.gallery?.[0] || 'https://camqrew.in/og-image.jpg';
+
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description || productDesc,
+    image: productImg,
+    offers: {
+      '@type': 'Offer',
+      price: product.price,
+      priceCurrency: 'INR',
+      availability: 'https://schema.org/InStock',
+      url: `https://camqrew.in/marketplace/${product.id}`,
+    },
+  };
+
   return (
     <div className="product-detail-page container">
+      <SEOHead
+        title={productTitle}
+        description={productDesc}
+        image={productImg}
+        canonical={`https://camqrew.in/marketplace/${product.id}`}
+        type="product"
+        schema={productSchema}
+      />
       {/* Toast Notification */}
       {toastMessage && (
         <div className="global-floating-toast">

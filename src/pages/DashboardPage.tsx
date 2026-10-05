@@ -12,6 +12,7 @@ import type { JobRequest } from '../types/job';
 import type { Product } from '../types/product';
 import type { ProfessionalProfile } from '../types/professional';
 import { useAuthStore } from '../store/authStore';
+import { SEOHead } from '../components/SEOHead';
 import { 
   LayoutDashboard,
   Calendar, 
@@ -1102,6 +1103,7 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="dashboard-page container" style={{ paddingBottom: 60, minHeight: '80vh' }}>
+      <SEOHead title="Dashboard" noindex={true} />
       {/* Toast Notification */}
       {toastMessage && (
         <div className="dashboard-toast">

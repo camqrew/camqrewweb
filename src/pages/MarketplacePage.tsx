@@ -8,6 +8,7 @@ import { useAuthStore } from '../store/authStore';
 import { LocationSelector } from '../components/LocationSelector';
 import { CustomDatePicker } from '../components/CustomDatePicker';
 import { ProductCard } from '../components/ProductCard';
+import { SEOHead } from '../components/SEOHead';
 import { 
   ShoppingBag, 
   Search, 
@@ -254,8 +255,23 @@ export const MarketplacePage: React.FC = () => {
   const activeDeposit = getSecurityDeposit(cartTab);
   const activeTotal = getTotal(cartTab);
 
+  const marketTitle = categoryFilter !== 'All'
+    ? `${categoryFilter} Rentals & Marketplace`
+    : (typeFilter === 'rental' 
+        ? 'Cinema Camera & Gear Rentals India' 
+        : 'Cinema Equipment & Camera Gear Marketplace');
+
+  const marketDesc = categoryFilter !== 'All'
+    ? `Rent and buy verified ${categoryFilter.toLowerCase()} across India. Sony, RED, ARRI, Canon, DJI cinema gear with milestone escrow protection.`
+    : 'Rent verified cinema cameras, cine lenses, lighting kits, audio gear, and drones anywhere in India with milestone escrow protection on Camqrew.';
+
   return (
     <div className="marketplace-page container">
+      <SEOHead
+        title={marketTitle}
+        description={marketDesc}
+        canonical="https://camqrew.in/marketplace"
+      />
       {/* Visual Toast Notification */}
       {toastMessage && (
         <div className="global-floating-toast">

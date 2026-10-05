@@ -5,6 +5,7 @@ import type { ProfessionalProfile } from '../types/professional';
 import { ProCard } from '../components/ProCard';
 import { LocationSelector } from '../components/LocationSelector';
 import { Search, UserCheck, X, MapPin } from 'lucide-react';
+import { SEOHead } from '../components/SEOHead';
 
 export const ExplorePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -80,8 +81,21 @@ export const ExplorePage: React.FC = () => {
 
   const hasActiveFilters = category !== 'All' || searchQuery || location.state;
 
+  const locString = location.city || location.district || location.state || 'India';
+  const seoTitle = category && category !== 'All'
+    ? `Hire Verified ${category} in ${locString}`
+    : `Explore Verified Production Crews & Creators in ${locString}`;
+  const seoDescription = category && category !== 'All'
+    ? `Find and book top-rated verified ${category.toLowerCase()} in ${locString}. View portfolios, verified reviews, and hire securely with milestone escrow on Camqrew.`
+    : `Browse verified cinematographers, wedding photographers, drone pilots, and editors across India. Book safely with escrow protection on Camqrew.`;
+
   return (
     <div className="explore-page container">
+      <SEOHead
+        title={seoTitle}
+        description={seoDescription}
+        canonical="https://camqrew.in/explore"
+      />
       <div className="explore-header" style={{ marginBottom: 24 }}>
         <h1 className="page-title">Explore Creative Crew Across India</h1>
         <p className="page-subtitle">

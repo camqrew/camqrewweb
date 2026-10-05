@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { jobApi } from '../api/jobApi';
 import { LocationSelector } from '../components/LocationSelector';
 import { CustomSelect } from '../components/CustomSelect';
+import { SEOHead } from '../components/SEOHead';
 import { useAuthStore } from '../store/authStore';
 import { 
   Radio, 
@@ -128,6 +129,11 @@ export const CreateJobPage: React.FC = () => {
 
   return (
     <div className="create-job-page container">
+      <SEOHead
+        title="Post a Production Job & Broadcast Request"
+        description="Post your film shoot, commercial, wedding, or event production requirements. Receive verified proposals from top cinematographers, photographers, and drone pilots on Camqrew."
+        canonical="https://camqrew.in/jobs/create"
+      />
       {/* Top Breadcrumb Navigation */}
       <div className="broadcast-top-nav">
         <button onClick={() => navigate(-1)} className="btn-back-link">
