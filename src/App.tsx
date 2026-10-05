@@ -6,6 +6,7 @@ import { Layout as AdminLayout } from './components/Layout';
 // Public & Customer / Creator Pages
 import HomePage from './pages/HomePage';
 import ExplorePage from './pages/ExplorePage';
+import CityLandingPage from './pages/CityLandingPage';
 import CreatorProfilePage from './pages/CreatorProfilePage';
 import BookingPage from './pages/BookingPage';
 import CreateJobPage from './pages/CreateJobPage';
@@ -67,6 +68,8 @@ function App() {
         <Route element={<MainLayout theme={theme} toggleTheme={toggleTheme} />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/crews/:city" element={<CityLandingPage />} />
+          <Route path="/city/:city" element={<CityLandingPage />} />
           <Route path="/reels" element={<ReelsFeedPage />} />
           <Route path="/showcase" element={<Navigate to="/reels" replace />} />
           <Route path="/creators/:id" element={<CreatorProfilePage />} />

@@ -33,6 +33,18 @@ export const Footer: React.FC = () => {
           </div>
 
           <div className="footer-col">
+            <h4 className="footer-title">Production Hubs</h4>
+            <ul className="footer-links">
+              <li><Link to="/crews/mumbai">Mumbai Film Crews</Link></li>
+              <li><Link to="/crews/delhi">Delhi NCR Crews</Link></li>
+              <li><Link to="/crews/bengaluru">Bengaluru Tech Shoots</Link></li>
+              <li><Link to="/crews/hyderabad">Hyderabad Tollywood</Link></li>
+              <li><Link to="/crews/chennai">Chennai Kollywood</Link></li>
+              <li><Link to="/crews/goa">Goa Destination Shoots</Link></li>
+            </ul>
+          </div>
+
+          <div className="footer-col">
             <h4 className="footer-title">Gear Marketplace</h4>
             <ul className="footer-links">
               <li><Link to="/marketplace?type=rental&category=Cameras">Cinema Cameras for Rent</Link></li>

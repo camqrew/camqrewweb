@@ -30,7 +30,10 @@ import {
   Car,
   Gift,
   Music,
-  Mic
+  Mic,
+  Lock,
+  Scale,
+  CheckCircle2
 } from 'lucide-react';
 
 const POPULAR_HUBS = [
@@ -469,31 +472,176 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      <section className="escrow-explainer-section">
+      {/* ── TOP PRODUCTION HUBS BY CITY (LOCAL SEO & DISCOVERY) ── */}
+      <section className="city-hubs-section" style={{ padding: '60px 0', borderTop: '1px solid var(--border-color, rgba(255,255,255,0.06))' }}>
         <div className="container">
-          <div className="escrow-header text-center">
-            <div className="escrow-icon-badge">
-              <ShieldCheck size={32} color="var(--accent)" />
+          <div className="section-header" style={{ marginBottom: 28 }}>
+            <div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--accent, #10b981)', fontSize: 13, fontWeight: 700, marginBottom: 8 }}>
+                <MapPin size={15} />
+                <span>Pan-India Film & Media Network</span>
+              </div>
+              <h2 className="section-title">Explore Production Crews by City</h2>
+              <p className="section-subtitle">Find local cinematographers, wedding photographers, and rental gear stationed in top creative hubs.</p>
             </div>
-            <h2 className="section-title">Milestone Escrow Protection</h2>
-            <p className="section-subtitle">Zero payment friction. Your money is held in escrow and disbursed as each milestone is met.</p>
+            <Link to="/explore" className="btn btn-outline">
+              Explore All Districts <ArrowRight size={16} />
+            </Link>
           </div>
 
-          <div className="escrow-steps-grid">
-            <div className="escrow-step-card card">
-              <div className="step-num">30%</div>
-              <h3 className="step-title">Advance Escrow</h3>
-              <p className="step-desc">Held safely when booking is confirmed. Pro locks calendar and travels to shoot location.</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
+            {[
+              { slug: 'mumbai', name: 'Mumbai', desc: 'Bollywood, Commercial Ad Shoots & Film City', count: '120+ Crews', color: '#3fb668' },
+              { slug: 'delhi', name: 'Delhi NCR', desc: 'Royal Weddings, Fashion & Noida Film City', count: '95+ Crews', color: '#6366f1' },
+              { slug: 'bengaluru', name: 'Bengaluru', desc: 'Tech Brand Films, Indie Cinema & Aerial Shoots', count: '80+ Crews', color: '#f59e0b' },
+              { slug: 'hyderabad', name: 'Hyderabad', desc: 'Tollywood Features, Studio Shoots & Events', count: '70+ Crews', color: '#ec4899' },
+              { slug: 'chennai', name: 'Chennai', desc: 'Kollywood Feature Shoots & Classical Weddings', count: '60+ Crews', color: '#06b6d4' },
+              { slug: 'goa', name: 'Goa', desc: 'Destination Weddings, Music Festivals & Coastal', count: '45+ Crews', color: '#10b981' },
+            ].map((hub) => (
+              <Link
+                key={hub.slug}
+                to={`/crews/${hub.slug}`}
+                className="card"
+                style={{
+                  padding: '24px 20px',
+                  textDecoration: 'none',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  borderRadius: 16,
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.005) 100%)',
+                  transition: 'transform 0.2s, border-color 0.2s'
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>{hub.name}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 8px', borderRadius: 12, background: 'rgba(255,255,255,0.08)', color: hub.color }}>
+                      {hub.count}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                    {hub.desc}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--accent, #10b981)', fontSize: 13, fontWeight: 700, marginTop: 18 }}>
+                  <span>View Verified Crews</span>
+                  <ArrowRight size={14} />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── ADVANCED TRUST & MILESTONE ESCROW ARCHITECTURE ── */}
+      <section className="escrow-explainer-section" style={{ padding: '70px 0', background: 'linear-gradient(180deg, rgba(16, 185, 129, 0.03) 0%, transparent 100%)' }}>
+        <div className="container">
+          <div className="escrow-header text-center" style={{ maxWidth: 760, margin: '0 auto 40px auto' }}>
+            <div className="escrow-icon-badge" style={{ display: 'inline-flex', padding: 12, borderRadius: 24, background: 'rgba(16, 185, 129, 0.12)', marginBottom: 16 }}>
+              <ShieldCheck size={36} color="var(--accent, #10b981)" />
             </div>
-            <div className="escrow-step-card card">
-              <div className="step-num">40%</div>
-              <h3 className="step-title">Shoot Wrap Escrow</h3>
-              <p className="step-desc">Released upon completion of physical shoot day and footage backup verification.</p>
+            <h2 className="section-title" style={{ fontSize: 'clamp(26px, 3.5vw, 36px)', fontWeight: 800 }}>
+              Milestone Escrow Protection Guarantee
+            </h2>
+            <p className="section-subtitle" style={{ fontSize: 16, color: 'var(--text-secondary)', marginTop: 8 }}>
+              Zero payment friction. Your money is held in a secure escrow vault and only disbursed as verified deliverables are met and approved.
+            </p>
+          </div>
+
+          {/* 3-Step Milestone Timeline */}
+          <div className="escrow-steps-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, marginBottom: 36 }}>
+            <div className="escrow-step-card card" style={{ padding: '28px 24px', borderRadius: 16, position: 'relative' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <span style={{ fontSize: 26, fontWeight: 900, color: 'var(--accent, #10b981)' }}>30%</span>
+                <span style={{ fontSize: 11, fontWeight: 800, padding: '4px 10px', borderRadius: 12, background: 'rgba(16, 185, 129, 0.1)', color: 'var(--accent, #10b981)' }}>
+                  MILESTONE 1
+                </span>
+              </div>
+              <h3 className="step-title" style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: 'var(--text-primary)' }}>
+                Advance Escrow Lock
+              </h3>
+              <p className="step-desc" style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                Client deposits funds into escrow upon booking confirmation. The creator locks their calendar, confirms call sheet, and begins pre-production prep.
+              </p>
             </div>
-            <div className="escrow-step-card card">
-              <div className="step-num">30%</div>
-              <h3 className="step-title">Final Deliverables</h3>
-              <p className="step-desc">Released only after you review high-res color graded deliverables and approve.</p>
+
+            <div className="escrow-step-card card" style={{ padding: '28px 24px', borderRadius: 16, position: 'relative' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <span style={{ fontSize: 26, fontWeight: 900, color: '#6366f1' }}>40%</span>
+                <span style={{ fontSize: 11, fontWeight: 800, padding: '4px 10px', borderRadius: 12, background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}>
+                  MILESTONE 2
+                </span>
+              </div>
+              <h3 className="step-title" style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: 'var(--text-primary)' }}>
+                Shoot Wrap & Backup
+              </h3>
+              <p className="step-desc" style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                Released upon completion of physical shoot day, footage offloading verification, and client check-in confirmation on the Camqrew platform.
+              </p>
+            </div>
+
+            <div className="escrow-step-card card" style={{ padding: '28px 24px', borderRadius: 16, position: 'relative' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <span style={{ fontSize: 26, fontWeight: 900, color: '#f59e0b' }}>30%</span>
+                <span style={{ fontSize: 11, fontWeight: 800, padding: '4px 10px', borderRadius: 12, background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+                  MILESTONE 3
+                </span>
+              </div>
+              <h3 className="step-title" style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: 'var(--text-primary)' }}>
+                Final Deliverables & Signoff
+              </h3>
+              <p className="step-desc" style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                Released only after you inspect the high-resolution deliverables, master edits, or color-graded photos and approve release.
+              </p>
+            </div>
+          </div>
+
+          {/* Dual Perspective Trust Matrix */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
+            {/* For Clients */}
+            <div className="card" style={{ padding: '28px 26px', borderRadius: 16, background: 'rgba(255, 255, 255, 0.02)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, color: 'var(--text-primary)' }}>
+                <Lock size={20} color="var(--accent, #10b981)" />
+                <h4 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>Client Protection Guarantee</h4>
+              </div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13.5, color: 'var(--text-secondary)' }}>
+                  <CheckCircle2 size={16} color="var(--accent, #10b981)" style={{ marginTop: 2, flexShrink: 0 }} />
+                  <span><strong>Zero Ghosting Risk:</strong> Funds are never paid direct in cash upfront before work begins.</span>
+                </li>
+                <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13.5, color: 'var(--text-secondary)' }}>
+                  <CheckCircle2 size={16} color="var(--accent, #10b981)" style={{ marginTop: 2, flexShrink: 0 }} />
+                  <span><strong>Inspection Window:</strong> 72-hour review period for client deliverable approval.</span>
+                </li>
+                <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13.5, color: 'var(--text-secondary)' }}>
+                  <CheckCircle2 size={16} color="var(--accent, #10b981)" style={{ marginTop: 2, flexShrink: 0 }} />
+                  <span><strong>Neutral Dispute Resolution:</strong> Free Camqrew arbitration if shoot requirements are unfulfilled.</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* For Creators */}
+            <div className="card" style={{ padding: '28px 26px', borderRadius: 16, background: 'rgba(255, 255, 255, 0.02)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, color: 'var(--text-primary)' }}>
+                <Scale size={20} color="#6366f1" />
+                <h4 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>Creator Security & Guaranteed Payouts</h4>
+              </div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13.5, color: 'var(--text-secondary)' }}>
+                  <CheckCircle2 size={16} color="#6366f1" style={{ marginTop: 2, flexShrink: 0 }} />
+                  <span><strong>Verified Client Budget:</strong> Shoot funds are confirmed in escrow before you pack your camera gear.</span>
+                </li>
+                <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13.5, color: 'var(--text-secondary)' }}>
+                  <CheckCircle2 size={16} color="#6366f1" style={{ marginTop: 2, flexShrink: 0 }} />
+                  <span><strong>Cancellation Fee Protection:</strong> If client cancels within 48h of shoot, advance is retained by creator.</span>
+                </li>
+                <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13.5, color: 'var(--text-secondary)' }}>
+                  <CheckCircle2 size={16} color="#6366f1" style={{ marginTop: 2, flexShrink: 0 }} />
+                  <span><strong>Instant Bank Settlement:</strong> Automated payouts straight to your verified UPI or bank account.</span>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
