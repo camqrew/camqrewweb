@@ -212,15 +212,61 @@ export default function Orders() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const formatCurrency = (amount: number) => {
-    if (amount === undefined || amount === null) return 'N/A';
-    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
+  const formatCurrency = (amount: any) => {
+    const num = Number(amount);
+    if (isNaN(num)) return '₹0';
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
   };
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return 'N/A';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return 'N/A';
+      return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    } catch {
+      return 'N/A';
+    }
+  };
+
+  const formatDateTime = (dateStr: string) => {
+    if (!dateStr) return 'N/A';
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return 'N/A';
+      return date.toLocaleString('en-IN', { 
+        day: '2-digit', 
+        month: 'short', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return 'N/A';
+    }
+  };
+
+  const formatLocation = (order: any): string => {
+    if (!order) return 'N/A';
+    if (order.raw?.shipping_address) {
+      const addr = order.raw.shipping_address;
+      if (typeof addr === 'string') return addr;
+      if (typeof addr === 'object') {
+        const parts = [
+          addr.addressLine1 || addr.address || addr.street,
+          addr.city,
+          addr.state,
+          addr.pincode || addr.postalCode
+        ].filter(Boolean);
+        if (parts.length > 0) return parts.join(', ');
+      }
+    }
+    const loc = order.raw?.location_details;
+    if (typeof loc === 'string' && loc.trim()) return loc;
+    if (loc && typeof loc === 'object') {
+      return loc.address || loc.city || loc.location || loc.venue || 'On-Location Shoot';
+    }
+    return order.type === 'Service Hire' ? 'On-Location Shoot' : 'Direct Service';
   };
 
   // Filter orders
@@ -482,7 +528,7 @@ export default function Orders() {
                   Order Details: {selectedOrder.id ? selectedOrder.id.slice(0, 8).toUpperCase() : ''}
                 </h2>
                 <p className="admin-modal-sub">
-                  Created on {new Date(selectedOrder.created_at).toLocaleString()} • {selectedOrder.type}
+                  Created on {formatDateTime(selectedOrder.created_at)} • {selectedOrder.type}
                 </p>
               </div>
 
@@ -521,7 +567,7 @@ export default function Orders() {
                   <Mail size={16} className="dossier-meta-icon" />
                   <div>
                     <span className="dossier-label">Customer Name</span>
-                    <span className="dossier-value">{selectedOrder.customerName}</span>
+                    <span className="dossier-value">{selectedOrder.customerName || 'Customer'}</span>
                   </div>
                 </div>
 
@@ -530,7 +576,7 @@ export default function Orders() {
                   <div>
                     <span className="dossier-label">Phone Contact</span>
                     <span className="dossier-value">
-                      {selectedOrder.raw?.shipping_address?.phone || selectedOrder.customerPhone || 'Not shared'}
+                      {String(selectedOrder.raw?.shipping_address?.phone || selectedOrder.customerPhone || 'Not shared')}
                     </span>
                   </div>
                 </div>
@@ -538,11 +584,11 @@ export default function Orders() {
                 <div className="dossier-meta-item">
                   <MapPin size={16} className="dossier-meta-icon" />
                   <div>
-                    <span className="dossier-label">Delivery Destination</span>
+                    <span className="dossier-label">
+                      {selectedOrder.type === 'Service Hire' ? 'Shoot / Event Location' : 'Delivery Destination'}
+                    </span>
                     <span className="dossier-value">
-                      {selectedOrder.raw?.shipping_address ? (
-                        `${selectedOrder.raw.shipping_address.city || ''}, ${selectedOrder.raw.shipping_address.state || ''} - ${selectedOrder.raw.shipping_address.pincode || ''}`
-                      ) : (selectedOrder.raw?.location_details || 'Digital Service Hire')}
+                      {formatLocation(selectedOrder)}
                     </span>
                   </div>
                 </div>
@@ -558,19 +604,58 @@ export default function Orders() {
                 </div>
               </div>
 
+              {/* Service Hire Details Card (For Production / Shoot Bookings) */}
+              {selectedOrder.type === 'Service Hire' && (
+                <div className="order-summary-box" style={{ marginBottom: 16 }}>
+                  <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Package size={15} color="var(--accent)" />
+                    <span>Crew Hire Details</span>
+                  </div>
+                  {selectedOrder.raw?.items?.serviceTitle && (
+                    <div className="order-summary-row">
+                      <span>Service Title</span>
+                      <span style={{ fontWeight: 600 }}>{String(selectedOrder.raw.items.serviceTitle)}</span>
+                    </div>
+                  )}
+                  {selectedOrder.raw?.items?.daysCount && (
+                    <div className="order-summary-row">
+                      <span>Shoot Duration</span>
+                      <span>{selectedOrder.raw.items.daysCount} Day(s)</span>
+                    </div>
+                  )}
+                  {selectedOrder.raw?.booking_date && (
+                    <div className="order-summary-row">
+                      <span>Date of Shoot</span>
+                      <span>{formatDate(selectedOrder.raw.booking_date)}</span>
+                    </div>
+                  )}
+                  {selectedOrder.raw?.start_time && (
+                    <div className="order-summary-row">
+                      <span>Call Time</span>
+                      <span>{selectedOrder.raw.start_time}{selectedOrder.raw.end_time ? ` - ${selectedOrder.raw.end_time}` : ''}</span>
+                    </div>
+                  )}
+                  {selectedOrder.raw?.items?.notes && (
+                    <div style={{ marginTop: 10, padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 6, fontSize: 12, color: 'var(--text-secondary)' }}>
+                      <strong style={{ color: 'var(--text-primary)' }}>Client Notes:</strong> {String(selectedOrder.raw.items.notes)}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Financial Breakdown Card */}
               <div className="order-summary-box">
                 <div className="order-summary-row">
                   <span>Subtotal</span>
                   <span>{formatCurrency(selectedOrder.raw?.subtotal || selectedOrder.raw?.total_amount || selectedOrder.amount)}</span>
                 </div>
-                {selectedOrder.raw?.tax > 0 && (
+                {Number(selectedOrder.raw?.tax) > 0 && (
                   <div className="order-summary-row">
                     <span>Tax</span>
                     <span>{formatCurrency(selectedOrder.raw.tax)}</span>
                   </div>
                 )}
-                {selectedOrder.raw?.shipping_fee > 0 && (
+                {Number(selectedOrder.raw?.shipping_fee) > 0 && (
                   <div className="order-summary-row">
                     <span>Shipping Fee</span>
                     <span>{formatCurrency(selectedOrder.raw.shipping_fee)}</span>
