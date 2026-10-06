@@ -485,6 +485,28 @@ export default function Orders() {
                           <span>Details</span>
                         </button>
 
+                        {(order.raw?.awb_code || order.raw?.shiprocket_order_id) && (
+                          <a 
+                            href={getShiprocketTrackingUrl(order.raw.awb_code, order.raw.shiprocket_order_id)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="admin-btn-action"
+                            style={{ 
+                              textDecoration: 'none', 
+                              color: 'var(--accent)', 
+                              borderColor: 'rgba(63, 182, 104, 0.4)',
+                              background: 'rgba(63, 182, 104, 0.08)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4
+                            }}
+                            title="Direct Shiprocket Courier Tracking"
+                          >
+                            <Truck size={14} />
+                            <span>Track ↗</span>
+                          </a>
+                        )}
+
                         {/* Functional Refresh Sync row */}
                         <button 
                           type="button" 
@@ -703,14 +725,14 @@ export default function Orders() {
                         <span>Dispatched</span>
                       </span>
                       <a 
-                        href={getShiprocketTrackingUrl(selectedOrder.raw.awb_code)}
+                        href={getShiprocketTrackingUrl(selectedOrder.raw.awb_code, selectedOrder.raw.shiprocket_order_id)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="admin-btn admin-btn-secondary"
                         style={{ padding: '6px 12px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'none' }}
                       >
                         <ExternalLink size={13} />
-                        <span>Track Shipment</span>
+                        <span>Track Shipment ↗</span>
                       </a>
                     </div>
                   )}

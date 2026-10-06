@@ -64,10 +64,23 @@ export const createShiprocketOrder = async (payload: ShiprocketOrderPayload): Pr
   };
 };
 
-/**
- * Generates official Shiprocket customer tracking URL for an AWB number
- */
-export const getShiprocketTrackingUrl = (awbCode: string): string => {
-  if (!awbCode) return '#';
-  return `https://shiprocket.co//tracking/${encodeURIComponent(awbCode.trim())}`;
+export const getShiprocketTrackingUrl = (awbCode?: string, shiprocketOrderId?: string): string => {
+  const cleanAwb = (awbCode || '').trim();
+  const cleanOrderId = (shiprocketOrderId || '').trim();
+
+  // If a valid courier AWB number exists and is not a pending placeholder
+  if (cleanAwb && !cleanAwb.toUpperCase().startsWith('PENDING')) {
+    return `https://shiprocket.co//tracking/${encodeURIComponent(cleanAwb)}`;
+  }
+
+  // Fallback to Shiprocket Order ID tracking
+  if (cleanOrderId && !cleanOrderId.startsWith('SR-')) {
+    return `https://shiprocket.co//tracking/order/${encodeURIComponent(cleanOrderId)}`;
+  }
+
+  if (cleanAwb) {
+    return `https://shiprocket.co//tracking/${encodeURIComponent(cleanAwb)}`;
+  }
+
+  return 'https://shiprocket.co//tracking';
 };

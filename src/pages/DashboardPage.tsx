@@ -6,13 +6,13 @@ import { jobApi } from '../api/jobApi';
 import { productApi } from '../api/productApi';
 import { professionalApi } from '../api/professionalApi';
 import { payoutApi, type PayoutRecord, type CreatorPayoutDetails } from '../api/payoutApi';
+import { getShiprocketTrackingUrl } from '../api/shiprocketService';
 import type { Booking } from '../types/booking';
 import type { Order } from '../types/order';
 import type { JobRequest } from '../types/job';
 import type { Product } from '../types/product';
 import type { ProfessionalProfile } from '../types/professional';
 import { useAuthStore } from '../store/authStore';
-import { SEOHead } from '../components/SEOHead';
 import { 
   LayoutDashboard,
   Calendar, 
@@ -1103,7 +1103,6 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="dashboard-page container" style={{ paddingBottom: 60, minHeight: '80vh' }}>
-      <SEOHead title="Dashboard" noindex={true} />
       {/* Toast Notification */}
       {toastMessage && (
         <div className="dashboard-toast">
@@ -3288,10 +3287,32 @@ export const DashboardPage: React.FC = () => {
                           Placed on {new Date(ord.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                           {ord.shippingAddress?.city ? ` • Shipping to ${ord.shippingAddress.city}, ${ord.shippingAddress.state}` : ''}
                         </p>
-                        {ord.awb_code && (
-                          <p style={{ color: 'var(--accent)', fontSize: 12, marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <Truck size={14} /> Tracking AWB: <strong>{ord.awb_code}</strong> ({ord.courier_name || 'Courier'})
-                          </p>
+                        {(ord.awb_code || ord.shiprocket_order_id) && (
+                          <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                            <p style={{ color: 'var(--accent)', fontSize: 12, margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <Truck size={14} /> Tracking: <strong>{ord.awb_code || 'Assigned'}</strong> ({ord.courier_name || 'Shiprocket'})
+                            </p>
+                            <a
+                              href={getShiprocketTrackingUrl(ord.awb_code, ord.shiprocket_order_id)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn btn-outline btn-xs"
+                              style={{ 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                gap: 4, 
+                                fontSize: 11, 
+                                padding: '3px 8px', 
+                                borderRadius: 6,
+                                borderColor: 'var(--accent)',
+                                color: 'var(--accent)',
+                                textDecoration: 'none'
+                              }}
+                            >
+                              <ExternalLink size={11} />
+                              <span>Track Shipment ↗</span>
+                            </a>
+                          </div>
                         )}
                       </div>
 
@@ -3299,6 +3320,18 @@ export const DashboardPage: React.FC = () => {
                         <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Order Total</span>
                         <strong className="payout-val">₹{ord.total.toLocaleString('en-IN')}</strong>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+                          {(ord.awb_code || ord.shiprocket_order_id) && (
+                            <a
+                              href={getShiprocketTrackingUrl(ord.awb_code, ord.shiprocket_order_id)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn btn-primary btn-sm"
+                              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: 12, textDecoration: 'none' }}
+                            >
+                              <Truck size={13} />
+                              <span>Track Live ↗</span>
+                            </a>
+                          )}
                           <span style={{ fontSize: 11, color: 'var(--accent)', textAlign: 'center', fontWeight: 600 }}>
                             🛡️ 100% Escrow Protected
                           </span>
