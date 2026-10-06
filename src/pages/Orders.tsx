@@ -13,10 +13,11 @@ import {
   Mail, 
   MapPin, 
   DollarSign, 
-  Package
+  Package,
+  ExternalLink
 } from 'lucide-react';
 import { supabase } from '../api/supabaseClient';
-import { createShiprocketOrder } from '../api/shiprocketService';
+import { createShiprocketOrder, getShiprocketTrackingUrl } from '../api/shiprocketService';
 
 export default function Orders() {
   const [ordersList, setOrdersList] = useState<any[]>([]);
@@ -135,26 +136,39 @@ export default function Orders() {
     if (!selectedOrder) return;
     setFulfilling(true);
     try {
+      const rawAddress = selectedOrder.raw?.shipping_address || {};
+      const rawItems = Array.isArray(selectedOrder.raw?.items) ? selectedOrder.raw.items : [];
+
+      const mappedItems = rawItems.map((it: any, index: number) => {
+        const prod = it.product || it;
+        return {
+          name: prod.title || prod.name || `Gear Item ${index + 1}`,
+          sku: prod.id ? `SKU-${String(prod.id).slice(0, 10)}` : `SKU-${index + 1}`,
+          units: Number(it.quantity || 1),
+          selling_price: String(prod.price || prod.daily_rate || Math.round(selectedOrder.amount / (rawItems.length || 1))),
+        };
+      });
+
       const response = await createShiprocketOrder({
         order_id: selectedOrder.id,
         order_date: selectedOrder.created_at,
-        pickup_location: 'Camqrew HQ',
-        billing_customer_name: selectedOrder.customerName,
-        billing_address: selectedOrder.raw?.shipping_address?.addressLine1 || 'Unknown',
-        billing_city: selectedOrder.raw?.shipping_address?.city || 'Unknown',
-        billing_pincode: selectedOrder.raw?.shipping_address?.pincode || '000000',
-        billing_state: selectedOrder.raw?.shipping_address?.state || 'Unknown',
+        billing_customer_name: rawAddress.fullName || selectedOrder.customerName || 'Customer',
+        billing_address: rawAddress.addressLine1 || 'Studio Address',
+        billing_address_2: rawAddress.addressLine2 || '',
+        billing_city: rawAddress.city || 'Mumbai',
+        billing_pincode: rawAddress.pincode || '400001',
+        billing_state: rawAddress.state || 'Maharashtra',
         billing_country: 'India',
-        billing_email: selectedOrder.raw?.shipping_address?.email || selectedOrder.customerEmail || 'test@camqrew.in',
-        billing_phone: selectedOrder.raw?.shipping_address?.phone || selectedOrder.customerPhone || '0000000000',
+        billing_email: selectedOrder.customerEmail || rawAddress.email || 'billing@camqrew.in',
+        billing_phone: rawAddress.phone || selectedOrder.customerPhone || '9999999999',
         shipping_is_billing: true,
-        order_items: [],
+        order_items: mappedItems,
         payment_method: selectedOrder.raw?.payment_method === 'COD' ? 'COD' : 'Prepaid',
         sub_total: selectedOrder.amount,
-        length: 10,
-        breadth: 10,
+        length: 15,
+        breadth: 15,
         height: 10,
-        weight: 1
+        weight: 1.0
       });
 
       // Update in Supabase
@@ -176,7 +190,8 @@ export default function Orders() {
         raw: { 
           ...selectedOrder.raw, 
           awb_code: response.awb_code, 
-          courier_name: response.courier_name 
+          courier_name: response.courier_name,
+          shiprocket_order_id: response.order_id
         } 
       };
       setSelectedOrder(updatedOrder);
@@ -185,7 +200,7 @@ export default function Orders() {
       setToastMessage(`Dispatched via ${response.courier_name}! AWB: ${response.awb_code} 🚚`);
     } catch (error: any) {
       console.error(error);
-      alert('Failed to fulfill via Shiprocket.');
+      alert(error.message || 'Failed to fulfill via Shiprocket.');
     } finally {
       setFulfilling(false);
     }
@@ -577,7 +592,9 @@ export default function Orders() {
                     </div>
                     <p style={{ margin: '4px 0 0', fontSize: 12.5, color: 'var(--text-secondary)' }}>
                       {selectedOrder.raw?.awb_code ? (
-                        `Fulfilled via ${selectedOrder.raw.courier_name || 'Courier'} • AWB: ${selectedOrder.raw.awb_code}`
+                        <span>
+                          Fulfilled via <strong>{selectedOrder.raw.courier_name || 'Courier'}</strong> • AWB: <strong>{selectedOrder.raw.awb_code}</strong>
+                        </span>
                       ) : (
                         'Generate courier pickup label & AWB tracking for this shipment'
                       )}
@@ -595,10 +612,22 @@ export default function Orders() {
                       <span>{fulfilling ? 'Generating AWB...' : 'Fulfill via Shiprocket'}</span>
                     </button>
                   ) : (
-                    <span className="admin-pill-badge success">
-                      <CheckCircle2 size={14} />
-                      <span>Label Generated</span>
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span className="admin-pill-badge success">
+                        <CheckCircle2 size={14} />
+                        <span>Dispatched</span>
+                      </span>
+                      <a 
+                        href={getShiprocketTrackingUrl(selectedOrder.raw.awb_code)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="admin-btn admin-btn-secondary"
+                        style={{ padding: '6px 12px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'none' }}
+                      >
+                        <ExternalLink size={13} />
+                        <span>Track Shipment</span>
+                      </a>
+                    </div>
                   )}
                 </div>
               )}
