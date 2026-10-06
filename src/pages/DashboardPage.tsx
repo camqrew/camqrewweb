@@ -343,6 +343,9 @@ export const DashboardPage: React.FC = () => {
   const [newGearCondition, setNewGearCondition] = useState('Brand New');
   const [newGearImage, setNewGearImage] = useState('');
   const [newGearDesc, setNewGearDesc] = useState('');
+  const [uploadingGearImage, setUploadingGearImage] = useState(false);
+  const [showGearUrlInput, setShowGearUrlInput] = useState(false);
+  const gearFileInputRef = useRef<HTMLInputElement>(null);
 
   // Payout account form
   const [payoutUpi, setPayoutUpi] = useState('');
@@ -1071,10 +1074,48 @@ export const DashboardPage: React.FC = () => {
     });
   };
 
+  // Gear image upload handler
+  const handleGearImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload a valid image file (PNG, JPG, WEBP).');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Image size exceeds 10MB limit.');
+      return;
+    }
+    setUploadingGearImage(true);
+    try {
+      const res = await cloudStorageApi.uploadImage(file, 'gear');
+      if (res.url) {
+        setNewGearImage(res.url);
+        showToast('Equipment image uploaded successfully!');
+      }
+    } catch (err: any) {
+      console.error('Gear image upload error:', err);
+      // Fallback: local FileReader data URL if remote upload fails
+      const reader = new FileReader();
+      reader.onload = () => {
+        setNewGearImage(reader.result as string);
+        showToast('Image attached locally!');
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploadingGearImage(false);
+      if (gearFileInputRef.current) gearFileInputRef.current.value = '';
+    }
+  };
+
   // List gear submission
   const handleCreateGear = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newGearTitle.trim()) return;
+    if (!newGearImage.trim()) {
+      alert('Please upload or provide an image for the equipment listing.');
+      return;
+    }
     setActionLoading('create-gear');
 
     try {
@@ -1094,6 +1135,8 @@ export const DashboardPage: React.FC = () => {
       setShowListGearModal(false);
       setNewGearTitle('');
       setNewGearDesc('');
+      setNewGearImage('');
+      setShowGearUrlInput(false);
       showToast('Gear successfully listed to Camqrew Store!');
     } catch (err: any) {
       alert(err.message || 'Failed to list equipment');
@@ -4107,15 +4150,149 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Image URL</label>
-                <input 
-                  type="url" 
-                  className="input-field"
-                  value={newGearImage}
-                  onChange={(e) => setNewGearImage(e.target.value)}
-                  required 
-                />
+              {/* Equipment Photo / Upload */}
+              <div className="form-group" style={{ marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <label className="form-label" style={{ margin: 0, fontWeight: 600, fontSize: 13 }}>
+                    Equipment Photo <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowGearUrlInput(!showGearUrlInput)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--accent, #3fb668)',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      padding: 0
+                    }}
+                  >
+                    <LinkIcon size={12} />
+                    {showGearUrlInput ? 'Upload file instead' : 'Or paste image URL'}
+                  </button>
+                </div>
+
+                {newGearImage ? (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: 10,
+                    borderRadius: 10,
+                    border: '1px solid var(--border-color, #e5e7eb)',
+                    background: 'var(--bg-elevated, #f9fafb)'
+                  }}>
+                    <img
+                      src={newGearImage}
+                      alt="Equipment preview"
+                      style={{
+                        width: 58,
+                        height: 58,
+                        borderRadius: 8,
+                        objectFit: 'cover',
+                        border: '1px solid var(--border-color, #e5e7eb)'
+                      }}
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Photo attached</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {newGearImage}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setNewGearImage('')}
+                      style={{
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        border: 'none',
+                        color: '#ef4444',
+                        padding: '6px 10px',
+                        borderRadius: 6,
+                        fontSize: 12,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4
+                      }}
+                    >
+                      <Trash2 size={13} />
+                      Remove
+                    </button>
+                  </div>
+                ) : showGearUrlInput ? (
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input
+                      type="url"
+                      className="input-field"
+                      placeholder="https://images.unsplash.com/... or hosted image URL"
+                      value={newGearImage}
+                      onChange={(e) => setNewGearImage(e.target.value)}
+                      required={!newGearImage}
+                      style={{ flex: 1 }}
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <input
+                      type="file"
+                      ref={gearFileInputRef}
+                      onChange={handleGearImageUpload}
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => gearFileInputRef.current?.click()}
+                      disabled={uploadingGearImage}
+                      style={{
+                        width: '100%',
+                        padding: '18px 12px',
+                        border: '2px dashed var(--border-color, #d1d5db)',
+                        borderRadius: 10,
+                        background: 'var(--bg-elevated, #f9fafb)',
+                        cursor: uploadingGearImage ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 6,
+                        transition: 'border-color 0.2s'
+                      }}
+                    >
+                      {uploadingGearImage ? (
+                        <>
+                          <Loader2 size={22} className="animate-spin" style={{ color: 'var(--accent, #3fb668)' }} />
+                          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Uploading equipment photo...</span>
+                        </>
+                      ) : (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--accent, #3fb668)', fontWeight: 600, fontSize: 13 }}>
+                            <UploadCloud size={18} />
+                            <span>Upload Equipment Photo</span>
+                          </div>
+                          <span style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>
+                            PNG, JPG, WEBP up to 10MB (click to browse from device)
+                          </span>
+                        </>
+                      )}
+                    </button>
+                    {/* Hidden input to guarantee required validation when form is submitted */}
+                    <input
+                      type="text"
+                      value={newGearImage}
+                      onChange={() => {}}
+                      required
+                      style={{ opacity: 0, height: 0, width: 0, margin: 0, padding: 0, position: 'absolute', pointerEvents: 'none' }}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="form-group">
