@@ -6,7 +6,13 @@ import { jobApi } from '../api/jobApi';
 import { productApi } from '../api/productApi';
 import { professionalApi } from '../api/professionalApi';
 import { payoutApi, type PayoutRecord, type CreatorPayoutDetails } from '../api/payoutApi';
-import { getShiprocketTrackingUrl } from '../api/shiprocketService';
+import { 
+  getShiprocketTrackingUrl, 
+  registerCreatorPickupAddress, 
+  generateShippingLabel,
+  createShiprocketOrder 
+} from '../api/shiprocketService';
+import { supabase } from '../api/supabaseClient';
 import type { Booking } from '../types/booking';
 import type { Order } from '../types/order';
 import type { JobRequest } from '../types/job';
@@ -39,10 +45,13 @@ import {
   Trash2,
   Smartphone,
   Plus,
+  Building2,
+  Download,
   Tv,
   Scale,
   FileText,
   AlertTriangle,
+  AlertCircle,
   Image as ImageIcon,
   UploadCloud,
   ZoomIn,
@@ -233,6 +242,32 @@ export const DashboardPage: React.FC = () => {
   const [userProducts, setUserProducts] = useState<Product[]>([]);
   const [payouts, setPayouts] = useState<PayoutRecord[]>([]);
   const [creatorAccount, setCreatorAccount] = useState<CreatorPayoutDetails | null>(null);
+  
+  // Creator Multi-Vendor Logistics State
+  const [incomingSellerOrders, setIncomingSellerOrders] = useState<any[]>([]);
+  const [creatorPickup, setCreatorPickup] = useState<{
+    name: string;
+    phone: string;
+    address: string;
+    address2: string;
+    city: string;
+    state: string;
+    pincode: string;
+    pickup_nickname?: string;
+  } | null>(null);
+  const [showPickupModal, setShowPickupModal] = useState(false);
+  const [savingPickup, setSavingPickup] = useState(false);
+  const [pickupForm, setPickupForm] = useState({
+    name: '',
+    phone: '',
+    address: '',
+    address2: '',
+    city: '',
+    state: '',
+    pincode: ''
+  });
+  const [fulfillingSellerOrderId, setFulfillingSellerOrderId] = useState<string | null>(null);
+  const [generatingLabelOrderId, setGeneratingLabelOrderId] = useState<string | null>(null);
   
   const totalCustomerEscrow = useMemo(() => {
     const shootsTotal = customerBookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
@@ -453,6 +488,53 @@ export const DashboardPage: React.FC = () => {
           setPayoutAccNum(acc.accountNumber);
           setPayoutIfsc(acc.ifscCode);
           setPayoutHolder(acc.accountHolderName);
+        }
+
+        // 3. Fetch Creator Studio Pickup Address & Incoming Seller Orders
+        try {
+          const { data: addrData } = await supabase
+            .from('addresses')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('label', 'Studio Pickup')
+            .maybeSingle();
+
+          if (addrData) {
+            setCreatorPickup({
+              name: user.name || 'Studio Owner',
+              phone: user.phone || '9999999999',
+              address: addrData.line1,
+              address2: addrData.line2 || '',
+              city: addrData.city,
+              state: addrData.state,
+              pincode: addrData.pincode,
+              pickup_nickname: `STUDIO-${user.id.slice(0, 8)}`,
+            });
+            setPickupForm({
+              name: user.name || '',
+              phone: user.phone || '',
+              address: addrData.line1 || '',
+              address2: addrData.line2 || '',
+              city: addrData.city || '',
+              state: addrData.state || '',
+              pincode: addrData.pincode || '',
+            });
+          } else if ((user as any).user_metadata?.pickup_address) {
+            setCreatorPickup((user as any).user_metadata.pickup_address);
+            setPickupForm((user as any).user_metadata.pickup_address);
+          }
+
+          // Fetch incoming marketplace orders
+          const { data: allSellerOrders } = await supabase
+            .from('orders')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (allSellerOrders) {
+            setIncomingSellerOrders(allSellerOrders);
+          }
+        } catch (e) {
+          console.warn('Error loading creator logistics data:', e);
         }
       }
     } catch (err) {
@@ -1017,6 +1099,153 @@ export const DashboardPage: React.FC = () => {
       alert(err.message || 'Failed to list equipment');
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  // Handle Save Studio Pickup Address (Multi-vendor Shiprocket registration)
+  const handleSavePickupAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setSavingPickup(true);
+    try {
+      const nickname = `STUDIO-${user.id.slice(0, 8)}`;
+      // 1. Register with Shiprocket API via Edge Function
+      const srRes = await registerCreatorPickupAddress({
+        user_id: user.id,
+        name: pickupForm.name || user.name || 'Camqrew Creator',
+        email: user.email || 'creator@camqrew.in',
+        phone: pickupForm.phone,
+        address: pickupForm.address,
+        address_2: pickupForm.address2,
+        city: pickupForm.city,
+        state: pickupForm.state,
+        pincode: pickupForm.pincode,
+        pickup_nickname: nickname,
+      });
+
+      // 2. Save in Supabase addresses table
+      await supabase.from('addresses').upsert({
+        user_id: user.id,
+        label: 'Studio Pickup',
+        line1: pickupForm.address,
+        line2: pickupForm.address2 || '',
+        city: pickupForm.city,
+        state: pickupForm.state,
+        pincode: pickupForm.pincode,
+        is_default: true,
+      });
+
+      // 3. Save to Auth user_metadata
+      await supabase.auth.updateUser({
+        data: {
+          pickup_address: {
+            ...pickupForm,
+            pickup_nickname: srRes.pickup_location || nickname,
+          }
+        }
+      });
+
+      setCreatorPickup({
+        ...pickupForm,
+        pickup_nickname: srRes.pickup_location || nickname,
+      });
+      setShowPickupModal(false);
+      showToast('Studio Pickup Address successfully saved and verified with Shiprocket! 📦');
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Failed to register pickup address with Shiprocket.');
+    } finally {
+      setSavingPickup(false);
+    }
+  };
+
+  // Creator Fulfill Order (Dispatches courier from creator's studio)
+  const handleCreatorFulfillOrder = async (order: any) => {
+    if (!creatorPickup) {
+      setShowPickupModal(true);
+      showToast('Please configure your Studio Pickup Address first before requesting courier pickup!');
+      return;
+    }
+
+    setFulfillingSellerOrderId(order.id);
+    try {
+      const rawAddress = order.shipping_address || {};
+      const rawItems = Array.isArray(order.items) ? order.items : [];
+      const mappedItems = rawItems.map((it: any, idx: number) => {
+        const prod = it.product || it;
+        return {
+          name: prod.name || prod.title || 'Gear Package',
+          sku: prod.sku || `SKU-${prod.id ? String(prod.id).slice(0, 8) : idx}`,
+          units: Number(it.quantity || 1),
+          selling_price: String(prod.price || prod.salePrice || Math.round(order.total_amount / (rawItems.length || 1))),
+        };
+      });
+
+      const response = await createShiprocketOrder({
+        order_id: order.id,
+        order_date: order.created_at,
+        pickup_location: creatorPickup.pickup_nickname || `STUDIO-${user?.id?.slice(0, 8)}` || 'warehouse',
+        billing_customer_name: rawAddress.fullName || 'Customer',
+        billing_address: rawAddress.addressLine1 || 'Delivery Address',
+        billing_address_2: rawAddress.addressLine2 || '',
+        billing_city: rawAddress.city || 'Mumbai',
+        billing_pincode: rawAddress.pincode || '400001',
+        billing_state: rawAddress.state || 'Maharashtra',
+        billing_country: 'India',
+        billing_email: rawAddress.email || 'customer@client.in',
+        billing_phone: rawAddress.phone || '9999999999',
+        shipping_is_billing: true,
+        order_items: mappedItems,
+        payment_method: order.payment_method === 'cod' ? 'COD' : 'Prepaid',
+        sub_total: order.subtotal || order.total_amount,
+        length: 20,
+        breadth: 20,
+        height: 15,
+        weight: 2.0,
+      });
+
+      // Update in Supabase
+      await supabase.from('orders').update({
+        awb_code: response.awb_code,
+        courier_name: response.courier_name,
+        shiprocket_order_id: response.order_id,
+        status: 'shipped',
+      }).eq('id', order.id);
+
+      // Update local state
+      setIncomingSellerOrders(prev => prev.map(o => o.id === order.id ? {
+        ...o,
+        status: 'shipped',
+        awb_code: response.awb_code,
+        courier_name: response.courier_name,
+        shiprocket_order_id: response.order_id,
+      } : o));
+
+      showToast(`Courier Pickup Scheduled with ${response.courier_name}! AWB: ${response.awb_code} 🚚`);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Failed to schedule courier pickup.');
+    } finally {
+      setFulfillingSellerOrderId(null);
+    }
+  };
+
+  // Creator Download Shipping Label PDF
+  const handleDownloadShippingLabel = async (order: any) => {
+    const shipmentId = order.shiprocket_order_id || order.raw?.shiprocket_order_id || order.shipment_id || order.id;
+    setGeneratingLabelOrderId(order.id);
+    try {
+      const labelUrl = await generateShippingLabel(shipmentId);
+      if (labelUrl) {
+        window.open(labelUrl, '_blank');
+      } else {
+        alert('Courier label generation in progress. Please retry in 30 seconds.');
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Could not download label. Ensure courier has assigned an AWB.');
+    } finally {
+      setGeneratingLabelOrderId(null);
     }
   };
 
@@ -2336,6 +2565,67 @@ export const DashboardPage: React.FC = () => {
                 </div>
               )}
 
+              {/* ── CREATOR STUDIO PICKUP & SHIPPING LOGISTICS ── */}
+              <div className="card studio-pickup-settings-card" style={{ marginTop: 28, borderColor: 'rgba(63, 182, 104, 0.3)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
+                  <div style={{ flex: 1, minWidth: 280 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(63, 182, 104, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
+                        <Building2 size={20} />
+                      </div>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: 16, color: 'var(--text-primary)' }}>
+                          Studio Pickup Address & Shipping Logistics
+                        </h3>
+                        <p style={{ margin: '2px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
+                          Multi-vendor logistics powered by Shiprocket. Courier partners pick up directly from your studio.
+                        </p>
+                      </div>
+                    </div>
+
+                    {creatorPickup ? (
+                      <div style={{ marginTop: 14, background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 10, padding: '12px 16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                          <span style={{ fontSize: 12, background: 'rgba(63, 182, 104, 0.15)', color: 'var(--accent)', padding: '2px 8px', borderRadius: 6, fontWeight: 600 }}>
+                            ✓ Registered Pickup Location
+                          </span>
+                          {creatorPickup.pickup_nickname && (
+                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                              Shiprocket Hub: {creatorPickup.pickup_nickname}
+                            </span>
+                          )}
+                        </div>
+                        <p style={{ margin: '4px 0', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+                          {creatorPickup.name} • {creatorPickup.phone}
+                        </p>
+                        <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
+                          {creatorPickup.address}{creatorPickup.address2 ? `, ${creatorPickup.address2}` : ''}, {creatorPickup.city}, {creatorPickup.state} - {creatorPickup.pincode}
+                        </p>
+                      </div>
+                    ) : (
+                      <div style={{ marginTop: 14, background: 'rgba(234, 179, 8, 0.08)', border: '1px solid rgba(234, 179, 8, 0.25)', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <AlertCircle size={18} color="#eab308" style={{ flexShrink: 0 }} />
+                        <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
+                          No studio pickup address configured yet. Add your studio or equipment warehouse address to enable 1-click courier pickup for equipment rentals and sales.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ alignSelf: 'center' }}>
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      onClick={() => setShowPickupModal(true)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderColor: 'var(--accent)', color: 'var(--accent)' }}
+                    >
+                      <Building2 size={14} />
+                      {creatorPickup ? 'Edit Studio Address' : '+ Set Pickup Address'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               {/* ── LEGAL, PRIVACY & DANGER ZONE ── */}
               <div className="card legal-danger-zone-card" style={{ marginTop: 28, borderColor: 'rgba(239,68,68,0.2)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
@@ -2553,6 +2843,68 @@ export const DashboardPage: React.FC = () => {
                 )}
               </div>
 
+              {/* Creator Studio Pickup Hub Status */}
+              <div style={{
+                background: creatorPickup ? 'rgba(63, 182, 104, 0.06)' : 'rgba(234, 179, 8, 0.06)',
+                border: `1px solid ${creatorPickup ? 'rgba(63, 182, 104, 0.25)' : 'rgba(234, 179, 8, 0.25)'}`,
+                borderRadius: 12,
+                padding: '14px 18px',
+                marginBottom: 20,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: 14
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 10,
+                    background: creatorPickup ? 'rgba(63, 182, 104, 0.15)' : 'rgba(234, 179, 8, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: creatorPickup ? 'var(--accent)' : '#eab308',
+                    flexShrink: 0
+                  }}>
+                    <Building2 size={20} />
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <strong style={{ fontSize: 14, color: 'var(--text-primary)' }}>
+                        {creatorPickup ? 'Studio Pickup Location Active' : 'Studio Pickup Address Required'}
+                      </strong>
+                      {creatorPickup ? (
+                        <span style={{ fontSize: 11, background: 'rgba(63, 182, 104, 0.2)', color: 'var(--accent)', padding: '2px 8px', borderRadius: 4, fontWeight: 600 }}>
+                          ✓ Shiprocket Verified ({creatorPickup.pickup_nickname || 'Default'})
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: 11, background: 'rgba(234, 179, 8, 0.2)', color: '#eab308', padding: '2px 8px', borderRadius: 4, fontWeight: 600 }}>
+                          Pending Setup
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ margin: '3px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>
+                      {creatorPickup ? (
+                        `${creatorPickup.name} • ${creatorPickup.address}${creatorPickup.address2 ? `, ${creatorPickup.address2}` : ''}, ${creatorPickup.city}, ${creatorPickup.state} - ${creatorPickup.pincode} (${creatorPickup.phone})`
+                      ) : (
+                        'Configure your studio address once so courier partners can pick up gear rentals and sold equipment directly from your doorstep.'
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className={creatorPickup ? "btn btn-outline btn-sm" : "btn btn-primary btn-sm"}
+                  onClick={() => setShowPickupModal(true)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0 }}
+                >
+                  <Building2 size={14} />
+                  {creatorPickup ? 'Edit Studio Address' : '+ Set Pickup Address'}
+                </button>
+              </div>
+
               {/* Quick switch banner for gear/products purchased as a buyer */}
               <div style={{ 
                 background: 'rgba(63, 182, 104, 0.05)', 
@@ -2580,35 +2932,234 @@ export const DashboardPage: React.FC = () => {
                 </button>
               </div>
 
-              <div className="card empty-state-card">
-                {isCaterer ? (
-                  <>
-                    <UtensilsCrossed size={48} color="var(--text-muted)" style={{ margin: '0 auto 16px' }} />
-                    <h3>No incoming catering orders yet</h3>
-                    <p>Add your signature catering dishes and per-plate pricing in the Menu & Prices tab to receive instant quotations and bookings from clients.</p>
-                    <button 
-                      className="btn btn-primary" 
-                      style={{ marginTop: 16 }}
-                      onClick={() => handleTabChange('listings')}
-                    >
-                      Manage Food Menu & Prices
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <ShoppingBag size={48} color="var(--text-muted)" style={{ margin: '0 auto 16px' }} />
-                    <h3>No incoming gear orders yet</h3>
-                    <p>Post your cinema cameras, lenses, or lighting equipment for rent or sale to earn steady revenue between production shoots.</p>
-                    <button 
-                      className="btn btn-primary" 
-                      style={{ marginTop: 16 }}
-                      onClick={() => setShowListGearModal(true)}
-                    >
-                      List Equipment for Sale or Rent
-                    </button>
-                  </>
-                )}
-              </div>
+              {incomingSellerOrders.length === 0 ? (
+                <div className="card empty-state-card">
+                  {isCaterer ? (
+                    <>
+                      <UtensilsCrossed size={48} color="var(--text-muted)" style={{ margin: '0 auto 16px' }} />
+                      <h3>No incoming catering orders yet</h3>
+                      <p>Add your signature catering dishes and per-plate pricing in the Menu & Prices tab to receive instant quotations and bookings from clients.</p>
+                      <button 
+                        className="btn btn-primary" 
+                        style={{ marginTop: 16 }}
+                        onClick={() => handleTabChange('listings')}
+                      >
+                        Manage Food Menu & Prices
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag size={48} color="var(--text-muted)" style={{ margin: '0 auto 16px' }} />
+                      <h3>No incoming gear orders yet</h3>
+                      <p>Post your cinema cameras, lenses, or lighting equipment for rent or sale to earn steady revenue between production shoots.</p>
+                      <button 
+                        className="btn btn-primary" 
+                        style={{ marginTop: 16 }}
+                        onClick={() => setShowListGearModal(true)}
+                      >
+                        List Equipment for Sale or Rent
+                      </button>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="bookings-cards-list" style={{ marginBottom: 28 }}>
+                  {incomingSellerOrders.map((ord: any) => {
+                    const itemsList = Array.isArray(ord.items) ? ord.items : [];
+                    const shippingAddr = ord.shipping_address || {};
+                    const isShipped = ord.status === 'shipped' || !!ord.awb_code;
+                    const isFulfilling = fulfillingSellerOrderId === ord.id;
+                    const isGeneratingLabel = generatingLabelOrderId === ord.id;
+                    const orderTotal = ord.total_amount || ord.total || ord.subtotal || 0;
+
+                    return (
+                      <div key={ord.id} className="card pro-booking-card">
+                        <div className="booking-card-main">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+                            <span className={`status-pill status-${ord.status || 'placed'}`}>
+                              {(ord.status || 'PENDING').toUpperCase()}
+                            </span>
+                            <span className="review-chip" style={{ textTransform: 'capitalize' }}>
+                              {ord.order_type === 'rental' || ord.orderType === 'rental' ? '🎥 Equipment Rental' : '📦 Gear Purchase'}
+                            </span>
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                              📅 {new Date(ord.created_at || ord.createdAt || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </span>
+                          </div>
+
+                          <h3 className="booking-service-title" style={{ marginBottom: 6 }}>
+                            Order #{String(ord.id).slice(0, 8).toUpperCase()} • {itemsList.length} {itemsList.length === 1 ? 'Item' : 'Items'}
+                          </h3>
+
+                          {/* Items in this order */}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '8px 0' }}>
+                            {itemsList.map((item: any, idx: number) => {
+                              const prod = item.product || item;
+                              return (
+                                <span key={idx} style={{ 
+                                  fontSize: 12, 
+                                  background: 'rgba(255, 255, 255, 0.05)', 
+                                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                                  padding: '4px 10px', 
+                                  borderRadius: 6,
+                                  color: 'var(--text-secondary)'
+                                }}>
+                                  {prod.name || prod.title || 'Gear Item'} × {item.quantity || 1}
+                                </span>
+                              );
+                            })}
+                          </div>
+
+                          {/* Buyer Delivery Information */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginTop: 8, fontSize: 13, color: 'var(--text-secondary)' }}>
+                            <span>
+                              👤 <strong>Client:</strong> {shippingAddr.fullName || 'Customer'}
+                            </span>
+                            <span>
+                              📍 <strong>Destination:</strong> {shippingAddr.city ? `${shippingAddr.city}, ${shippingAddr.state || ''} (${shippingAddr.pincode || ''})` : 'India'}
+                            </span>
+                            {shippingAddr.phone && (
+                              <span>
+                                📞 {shippingAddr.phone}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Courier Dispatch Status (If Dispatched) */}
+                          {isShipped && (
+                            <div style={{ 
+                              marginTop: 12, 
+                              background: 'rgba(63, 182, 104, 0.08)', 
+                              border: '1px solid rgba(63, 182, 104, 0.2)', 
+                              borderRadius: 8, 
+                              padding: '8px 12px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              flexWrap: 'wrap',
+                              gap: 8
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--accent)' }}>
+                                <Truck size={16} />
+                                <span>
+                                  Courier: <strong>{ord.courier_name || 'Shiprocket Express'}</strong>
+                                  {ord.awb_code && <> • AWB: <strong>{ord.awb_code}</strong></>}
+                                </span>
+                              </div>
+                              <a
+                                href={getShiprocketTrackingUrl(ord.awb_code, ord.shiprocket_order_id)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-outline btn-xs"
+                                style={{ 
+                                  display: 'inline-flex', 
+                                  alignItems: 'center', 
+                                  gap: 4, 
+                                  fontSize: 11, 
+                                  padding: '3px 8px', 
+                                  borderRadius: 6,
+                                  borderColor: 'var(--accent)',
+                                  color: 'var(--accent)',
+                                  textDecoration: 'none'
+                                }}
+                              >
+                                <ExternalLink size={11} />
+                                <span>Track Courier ↗</span>
+                              </a>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Right Action Side */}
+                        <div className="booking-card-side" style={{ minWidth: 200, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                          <div>
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Order Value</span>
+                            <strong className="payout-val" style={{ display: 'block', margin: '4px 0 10px' }}>
+                              ₹{Number(orderTotal).toLocaleString('en-IN')}
+                            </strong>
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 'auto' }}>
+                            {!isShipped ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className="btn btn-primary btn-sm"
+                                  onClick={() => handleCreatorFulfillOrder(ord)}
+                                  disabled={isFulfilling}
+                                  style={{ 
+                                    display: 'inline-flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    gap: 6,
+                                    background: 'var(--accent)',
+                                    color: '#000',
+                                    fontWeight: 600
+                                  }}
+                                >
+                                  {isFulfilling ? (
+                                    <>
+                                      <Loader2 size={14} className="animate-spin" /> Scheduling...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Truck size={14} /> Schedule Courier Pickup
+                                    </>
+                                  )}
+                                </button>
+                                <span style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.3 }}>
+                                  Courier collects directly from your studio
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  type="button"
+                                  className="btn btn-primary btn-sm"
+                                  onClick={() => handleDownloadShippingLabel(ord)}
+                                  disabled={isGeneratingLabel}
+                                  style={{ 
+                                    display: 'inline-flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    gap: 6 
+                                  }}
+                                >
+                                  {isGeneratingLabel ? (
+                                    <>
+                                      <Loader2 size={14} className="animate-spin" /> Generating...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Download size={14} /> Download Shipping Label
+                                    </>
+                                  )}
+                                </button>
+
+                                <a
+                                  href={getShiprocketTrackingUrl(ord.awb_code, ord.shiprocket_order_id)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="btn btn-outline btn-sm"
+                                  style={{ 
+                                    display: 'inline-flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    gap: 6,
+                                    textDecoration: 'none'
+                                  }}
+                                >
+                                  <Truck size={14} /> Track Courier ↗
+                                </a>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
@@ -3592,6 +4143,150 @@ export const DashboardPage: React.FC = () => {
                   disabled={actionLoading === 'create-gear'}
                 >
                   {actionLoading === 'create-gear' ? <Loader2 size={16} className="animate-spin" /> : 'Publish to Store'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: STUDIO PICKUP ADDRESS (SHIPROCKET LOGISTICS) ── */}
+      {showPickupModal && (
+        <div className="dashboard-modal-backdrop" onClick={() => !savingPickup && setShowPickupModal(false)}>
+          <div className="dashboard-modal-content card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 540 }}>
+            <div className="modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(63, 182, 104, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
+                  <Building2 size={20} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0 }}>Studio Pickup Address</h3>
+                  <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)' }}>Registered with Shiprocket for 1-click courier dispatches</p>
+                </div>
+              </div>
+              <button className="btn-close" onClick={() => !savingPickup && setShowPickupModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSavePickupAddress} className="modal-form">
+              <div className="form-group">
+                <label className="form-label">Contact Person / Studio Manager Name *</label>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="e.g. Rahul Sharma"
+                  value={pickupForm.name}
+                  onChange={(e) => setPickupForm({ ...pickupForm, name: e.target.value })}
+                  required 
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Phone Number (For Courier Agent Contact) *</label>
+                <input 
+                  type="tel" 
+                  className="input-field" 
+                  placeholder="e.g. 9876543210 (10 digits)"
+                  value={pickupForm.phone}
+                  onChange={(e) => setPickupForm({ ...pickupForm, phone: e.target.value })}
+                  required 
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Studio / Building Address (Line 1) *</label>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="e.g. Studio 4B, Camqrew Creative Studios, Lotus Business Park"
+                  value={pickupForm.address}
+                  onChange={(e) => setPickupForm({ ...pickupForm, address: e.target.value })}
+                  required 
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Landmark / Street (Line 2)</label>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="e.g. Near Film City Gate 2, Goregaon East"
+                  value={pickupForm.address2}
+                  onChange={(e) => setPickupForm({ ...pickupForm, address2: e.target.value })}
+                />
+              </div>
+
+              <div className="form-row-2">
+                <div className="form-group">
+                  <label className="form-label">City *</label>
+                  <input 
+                    type="text" 
+                    className="input-field" 
+                    placeholder="e.g. Mumbai"
+                    value={pickupForm.city}
+                    onChange={(e) => setPickupForm({ ...pickupForm, city: e.target.value })}
+                    required 
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">State *</label>
+                  <input 
+                    type="text" 
+                    className="input-field" 
+                    placeholder="e.g. Maharashtra"
+                    value={pickupForm.state}
+                    onChange={(e) => setPickupForm({ ...pickupForm, state: e.target.value })}
+                    required 
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Pincode *</label>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="e.g. 400065"
+                  maxLength={6}
+                  value={pickupForm.pincode}
+                  onChange={(e) => setPickupForm({ ...pickupForm, pincode: e.target.value })}
+                  required 
+                />
+              </div>
+
+              <div style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: 'var(--text-secondary)', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                <Truck size={16} color="#3b82f6" style={{ flexShrink: 0, marginTop: 2 }} />
+                <span>
+                  Courier partners (Bluedart, Delhivery, DTDC, Shadowfax) will arrive at this address to collect the sealed package and deliver it with real-time GPS tracking.
+                </span>
+              </div>
+
+              <div className="modal-actions" style={{ marginTop: 20 }}>
+                <button 
+                  type="button" 
+                  className="btn btn-outline"
+                  onClick={() => setShowPickupModal(false)}
+                  disabled={savingPickup}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn btn-primary"
+                  disabled={savingPickup}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                >
+                  {savingPickup ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" /> Verifying with Shiprocket...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 size={16} /> Save & Register Pickup Address
+                    </>
+                  )}
                 </button>
               </div>
             </form>

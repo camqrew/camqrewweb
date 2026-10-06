@@ -37,6 +37,19 @@ export interface ShiprocketResponse {
   courier_name: string;
 }
 
+export interface CreatorPickupAddress {
+  user_id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  address_2?: string;
+  city: string;
+  state: string;
+  pincode: string;
+  pickup_nickname?: string;
+}
+
 /**
  * Creates an ad-hoc shipment and requests courier AWB assignment via Supabase Edge Function
  */
@@ -64,6 +77,45 @@ export const createShiprocketOrder = async (payload: ShiprocketOrderPayload): Pr
   };
 };
 
+/**
+ * Registers or updates a creator's individual studio pickup address in Shiprocket
+ */
+export const registerCreatorPickupAddress = async (details: CreatorPickupAddress): Promise<{ success: boolean; pickup_location: string }> => {
+  const { data, error } = await supabase.functions.invoke('shiprocket-fulfillment', {
+    body: {
+      action: 'register_creator_pickup',
+      ...details,
+    },
+  });
+
+  if (error || data?.error) {
+    throw new Error(error?.message || data?.error || 'Failed to register pickup address with Shiprocket');
+  }
+
+  return data;
+};
+
+/**
+ * Requests official printable courier shipping label PDF from Shiprocket
+ */
+export const generateShippingLabel = async (shipmentId: string | number): Promise<string> => {
+  const { data, error } = await supabase.functions.invoke('shiprocket-fulfillment', {
+    body: {
+      action: 'generate_label',
+      shipment_id: shipmentId,
+    },
+  });
+
+  if (error || data?.error) {
+    throw new Error(error?.message || data?.error || 'Failed to generate shipping label PDF');
+  }
+
+  return data.label_url;
+};
+
+/**
+ * Smart tracking URL helper (AWB or Order ID fallback)
+ */
 export const getShiprocketTrackingUrl = (awbCode?: string, shiprocketOrderId?: string): string => {
   const cleanAwb = (awbCode || '').trim();
   const cleanOrderId = (shiprocketOrderId || '').trim();
