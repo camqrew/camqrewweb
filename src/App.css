@@ -17910,3 +17910,316 @@ input.admin-palette-input::placeholder,
   line-height: 1.4;
 }
 
+/* Marketplace Header Base (Desktop Preserved) */
+.marketplace-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+/* ==========================================================================
+   MOBILE VIEW POLISH & RESPONSIVE ALIGNMENT FIXES (max-width: 768px)
+   STRICTLY SCOPED TO MOBILE VIEW TO KEEP DESKTOP WEBAPP LAYOUT 100% UNTOUCHED
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* 1. Global Safe Spacing & Navbar Clearance */
+  .main-site-content {
+    padding-top: calc(var(--navbar-height, 60px) + env(safe-area-inset-top, 0px)) !important;
+    padding-bottom: calc(var(--tabbar-height, 64px) + env(safe-area-inset-bottom, 12px) + 20px) !important;
+  }
+
+  .container {
+    padding-left: max(16px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(16px, env(safe-area-inset-right, 0px)) !important;
+  }
+
+  /* 2. Public Creator Profile - Service Cards Alignment & Background Shape Removal */
+  .creator-profile-page {
+    padding-top: 14px !important;
+    padding-bottom: 40px !important;
+  }
+
+  .profile-top-nav-bar {
+    margin-bottom: 16px !important;
+  }
+
+  .profile-header-card,
+  .profile-section-card {
+    padding: 16px !important;
+    border-radius: 18px !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* Remove outer background card shape around service & product cards */
+  .services-section-card,
+  .products-section-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin-bottom: 24px !important;
+  }
+
+  .services-section-card .section-header-inline,
+  .products-section-card .section-header-inline {
+    padding: 0 4px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Align service cards seamlessly to the container margin */
+  .services-section-card .pros-grid,
+  .products-section-card .pros-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    margin-top: 8px !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  .services-section-card .pro-card,
+  .products-section-card .pro-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 20px !important;
+    border: none !important;
+  }
+
+  /* 3. Explore Page Search & Location Alignment */
+  .explore-page {
+    padding-top: 16px !important;
+    padding-bottom: 40px !important;
+  }
+
+  .explore-filter-hub {
+    padding: 16px !important;
+    border-radius: 18px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .explore-search-row {
+    flex-direction: column !important;
+    gap: 10px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .btn-explore-search {
+    width: 100% !important;
+    height: 44px !important;
+    border-radius: 12px !important;
+  }
+
+  .explore-location-row {
+    margin-bottom: 14px !important;
+  }
+
+  /* Stack location selects vertically on phone screens to prevent text truncation */
+  .location-inline-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .location-inline-grid .select-box-wrapper {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  .explore-categories-row {
+    margin-left: -4px !important;
+    margin-right: -4px !important;
+  }
+
+  .category-chips-scroll {
+    padding: 4px 4px 8px !important;
+    gap: 8px !important;
+  }
+
+  /* 4. Gear Marketplace Header & Filter Hub Alignment */
+  .marketplace-page {
+    padding-top: 16px !important;
+    padding-bottom: 40px !important;
+  }
+
+  .marketplace-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .marketplace-header .page-title {
+    font-size: 24px !important;
+    line-height: 1.25 !important;
+    margin-bottom: 4px !important;
+  }
+
+  .marketplace-header .page-subtitle {
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    max-width: 100% !important;
+  }
+
+  .marketplace-header .btn {
+    align-self: flex-start !important;
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+  }
+
+  .marketplace-filter-hub {
+    padding: 16px !important;
+    border-radius: 18px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .segmented-gear-switch {
+    width: 100% !important;
+    display: flex !important;
+    padding: 3px !important;
+    gap: 3px !important;
+  }
+
+  .segmented-tab {
+    flex: 1 !important;
+    text-align: center !important;
+    padding: 0 6px !important;
+    font-size: 12px !important;
+    height: 36px !important;
+    white-space: nowrap !important;
+  }
+
+  .marketplace-search-box {
+    width: 100% !important;
+    margin-top: 4px !important;
+  }
+
+  .marketplace-search-input {
+    font-size: 13px !important;
+    height: 42px !important;
+  }
+
+  .marketplace-products-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  /* 5. Product Detail Page Breadcrumbs & Specifications Alignment */
+  .product-detail-page {
+    padding-top: 14px !important;
+    padding-bottom: 40px !important;
+  }
+
+  .product-breadcrumbs {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    font-size: 12px !important;
+    gap: 6px !important;
+    margin-bottom: 12px !important;
+    padding: 2px 0 6px !important;
+  }
+
+  .product-breadcrumbs::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .breadcrumb-current {
+    max-width: 160px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .detail-back-btn {
+    font-size: 12px !important;
+    padding: 6px 12px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .product-hero-image-card {
+    border-radius: 20px !important;
+  }
+
+  .product-hero-img-viewport {
+    height: 290px !important;
+  }
+
+  .product-specs-card {
+    padding: 18px 16px !important;
+    border-radius: 20px !important;
+    margin-top: 16px !important;
+  }
+
+  .detail-section-header {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .specs-header-text h3 {
+    font-size: 16px !important;
+  }
+
+  .specs-tiles-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* 6. Reels Feed Page Layout & Viewport Alignment */
+  .reels-feed-page-wrapper {
+    overflow-x: hidden !important;
+  }
+
+  .reels-top-nav-bar {
+    padding: 10px 14px 4px !important;
+    gap: 8px !important;
+  }
+
+  .reels-brand-cluster {
+    display: none !important;
+  }
+
+  .reels-top-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .reels-search-box {
+    width: 100% !important;
+    height: 40px !important;
+    font-size: 13px !important;
+    margin-top: 2px !important;
+  }
+
+  .reels-category-strip-container {
+    padding: 4px 14px 8px !important;
+  }
+
+  .reels-stage-container {
+    padding: 0 12px 16px !important;
+  }
+
+  .reel-video-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: calc(100svh - 220px) !important;
+    min-height: 460px !important;
+    max-height: calc(100dvh - 215px) !important;
+    border-radius: 22px !important;
+  }
+}
+
+

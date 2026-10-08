@@ -284,7 +284,7 @@ export const MarketplacePage: React.FC = () => {
       )}
 
       {/* Header Banner */}
-      <div className="marketplace-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+      <div className="marketplace-header">
         <div>
           <h1 className="page-title">Production Gear Marketplace</h1>
           <p className="page-subtitle">Rent cinema packages for shoots or buy verified pre-owned and official equipment.</p>
