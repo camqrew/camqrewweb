@@ -6,51 +6,55 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Camqrew - Creative Marketplace &amp; Production Crews</title>
-    <meta name="description" content="Hire verified photographers, cinematographers, drone pilots, and rent cinema gear anywhere in India with milestone escrow protection." />
+    <title>Camqrew | Creative Marketplace, Film Crews &amp; Gear Rental India</title>
+    <meta name="description" content="Camqrew is India's leading platform to hire verified cinematographers, photographers, drone pilots, and rent cinema cameras &amp; gear with 100% milestone escrow protection." />
     <meta name="application-name" content="Camqrew" />
     <meta name="apple-mobile-web-app-title" content="Camqrew" />
-
-    <!-- Google Search Engine Site Name Schema -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Camqrew",
-      "alternateName": ["Camqrew India", "Camqrew Official"],
-      "url": "https://camqrew.in"
-    }
-    </script>
-    
-    <link rel="canonical" href="https://camqrew.in/" />
     <meta name="theme-color" content="#0a0d14" />
-    <meta name="application-name" content="Camqrew" />
-    <meta name="apple-mobile-web-app-title" content="Camqrew" />
-    <meta name="keywords" content="Camqrew, hire cinematographers India, wedding photographers India, drone pilots rental, camera gear rental Mumbai Bangalore Delhi, cinema equipment escrow" />
+    <link rel="canonical" href="https://camqrew.in/" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="keywords" content="Camqrew, Camcrew, Cam Qrew, hire cinematographers India, wedding photographers India, drone pilots rental, camera gear rental Mumbai Bangalore Delhi, cinema equipment escrow" />
 
-    <!-- Google Search Engine WebSite & Organization Schema -->
+    <!-- Google Search Engine WebSite & Organization Knowledge Graph Schema -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@graph": [
         {
-          "@type": "WebSite",
-          "@id": "https://camqrew.in/#website",
-          "name": "Camqrew",
-          "alternateName": ["Camqrew India", "Camqrew Official"],
-          "url": "https://camqrew.in",
-          "description": "India's Premier Creative Marketplace & Production Crews"
-        },
-        {
           "@type": "Organization",
           "@id": "https://camqrew.in/#organization",
           "name": "Camqrew",
+          "legalName": "Camqrew",
+          "alternateName": ["Camcrew", "Cam Crew", "Camqrew India", "Camqrew Official"],
           "url": "https://camqrew.in",
-          "logo": "https://camqrew.in/camqrew-logo-white.png",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://camqrew.in/camqrew-logo-white.png",
+            "caption": "Camqrew Official Logo"
+          },
+          "image": "https://camqrew.in/og-image.jpg",
+          "description": "Camqrew is India's premier creative marketplace and production platform for hiring verified cinematographers, photographers, drone pilots, and renting cinema gear with milestone escrow protection.",
           "sameAs": [
-            "https://twitter.com/camqrew"
-          ],
-          "description": "Marketplace for verified cinematographers, photographers, drone pilots, and cinema equipment rentals across India with milestone escrow protection."
+            "https://twitter.com/camqrew",
+            "https://www.instagram.com/camqrew"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://camqrew.in/#website",
+          "url": "https://camqrew.in",
+          "name": "Camqrew",
+          "alternateName": ["Camcrew", "Cam Qrew", "Camqrew India"],
+          "publisher": {
+            "@id": "https://camqrew.in/#organization"
+          },
+          "description": "India's Premier Creative Marketplace & Production Crews",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://camqrew.in/explore?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
         }
       ]
     }
@@ -59,7 +63,7 @@
     <!-- Open Graph / WhatsApp / Facebook Preview Tags -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Camqrew" />
-    <meta property="og:title" content="Camqrew - India's Premier Creative Marketplace & Production Crews" />
+    <meta property="og:title" content="Camqrew | Creative Marketplace, Film Crews &amp; Gear Rental India" />
     <meta property="og:description" content="Discover verified cinematographers, photographers, drone pilots, and rent cinema gear anywhere in India with milestone escrow protection." />
     <meta property="og:image" content="https://camqrew.in/og-image.jpg" />
     <meta property="og:image:secure_url" content="https://camqrew.in/og-image.jpg" />
@@ -90,7 +94,23 @@
     <noscript><link rel="stylesheet" href="https://fonts.cdnfonts.com/css/google-sans" /></noscript>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Crawlable Semantic Index for Search Engines & Social Crawlers -->
+      <header style="display:none;">
+        <h1>Camqrew - India's Premier Creative Marketplace &amp; Production Crews</h1>
+        <p>Hire verified cinematographers, wedding photographers, drone pilots, editors, and rent cinema cameras &amp; gear anywhere in India with milestone escrow protection.</p>
+        <nav>
+          <a href="/explore">Hire Creative Crews</a>
+          <a href="/marketplace">Rent Cinema Equipment</a>
+          <a href="/reels">Production Video Showcase</a>
+          <a href="/jobs/create">Post a Production Lead</a>
+          <a href="/crews/mumbai">Film Crews in Mumbai</a>
+          <a href="/crews/delhi">Film Crews in Delhi</a>
+          <a href="/crews/bengaluru">Film Crews in Bengaluru</a>
+          <a href="/crews/hyderabad">Film Crews in Hyderabad</a>
+        </nav>
+      </header>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
