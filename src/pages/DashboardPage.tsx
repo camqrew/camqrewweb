@@ -76,6 +76,7 @@ import { isCustomAvatar } from '../utils/avatarUtils';
 import { CustomSelect } from '../components/CustomSelect';
 import { ProductCard } from '../components/ProductCard';
 import { getArchetype } from '../constants/categories';
+import { invoiceService } from '../services/invoiceService';
 
 type ProTab = 
   | 'overview' 
@@ -282,7 +283,20 @@ export const DashboardPage: React.FC = () => {
   // Availability calendar state
   const [calendarMonth, setCalendarMonth] = useState<number>(new Date().getMonth());
   const [calendarYear, setCalendarYear] = useState<number>(new Date().getFullYear());
-  const [blockedDates, setBlockedDates] = useState<string[]>([]);
+  const [blockedDates, setBlockedDates] = useState<string[]>(() => {
+    try {
+      const uStr = localStorage.getItem('@camqrew_user') || localStorage.getItem('@camcrew_user');
+      const u = uStr ? JSON.parse(uStr) : null;
+      if (u?.id) {
+        const saved = localStorage.getItem(`@camqrew_blocked_dates_${u.id}`) || localStorage.getItem(`@camcrew_blocked_dates_${u.id}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      }
+    } catch {}
+    return [];
+  });
 
   // Modals state
   const [showListGearModal, setShowListGearModal] = useState(false);
@@ -436,11 +450,27 @@ export const DashboardPage: React.FC = () => {
         try {
           const profile = await professionalApi.getProfileById(user.id);
           setProProfile(profile);
-          if (profile.blockedDates && Array.isArray(profile.blockedDates)) {
+          if (profile.blockedDates && Array.isArray(profile.blockedDates) && profile.blockedDates.length > 0) {
             setBlockedDates(profile.blockedDates);
+          } else {
+            try {
+              const saved = localStorage.getItem(`@camqrew_blocked_dates_${user.id}`) || localStorage.getItem(`@camcrew_blocked_dates_${user.id}`);
+              if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                  setBlockedDates(parsed);
+                }
+              }
+            } catch {}
           }
         } catch {
           // Provide clean zero defaults for new creator
+          const cachedDates = (() => {
+            try {
+              const s = localStorage.getItem(`@camqrew_blocked_dates_${user.id}`) || localStorage.getItem(`@camcrew_blocked_dates_${user.id}`);
+              return s ? JSON.parse(s) : [];
+            } catch { return []; }
+          })();
           const fallbackPro: ProfessionalProfile = {
             id: user.id,
             userId: user.id,
@@ -465,11 +495,12 @@ export const DashboardPage: React.FC = () => {
             services: [],
             reviews: [],
             weeklyAvailability: { mon: true, tue: true, wed: true, thu: true, fri: true, sat: true, sun: false },
-            blockedDates: [],
+            blockedDates: cachedDates,
             totalEarnings: 0,
             views: 0
           };
           setProProfile(fallbackPro);
+          setBlockedDates(cachedDates);
         }
 
         const [openJobs, pBookings, products, payoutHistory, acc] = await Promise.all([
@@ -1065,13 +1096,30 @@ export const DashboardPage: React.FC = () => {
   };
 
   // Toggle date in Availability Calendar
-  const handleToggleDate = (dateStr: string) => {
-    setBlockedDates((prev) => {
-      const isBlocked = prev.includes(dateStr);
-      const next = isBlocked ? prev.filter((d) => d !== dateStr) : [...prev, dateStr];
-      showToast(isBlocked ? `Marked ${dateStr} as Available` : `Marked ${dateStr} as Blocked / Booked`);
-      return next;
-    });
+  const handleToggleDate = async (dateStr: string) => {
+    if (!user) return;
+    const isBlocked = blockedDates.includes(dateStr);
+    const next = isBlocked ? blockedDates.filter((d) => d !== dateStr) : [...blockedDates, dateStr];
+
+    // 1. Optimistic UI update
+    setBlockedDates(next);
+    showToast(isBlocked ? `Marked ${dateStr} as Available` : `Marked ${dateStr} as Blocked / Booked`);
+
+    // 2. Immediately persist to localStorage cache
+    try {
+      localStorage.setItem(`@camqrew_blocked_dates_${user.id}`, JSON.stringify(next));
+    } catch {}
+
+    // 3. Persist to Supabase pro_blocked_dates table
+    try {
+      const updatedDbDates = await professionalApi.toggleBlockedDate(user.id, dateStr);
+      setBlockedDates(updatedDbDates);
+      if (proProfile) {
+        setProProfile({ ...proProfile, blockedDates: updatedDbDates });
+      }
+    } catch (err: any) {
+      console.warn('Failed to sync blocked date to Supabase database:', err);
+    }
   };
 
   // Gear image upload handler
@@ -2837,6 +2885,25 @@ export const DashboardPage: React.FC = () => {
                             <FileText size={14} /> Call Sheet
                           </button>
 
+                          {(b.status === 'confirmed' || b.status === 'completed' || b.status === 'escrow_held') && (
+                            <button
+                              type="button"
+                              className="btn btn-outline btn-sm"
+                              style={{ color: '#16a34a', borderColor: 'rgba(22,163,74,0.35)' }}
+                              onClick={async () => {
+                                try {
+                                  const inv = await invoiceService.createOrGetBookingInvoice(b.id);
+                                  invoiceService.openAndPrintInvoice(inv);
+                                } catch (e: any) {
+                                  alert(e.message || 'Could not load invoice');
+                                }
+                              }}
+                              title="View & Download GST Tax Invoice (18%)"
+                            >
+                              <FileText size={14} /> Tax Invoice
+                            </button>
+                          )}
+
                           <Link 
                             to={`/chat?userId=${b.customerId}`} 
                             className="btn btn-outline btn-sm"
@@ -4007,6 +4074,26 @@ export const DashboardPage: React.FC = () => {
                               >
                                 <FileText size={14} /> Call Sheet
                               </button>
+
+                              {(b.status === 'confirmed' || b.status === 'completed' || b.status === 'escrow_held') && (
+                                <button
+                                  type="button"
+                                  className="btn btn-outline btn-sm"
+                                  style={{ color: '#16a34a', borderColor: 'rgba(22,163,74,0.35)' }}
+                                  onClick={async () => {
+                                    try {
+                                      const inv = await invoiceService.createOrGetBookingInvoice(b.id);
+                                      invoiceService.openAndPrintInvoice(inv);
+                                    } catch (e: any) {
+                                      alert(e.message || 'Could not load invoice');
+                                    }
+                                  }}
+                                  title="View & Download GST Tax Invoice (18%)"
+                                >
+                                  <FileText size={14} /> Tax Invoice
+                                </button>
+                              )}
+
                               <Link to={`/chat?userId=${b.professionalId}`} className="btn btn-outline btn-sm">
                                 <MessageSquare size={14} /> Message Pro
                               </Link>

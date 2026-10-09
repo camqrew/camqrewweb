@@ -383,7 +383,22 @@ const mapPro = (row: any): ProfessionalProfile => {
     hostingStyles: Array.isArray(row.hosting_styles) ? row.hosting_styles : [],
     reviews: [],
     weeklyAvailability: { mon: true, tue: true, wed: true, thu: true, fri: true, sat: true, sun: false },
-    blockedDates: [],
+    blockedDates: (() => {
+      if (Array.isArray(row.blocked_dates)) {
+        return row.blocked_dates.map((d: any) => String(d).split('T')[0]);
+      }
+      if (Array.isArray(row.pro_blocked_dates)) {
+        return row.pro_blocked_dates.map((d: any) => String(d.date || d).split('T')[0]);
+      }
+      try {
+        const saved = localStorage.getItem(`@camqrew_blocked_dates_${row.id}`) || localStorage.getItem(`@camcrew_blocked_dates_${row.id}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch {}
+      return [];
+    })(),
   };
 };
 
@@ -445,7 +460,7 @@ export const professionalApi = {
   },
 
   getProfileById: async (id: string): Promise<ProfessionalProfile> => {
-    const [profileRes, reviews] = await Promise.all([
+    const [profileRes, reviews, blockedRes] = await Promise.all([
       supabase.from('professional_profiles').select(`
         *,
         users (
@@ -456,7 +471,14 @@ export const professionalApi = {
           media_url
         )
       `).eq('id', id).single(),
-      professionalApi.getReviews(id).catch(() => [])
+      professionalApi.getReviews(id).catch(() => []),
+      (async () => {
+        try {
+          return await supabase.from('pro_blocked_dates').select('date').eq('professional_id', id);
+        } catch {
+          return { data: [] as any[] };
+        }
+      })()
     ]);
 
     const { data, error } = profileRes;
@@ -470,6 +492,23 @@ export const professionalApi = {
     if (pro.reviews.length > 0) {
       pro.reviewCount = pro.reviews.length;
     }
+
+    if (blockedRes?.data && Array.isArray(blockedRes.data) && blockedRes.data.length > 0) {
+      const dates = blockedRes.data.map((r: any) => String(r.date).split('T')[0]);
+      pro.blockedDates = dates;
+      try {
+        localStorage.setItem(`@camqrew_blocked_dates_${id}`, JSON.stringify(dates));
+      } catch {}
+    } else {
+      try {
+        const saved = localStorage.getItem(`@camqrew_blocked_dates_${id}`) || localStorage.getItem(`@camcrew_blocked_dates_${id}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) pro.blockedDates = parsed;
+        }
+      } catch {}
+    }
+
     return pro;
   },
 
@@ -539,6 +578,105 @@ export const professionalApi = {
       date: 'Just now',
       comment: data.comment || comment,
     };
+  },
+
+  getBlockedDates: async (proId: string): Promise<string[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('pro_blocked_dates')
+        .select('date')
+        .eq('professional_id', proId);
+
+      if (!error && data && data.length > 0) {
+        const dates = data.map((r: any) => String(r.date).split('T')[0]);
+        try {
+          localStorage.setItem(`@camqrew_blocked_dates_${proId}`, JSON.stringify(dates));
+        } catch {}
+        return dates;
+      }
+    } catch (e) {
+      console.warn('Failed to fetch pro_blocked_dates from Supabase:', e);
+    }
+
+    try {
+      const saved = localStorage.getItem(`@camqrew_blocked_dates_${proId}`) || localStorage.getItem(`@camcrew_blocked_dates_${proId}`);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+
+    return [];
+  },
+
+  toggleBlockedDate: async (proId: string, dateStr: string): Promise<string[]> => {
+    const cleanDate = dateStr.split('T')[0];
+
+    // 1. Check existing record in Supabase
+    const { data: existing } = await supabase
+      .from('pro_blocked_dates')
+      .select('id')
+      .eq('professional_id', proId)
+      .eq('date', cleanDate)
+      .maybeSingle();
+
+    if (existing) {
+      // Unblock: delete row
+      const { error: delErr } = await supabase
+        .from('pro_blocked_dates')
+        .delete()
+        .eq('professional_id', proId)
+        .eq('date', cleanDate);
+
+      if (delErr) {
+        console.error('Error removing blocked date:', delErr);
+        throw new Error(delErr.message);
+      }
+    } else {
+      // Block: insert row
+      const { error: insErr } = await supabase
+        .from('pro_blocked_dates')
+        .insert([{
+          professional_id: proId,
+          date: cleanDate,
+          reason: 'Blocked by Creator',
+        }]);
+
+      if (insErr) {
+        console.error('Error adding blocked date:', insErr);
+        throw new Error(insErr.message);
+      }
+    }
+
+    // 2. Fetch fresh list from Supabase
+    const { data: fresh } = await supabase
+      .from('pro_blocked_dates')
+      .select('date')
+      .eq('professional_id', proId);
+
+    const updatedList = (fresh || []).map((r: any) => String(r.date).split('T')[0]);
+    try {
+      localStorage.setItem(`@camqrew_blocked_dates_${proId}`, JSON.stringify(updatedList));
+    } catch {}
+
+    return updatedList;
+  },
+
+  setBlockedDates: async (proId: string, dates: string[]): Promise<string[]> => {
+    const cleanDates = Array.from(new Set(dates.map((d) => d.split('T')[0])));
+    try {
+      await supabase.from('pro_blocked_dates').delete().eq('professional_id', proId);
+      if (cleanDates.length > 0) {
+        const rows = cleanDates.map((date) => ({
+          professional_id: proId,
+          date,
+          reason: 'Blocked by Creator',
+        }));
+        await supabase.from('pro_blocked_dates').insert(rows);
+      }
+      localStorage.setItem(`@camqrew_blocked_dates_${proId}`, JSON.stringify(cleanDates));
+      return cleanDates;
+    } catch (e: any) {
+      console.error('Error setting blocked dates:', e);
+      throw new Error(e.message || 'Failed to update blocked dates');
+    }
   },
 
   updateProfile: async (data: Partial<ProfessionalProfile>, explicitUserId?: string): Promise<ProfessionalProfile> => {

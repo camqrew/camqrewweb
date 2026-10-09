@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 export interface CustomDatePickerProps {
@@ -7,6 +7,7 @@ export interface CustomDatePickerProps {
   placeholder?: string;
   min?: string; // YYYY-MM-DD
   max?: string; // YYYY-MM-DD
+  disabledDates?: string[]; // Array of YYYY-MM-DD strings that are blocked
   disabled?: boolean;
   className?: string;
   style?: React.CSSProperties;
@@ -26,6 +27,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
   placeholder = 'Select date',
   min,
   max,
+  disabledDates,
   disabled = false,
   className = '',
   style,
@@ -163,6 +165,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
       let isDisabled = false;
       if (min && dateStr < min) isDisabled = true;
       if (max && dateStr > max) isDisabled = true;
+      if (disabledDates && disabledDates.includes(dateStr)) isDisabled = true;
 
       days.push({
         day: d,

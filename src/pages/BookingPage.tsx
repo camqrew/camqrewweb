@@ -178,6 +178,12 @@ export const BookingPage: React.FC = () => {
     ? Number(totalParam)
     : (jobBudgetParam ? Number(jobBudgetParam) : ((pro?.ratePerDay || 15000) * daysCount));
 
+  // 18% GST Breakdown (Inclusive)
+  const taxableBase = Math.round((totalAmount / 1.18) * 100) / 100;
+  const totalGst = Math.round((totalAmount - taxableBase) * 100) / 100;
+  const cgst = Math.round((totalGst / 2) * 100) / 100;
+  const sgst = Math.round((totalGst - cgst) * 100) / 100;
+
   const categoryMilestones = useMemo(() => {
     return computeCategoryMilestones(
       [archetype, pro?.title || '', jobTitleParam || '', ...(pro?.categories || [])],
@@ -414,6 +420,19 @@ export const BookingPage: React.FC = () => {
         ? `${notes.trim()}\n${categoryDetailsSummary}` 
         : categoryDetailsSummary.trim();
 
+      // Check for blocked dates
+      if (pro?.blockedDates && Array.isArray(pro.blockedDates) && pro.blockedDates.length > 0) {
+        const d1 = new Date(startDate);
+        const d2 = new Date(endDate);
+        for (let dt = new Date(d1); dt <= d2; dt.setDate(dt.getDate() + 1)) {
+          const curStr = dt.toISOString().split('T')[0];
+          if (pro.blockedDates.includes(curStr)) {
+            alert(`The creator is marked unavailable on ${curStr}. Please choose available dates.`);
+            return;
+          }
+        }
+      }
+
       const created = await bookingApi.createBooking({
         professionalId: proId,
         professionalName: pro?.name || 'Creator',
@@ -539,6 +558,7 @@ export const BookingPage: React.FC = () => {
                     setEndDate(val);
                   }}
                   min={new Date().toISOString().split('T')[0]}
+                  disabledDates={pro?.blockedDates || []}
                   placeholder={categoryConfig.startDateLabel}
                   required
                 />
@@ -556,6 +576,7 @@ export const BookingPage: React.FC = () => {
                       }
                     }}
                     min={new Date().toISOString().split('T')[0]}
+                    disabledDates={pro?.blockedDates || []}
                     placeholder={categoryConfig.startDateLabel}
                     required
                   />
@@ -566,6 +587,7 @@ export const BookingPage: React.FC = () => {
                     value={endDate}
                     onChange={(val) => setEndDate(val)}
                     min={startDate || new Date().toISOString().split('T')[0]}
+                    disabledDates={pro?.blockedDates || []}
                     placeholder={categoryConfig.endDateLabel}
                     required
                   />
@@ -1107,20 +1129,28 @@ export const BookingPage: React.FC = () => {
               </div>
               {isBudgetLocked ? (
                 <div className="cost-row locked-row" style={{ color: 'var(--accent)', fontWeight: 600 }}>
-                  <span>Agreed Package Budget</span>
-                  <span><Lock size={12} /> ₹{totalAmount.toLocaleString('en-IN')}</span>
+                  <span>Agreed Package Base</span>
+                  <span><Lock size={12} /> ₹{taxableBase.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
               ) : (
                 <div className="cost-row">
                   <span>
                     {archetype === 'crafts_gifting' ? 'Gifting Order Rate' : (archetype === 'home_baker' ? 'Order Rate' : archetype === 'travels' ? 'Travel Day Rate' : `${proArchetype.rateUnitDefault} Rate`)} (₹{pro?.ratePerDay?.toLocaleString('en-IN')} × {daysCount})
                   </span>
-                  <span>₹{totalAmount.toLocaleString('en-IN')}</span>
+                  <span>₹{taxableBase.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
               )}
+              <div className="cost-row" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                <span>CGST (9.0%)</span>
+                <span>₹{cgst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+              <div className="cost-row" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                <span>SGST (9.0%)</span>
+                <span>₹{sgst.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
               <div className="cost-row total-row">
-                <strong>Total Amount</strong>
-                <strong className="accent-text">₹{totalAmount.toLocaleString('en-IN')}</strong>
+                <strong>Total Amount (Inc. 18% GST)</strong>
+                <strong className="accent-text">₹{totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
               </div>
             </div>
 

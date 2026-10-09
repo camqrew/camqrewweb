@@ -14,10 +14,12 @@ import {
   MapPin, 
   DollarSign, 
   Package,
-  ExternalLink
+  ExternalLink,
+  FileText
 } from 'lucide-react';
 import { supabase } from '../api/supabaseClient';
 import { createShiprocketOrder, getShiprocketTrackingUrl } from '../api/shiprocketService';
+import { invoiceService } from '../services/invoiceService';
 
 export default function Orders() {
   const [ordersList, setOrdersList] = useState<any[]>([]);
@@ -687,6 +689,41 @@ export default function Orders() {
                   <span>Total Settled</span>
                   <span>{formatCurrency(selectedOrder.amount)}</span>
                 </div>
+              </div>
+
+              {/* GST Tax Invoice Print Action */}
+              <div style={{ marginTop: 12, marginBottom: 16 }}>
+                <button
+                  type="button"
+                  className="btn btn-outline full-width"
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    gap: 8, 
+                    padding: '10px 14px', 
+                    borderRadius: 8, 
+                    fontWeight: 600, 
+                    color: '#16a34a', 
+                    borderColor: 'rgba(22,163,74,0.4)', 
+                    background: 'rgba(22,163,74,0.06)',
+                    cursor: 'pointer',
+                    width: '100%'
+                  }}
+                  onClick={async () => {
+                    try {
+                      const inv = selectedOrder.type === 'Service Hire'
+                        ? await invoiceService.createOrGetBookingInvoice(selectedOrder.id)
+                        : await invoiceService.createOrGetOrderInvoice(selectedOrder.id);
+                      invoiceService.openAndPrintInvoice(inv);
+                    } catch (e: any) {
+                      alert(e.message || 'Could not generate invoice');
+                    }
+                  }}
+                  title="Print / Save permanent GST Tax Invoice (18%)"
+                >
+                  <FileText size={16} /> 📄 Print / Save GST Tax Invoice (18% GST)
+                </button>
               </div>
 
               {/* Shiprocket Fulfillment Integration */}
