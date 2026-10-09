@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { professionalApi, type GetProfessionalsFilter } from '../api/professionalApi';
+import { professionalApi, type GetProfessionalsFilter, isProAvailableOnDates } from '../api/professionalApi';
 import type { ProfessionalProfile } from '../types/professional';
 import { ProCard } from '../components/ProCard';
 import { LocationSelector } from '../components/LocationSelector';
-import { Search, UserCheck, X, MapPin } from 'lucide-react';
+import { CustomDatePicker } from '../components/CustomDatePicker';
+import { Search, UserCheck, X, MapPin, Calendar, ArrowUpDown } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
 
 export const ExplorePage: React.FC = () => {
@@ -19,6 +20,17 @@ export const ExplorePage: React.FC = () => {
     district: searchParams.get('district') || '',
     city: searchParams.get('city') || '',
   });
+
+  // Date Availability & Sorting State
+  const [startDate, setStartDate] = useState(searchParams.get('startDate') || '');
+  const [endDate, setEndDate] = useState(searchParams.get('endDate') || '');
+  const [isRange, setIsRange] = useState(Boolean(searchParams.get('endDate')));
+  const [onlyAvailable, setOnlyAvailable] = useState(searchParams.get('available') === 'true');
+  const [sortBy, setSortBy] = useState<'available' | 'rating' | 'price_asc' | 'price_desc' | 'experience'>(
+    (searchParams.get('sortBy') as any) || (searchParams.get('startDate') ? 'available' : 'rating')
+  );
+
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
   const categories = [
     'All',
@@ -72,14 +84,95 @@ export const ExplorePage: React.FC = () => {
     fetchPros();
   };
 
+  const handleStartDateChange = (val: string) => {
+    setStartDate(val);
+    if (val && sortBy !== 'available') {
+      setSortBy('available');
+    }
+    if (isRange && endDate && val > endDate) {
+      setEndDate(val);
+    }
+  };
+
+  const formatDateLabel = (d: string) => {
+    if (!d) return '';
+    const [y, m, day] = d.split('-').map(Number);
+    if (!y || !m || !day) return d;
+    const dateObj = new Date(y, m - 1, day);
+    return dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  // Sync search params with URL
+  useEffect(() => {
+    const params: Record<string, string> = {};
+    if (category !== 'All') params.category = category;
+    if (searchQuery.trim()) params.q = searchQuery.trim();
+    if (location.state) params.state = location.state;
+    if (location.district) params.district = location.district;
+    if (location.city) params.city = location.city;
+    if (startDate) params.startDate = startDate;
+    if (isRange && endDate) params.endDate = endDate;
+    if (onlyAvailable) params.available = 'true';
+    if (sortBy && sortBy !== 'rating') params.sortBy = sortBy;
+    setSearchParams(params, { replace: true });
+  }, [category, searchQuery, location, startDate, endDate, isRange, onlyAvailable, sortBy]);
+
   const clearAllFilters = () => {
     setCategory('All');
     setSearchQuery('');
     setLocation({ state: '', district: '', city: '' });
+    setStartDate('');
+    setEndDate('');
+    setIsRange(false);
+    setOnlyAvailable(false);
+    setSortBy('rating');
     setSearchParams({});
   };
 
-  const hasActiveFilters = category !== 'All' || searchQuery || location.state;
+  // Availability calculation
+  const availableCount = useMemo(() => {
+    if (!startDate) return 0;
+    return pros.filter(p => isProAvailableOnDates(p, startDate, isRange ? endDate : undefined)).length;
+  }, [pros, startDate, endDate, isRange]);
+
+  // Filtered & Sorted professionals
+  const sortedAndFilteredPros = useMemo(() => {
+    let list = [...pros];
+
+    // 1. Filter only available if toggle enabled
+    if (startDate && onlyAvailable) {
+      list = list.filter(p => isProAvailableOnDates(p, startDate, isRange ? endDate : undefined));
+    }
+
+    // 2. Sort list
+    list.sort((a, b) => {
+      if (sortBy === 'available' && startDate) {
+        const aAvail = isProAvailableOnDates(a, startDate, isRange ? endDate : undefined) ? 1 : 0;
+        const bAvail = isProAvailableOnDates(b, startDate, isRange ? endDate : undefined) ? 1 : 0;
+        if (aAvail !== bAvail) {
+          return bAvail - aAvail; // Available (1) before Blocked (0)
+        }
+        return (b.rating || 0) - (a.rating || 0);
+      }
+      if (sortBy === 'rating') {
+        return (b.rating || 0) - (a.rating || 0);
+      }
+      if (sortBy === 'price_asc') {
+        return (a.ratePerDay || 0) - (b.ratePerDay || 0);
+      }
+      if (sortBy === 'price_desc') {
+        return (b.ratePerDay || 0) - (a.ratePerDay || 0);
+      }
+      if (sortBy === 'experience') {
+        return (b.experienceYears || 0) - (a.experienceYears || 0);
+      }
+      return 0;
+    });
+
+    return list;
+  }, [pros, startDate, endDate, isRange, onlyAvailable, sortBy]);
+
+  const hasActiveFilters = category !== 'All' || !!searchQuery || !!location.state || !!startDate || onlyAvailable;
 
   const locString = location.city || location.district || location.state || 'India';
   const seoTitle = category && category !== 'All'
@@ -149,6 +242,108 @@ export const ExplorePage: React.FC = () => {
           </div>
         </div>
 
+        {/* Date Availability & Sorting Section */}
+        <div className="explore-date-row">
+          <div className="explore-date-header">
+            <div className="explore-location-badge">
+              <Calendar size={15} color="var(--accent)" />
+              <span>Event / Shoot Date Availability:</span>
+            </div>
+            <div className="explore-date-mode-toggle">
+              <button
+                type="button"
+                className={`date-mode-pill ${!isRange ? 'active' : ''}`}
+                onClick={() => {
+                  setIsRange(false);
+                  setEndDate('');
+                }}
+              >
+                Single Day
+              </button>
+              <button
+                type="button"
+                className={`date-mode-pill ${isRange ? 'active' : ''}`}
+                onClick={() => {
+                  setIsRange(true);
+                  if (startDate && !endDate) setEndDate(startDate);
+                }}
+              >
+                Date Range
+              </button>
+            </div>
+          </div>
+
+          <div className="explore-date-inputs-wrap">
+            <div className="explore-datepicker-item">
+              <span className="datepicker-mini-label">{isRange ? 'Start Date' : 'Shoot Date'}</span>
+              <CustomDatePicker
+                value={startDate}
+                onChange={handleStartDateChange}
+                min={todayStr}
+                placeholder={isRange ? 'Select start date' : 'Select shoot date'}
+              />
+            </div>
+
+            {isRange && (
+              <div className="explore-datepicker-item">
+                <span className="datepicker-mini-label">End Date</span>
+                <CustomDatePicker
+                  value={endDate}
+                  onChange={(val) => setEndDate(val)}
+                  min={startDate || todayStr}
+                  placeholder="Select end date"
+                />
+              </div>
+            )}
+
+            {startDate && (
+              <button
+                type="button"
+                className="btn-clear-date"
+                onClick={() => {
+                  setStartDate('');
+                  setEndDate('');
+                  if (sortBy === 'available') setSortBy('rating');
+                }}
+                title="Clear date filter"
+              >
+                <X size={14} /> Clear Dates
+              </button>
+            )}
+
+            {startDate && (
+              <label className="only-available-toggle">
+                <input
+                  type="checkbox"
+                  checked={onlyAvailable}
+                  onChange={(e) => setOnlyAvailable(e.target.checked)}
+                />
+                <span className="available-indicator-dot" />
+                <span>Only Show Available</span>
+              </label>
+            )}
+
+            <div className="explore-sort-wrap">
+              <span className="sort-mini-label">
+                <ArrowUpDown size={12} color="var(--accent)" /> Sort Creators By:
+              </span>
+              <select
+                className="explore-sort-select"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+              >
+                {startDate && (
+                  <option value="available">🟢 Available on Dates First</option>
+                )}
+                <option value="rating">⭐ Highest Rated</option>
+                <option value="price_asc">💰 Price: Low to High</option>
+                <option value="price_desc">💎 Price: High to Low</option>
+                <option value="experience">🏆 Most Experienced</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         {/* Category Filter Chips */}
         <div className="explore-categories-row">
           <div className="category-chips-scroll">
@@ -183,6 +378,33 @@ export const ExplorePage: React.FC = () => {
                   <button type="button" onClick={() => setLocation({ state: '', district: '', city: '' })} title="Remove filter"><X size={12} /></button>
                 </span>
               )}
+              {startDate && (
+                <span className="active-filter-tag">
+                  <Calendar size={12} color="var(--accent)" />
+                  <strong>
+                    {formatDateLabel(startDate)}
+                    {isRange && endDate && endDate !== startDate ? ` - ${formatDateLabel(endDate)}` : ''}
+                  </strong>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStartDate('');
+                      setEndDate('');
+                      if (sortBy === 'available') setSortBy('rating');
+                    }}
+                    title="Remove date filter"
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+              {onlyAvailable && (
+                <span className="active-filter-tag">
+                  <span className="available-indicator-dot" style={{ width: 6, height: 6 }} />
+                  <strong>Only Available</strong>
+                  <button type="button" onClick={() => setOnlyAvailable(false)} title="Remove filter"><X size={12} /></button>
+                </span>
+              )}
               {searchQuery && (
                 <span className="active-filter-tag">
                   Query: <strong>"{searchQuery}"</strong>
@@ -197,8 +419,23 @@ export const ExplorePage: React.FC = () => {
         )}
       </div>
 
-      <div className="results-count-bar" style={{ marginBottom: 16, fontSize: 14, color: 'var(--text-secondary)' }}>
-        <span>Showing <strong>{pros.length}</strong> verified creative professionals</span>
+      <div className="results-count-bar" style={{ marginBottom: 16, fontSize: 14, color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+        <span>
+          Showing <strong>{sortedAndFilteredPros.length}</strong> verified creative professionals
+          {startDate && (
+            <>
+              {' • '}
+              <span style={{ color: 'var(--accent)', fontWeight: 600 }}>
+                {availableCount} available on {formatDateLabel(startDate)}{isRange && endDate && endDate !== startDate ? ` - ${formatDateLabel(endDate)}` : ''}
+              </span>
+            </>
+          )}
+        </span>
+        {startDate && (
+          <span style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>
+            Sorted by: <strong>{sortBy === 'available' ? 'Available First' : sortBy}</strong>
+          </span>
+        )}
       </div>
 
       {loading ? (
@@ -207,19 +444,27 @@ export const ExplorePage: React.FC = () => {
             <div key={n} className="card skeleton-card" style={{ height: 320 }} />
           ))}
         </div>
-      ) : pros.length === 0 ? (
+      ) : sortedAndFilteredPros.length === 0 ? (
         <div className="empty-results card text-center" style={{ padding: 48 }}>
           <UserCheck size={48} color="var(--text-muted)" style={{ margin: '0 auto 16px' }} />
           <h3>No creators found matching this criteria</h3>
-          <p style={{ color: 'var(--text-secondary)' }}>Try widening your search location or clearing category filters to find nearby crew.</p>
+          <p style={{ color: 'var(--text-secondary)' }}>
+            {onlyAvailable && startDate
+              ? 'No creators are currently marked available on your selected dates. Try unchecking "Only Show Available" to see all creators.'
+              : 'Try widening your search location or clearing category filters to find nearby crew.'}
+          </p>
           <button onClick={clearAllFilters} className="btn btn-primary" style={{ marginTop: 16 }}>
             Reset All Filters
           </button>
         </div>
       ) : (
         <div className="pros-grid">
-          {pros.map((pro) => (
-            <ProCard key={pro.id} pro={pro} />
+          {sortedAndFilteredPros.map((pro) => (
+            <ProCard
+              key={pro.id}
+              pro={pro}
+              selectedDates={startDate ? { startDate, endDate: isRange ? endDate : undefined } : undefined}
+            />
           ))}
         </div>
       )}

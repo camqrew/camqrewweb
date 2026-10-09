@@ -21,6 +21,29 @@ export interface ParsedVideo {
   isShort?: boolean;
 }
 
+export function isProAvailableOnDates(pro: ProfessionalProfile, startDate?: string, endDate?: string): boolean {
+  if (!startDate) return true;
+  const blocked = pro.blockedDates || [];
+  if (blocked.length === 0) return true;
+
+  const d1 = new Date(startDate);
+  const d2 = endDate ? new Date(endDate) : new Date(startDate);
+
+  if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return true;
+
+  const start = d1 <= d2 ? d1 : d2;
+  const end = d1 <= d2 ? d2 : d1;
+
+  for (let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
+    const curStr = dt.toISOString().split('T')[0];
+    if (blocked.includes(curStr)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export function parseVideoUrl(url: string): ParsedVideo {
   const cleanUrl = (url || '').trim();
 
@@ -412,6 +435,9 @@ export const professionalApi = {
       ),
       portfolio_items (
         media_url
+      ),
+      pro_blocked_dates (
+        date
       )
     `);
 

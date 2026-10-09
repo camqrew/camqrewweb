@@ -3,14 +3,23 @@ import { Link } from 'react-router-dom';
 import type { ProfessionalProfile } from '../types/professional';
 import { Star, MapPin, CheckCircle2, UserCheck, User } from 'lucide-react';
 import { getArchetype } from '../constants/categories';
+import { isProAvailableOnDates } from '../api/professionalApi';
 
 interface ProCardProps {
   pro: ProfessionalProfile;
+  selectedDates?: {
+    startDate: string;
+    endDate?: string;
+  };
 }
 
-export const ProCard: React.FC<ProCardProps> = ({ pro }) => {
+export const ProCard: React.FC<ProCardProps> = ({ pro, selectedDates }) => {
   const [imgError, setImgError] = useState(false);
   const archetype = getArchetype(pro.categories);
+
+  const isAvailableOnDates = selectedDates?.startDate
+    ? isProAvailableOnDates(pro, selectedDates.startDate, selectedDates.endDate)
+    : null;
 
   const specsText = pro.categories && pro.categories.length > 0
     ? pro.categories.slice(0, 3).join(' • ')
@@ -19,16 +28,49 @@ export const ProCard: React.FC<ProCardProps> = ({ pro }) => {
   // Fallback banner if none exists
   const bannerSrc = pro.bannerImage || 'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=1600';
 
+  const bookUrl = selectedDates?.startDate
+    ? `/book/${pro.id}?startDate=${selectedDates.startDate}${selectedDates.endDate ? `&endDate=${selectedDates.endDate}` : ''}`
+    : `/book/${pro.id}`;
+
   return (
     <div className="pro-card pro-card-mobile-match">
       {/* Top Cinematic Image Banner */}
-      <div className="pro-card-banner-wrapper">
+      <div className="pro-card-banner-wrapper" style={{ position: 'relative' }}>
         <img
           src={bannerSrc}
           alt={pro.name}
           className="pro-card-banner-img"
           loading="lazy"
         />
+        {isAvailableOnDates !== null && (
+          <div style={{
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            padding: '4px 9px',
+            borderRadius: 20,
+            fontSize: 11,
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 5,
+            backdropFilter: 'blur(8px)',
+            background: isAvailableOnDates ? 'rgba(34, 197, 94, 0.92)' : 'rgba(239, 68, 68, 0.92)',
+            color: '#ffffff',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            zIndex: 2,
+            letterSpacing: '0.2px'
+          }}>
+            <span style={{
+              width: 6,
+              height: 6,
+              borderRadius: '50%',
+              background: '#ffffff',
+              display: 'inline-block'
+            }} />
+            <span>{isAvailableOnDates ? 'Available on Dates' : 'Blocked / Booked'}</span>
+          </div>
+        )}
       </div>
 
       {/* Floating Content Box with curved top overlapping banner */}
@@ -107,7 +149,7 @@ export const ProCard: React.FC<ProCardProps> = ({ pro }) => {
             <UserCheck size={15} />
           </Link>
 
-          <Link to={`/book/${pro.id}`} className="pro-card-btn-book">
+          <Link to={bookUrl} className="pro-card-btn-book">
             <span>Book Now</span>
           </Link>
         </div>
