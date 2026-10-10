@@ -66,8 +66,20 @@ function App() {
   }, [theme]);
 
   useEffect(() => {
+    // If user lands with recovery hash on root or another page, redirect to /login?type=recovery
+    if (window.location.hash.includes('type=recovery') && !window.location.pathname.includes('/login') && !window.location.pathname.includes('/reset-password')) {
+      window.location.href = `/login?type=recovery${window.location.hash}`;
+      return;
+    }
+
     loadAuth();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/reset-password')) {
+          window.location.href = `/login?type=recovery${window.location.hash}`;
+        }
+        return;
+      }
       if (session) {
         loadAuth();
       }
@@ -111,6 +123,7 @@ function App() {
             <Route path="/pro-dashboard" element={<Navigate to="/dashboard?tab=overview" replace />} />
             <Route path="/login" element={<AuthPage />} />
             <Route path="/register" element={<AuthPage />} />
+            <Route path="/reset-password" element={<AuthPage />} />
             <Route path="/legal" element={<LegalPage />} />
             <Route path="/terms" element={<LegalPage />} />
             <Route path="/privacy" element={<LegalPage />} />

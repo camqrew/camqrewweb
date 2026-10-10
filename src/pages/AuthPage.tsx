@@ -161,7 +161,8 @@ export const AuthPage: React.FC = () => {
   useEffect(() => {
     const isRecoveryParam = searchParams.get('type') === 'recovery';
     const isRecoveryHash = window.location.hash.includes('type=recovery');
-    if (isRecoveryParam || isRecoveryHash) {
+    const isResetPasswordPath = window.location.pathname.includes('reset-password');
+    if (isRecoveryParam || isRecoveryHash || isResetPasswordPath) {
       setCurrentScreen('reset_password');
       setError('');
       setSuccessNotice('');
