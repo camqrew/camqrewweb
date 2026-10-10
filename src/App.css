@@ -10032,7 +10032,7 @@
   gap: 9px;
   background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: none;
   padding: 8px 16px;
   border-radius: 30px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -10067,7 +10067,7 @@
   color: #3fb668;
   padding: 2px 8px;
   border-radius: 12px;
-  border: 1px solid rgba(63, 182, 104, 0.3);
+  border: none;
 }
 
 .reels-upload-quick-btn {
@@ -10112,7 +10112,7 @@
   width: 100%;
   background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: none;
   border-radius: 30px;
   padding: 9px 36px 9px 38px;
   font-size: 13px;
@@ -10127,8 +10127,7 @@
 
 .reels-search-input:focus {
   background: rgba(255, 255, 255, 0.12);
-  border-color: var(--accent, #3fb668);
-  box-shadow: 0 0 0 3px rgba(63, 182, 104, 0.2);
+  box-shadow: 0 4px 16px rgba(63, 182, 104, 0.25);
 }
 
 .reels-search-clear-btn {
@@ -10154,7 +10153,7 @@
   display: flex;
   background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: none;
   border-radius: 30px;
   padding: 3px;
 }
@@ -10186,7 +10185,7 @@
   gap: 6px;
   background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: none;
   color: #ffffff;
   padding: 8px 14px;
   border-radius: 30px;
@@ -10208,7 +10207,7 @@
   height: 36px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: none;
   color: rgba(255, 255, 255, 0.75);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -10244,7 +10243,7 @@
   display: inline-flex;
   align-items: center;
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   color: rgba(255, 255, 255, 0.75);
   padding: 7px 16px;
   border-radius: 20px;
@@ -10258,12 +10257,11 @@
 .reels-cat-pill-btn:hover {
   background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .reels-cat-pill-btn.active {
   background: var(--accent, #3fb668);
-  border-color: var(--accent, #3fb668);
+  border: none;
   color: #ffffff;
   box-shadow: 0 4px 14px rgba(63, 182, 104, 0.35);
   font-weight: 700;
@@ -10303,7 +10301,7 @@
   border-radius: 26px;
   overflow: hidden;
   background: #000000;
-  box-shadow: 0 35px 90px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.14);
+  box-shadow: 0 35px 90px rgba(0, 0, 0, 0.9);
   display: flex;
   flex-direction: column;
 }
@@ -10334,7 +10332,7 @@
   color: #ffffff;
   padding: 4px 10px;
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: none;
 }
 
 .reel-floating-format-badge {
@@ -10345,7 +10343,7 @@
   backdrop-filter: blur(8px);
   padding: 4px 8px;
   border-radius: 20px;
-  border: 1px solid rgba(63, 182, 104, 0.45);
+  border: none;
 }
 
 .reel-floating-sound-pill {
@@ -10358,7 +10356,7 @@
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: none;
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -10547,7 +10545,7 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: none;
   color: #ffffff;
   cursor: pointer;
   display: flex;
@@ -10558,7 +10556,7 @@
 
 .reel-nav-btn:hover {
   background: var(--accent, #3fb668);
-  border-color: var(--accent, #3fb668);
+  border: none;
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(63, 182, 104, 0.4);
 }
@@ -10577,7 +10575,7 @@
   background: rgba(255, 255, 255, 0.08);
   padding: 6px 10px;
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: none;
 }
 
 .reel-index-pill .idx-num {
@@ -10605,7 +10603,7 @@
 .sidepanel-creator-card {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: none;
   border-radius: 20px;
   padding: 18px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
@@ -10622,7 +10620,8 @@
   width: 54px;
   height: 54px;
   border-radius: 50%;
-  border: 2.5px solid var(--accent, #3fb668);
+  border: none;
+  box-shadow: 0 0 12px rgba(63, 182, 104, 0.35);
   flex-shrink: 0;
   display: block;
 }
@@ -10656,7 +10655,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #080c10;
+  border: none;
 }
 
 .sidepanel-creator-info {
@@ -10710,7 +10709,7 @@
 .sidepanel-pricing-banner {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: none;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -10741,7 +10740,7 @@
   align-items: center;
   gap: 5px;
   background: rgba(63, 182, 104, 0.12);
-  border: 1px solid rgba(63, 182, 104, 0.3);
+  border: none;
   color: #3fb668;
   padding: 4px 9px;
   border-radius: 12px;
@@ -10753,7 +10752,7 @@
 .sidepanel-reel-details {
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  border: none;
   border-radius: 18px;
   padding: 16px;
 }
@@ -10797,7 +10796,7 @@
 
 .sidepanel-action-btn {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   color: rgba(255, 255, 255, 0.85);
   border-radius: 14px;
   padding: 10px 4px;
@@ -10815,18 +10814,17 @@
 .sidepanel-action-btn:hover {
   background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .sidepanel-action-btn.liked {
   background: rgba(255, 59, 92, 0.15);
-  border-color: #ff3b5c;
+  border: none;
   color: #ff3b5c;
 }
 
 .sidepanel-action-btn.saved {
   background: rgba(63, 182, 104, 0.15);
-  border-color: #3fb668;
+  border: none;
   color: #3fb668;
 }
 
@@ -10870,7 +10868,7 @@
   justify-content: center;
   gap: 6px;
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: none;
   color: #ffffff;
   padding: 10px 12px;
   border-radius: 12px;
@@ -10883,13 +10881,12 @@
 .sidepanel-chat-btn:hover, .sidepanel-profile-btn:hover {
   background: rgba(255, 255, 255, 0.14);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.25);
 }
 
 /* Up Next Queue Mini-Preview */
 .sidepanel-queue-preview {
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: none;
   border-radius: 16px;
   padding: 12px 14px;
 }
@@ -10929,13 +10926,12 @@
   border-radius: 10px;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid transparent;
+  border: none;
   transition: all 0.2s ease;
 }
 
 .queue-item-card:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .queue-item-thumb {
@@ -11001,7 +10997,7 @@
   align-items: flex-end;
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: none;
 }
 
 .grid-heading {
@@ -11025,7 +11021,7 @@
   background: rgba(63, 182, 104, 0.12);
   padding: 6px 14px;
   border-radius: 20px;
-  border: 1px solid rgba(63, 182, 104, 0.25);
+  border: none;
 }
 
 .reels-cards-grid {
@@ -11041,15 +11037,14 @@
   overflow: hidden;
   cursor: pointer;
   background: #000000;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .reel-grid-card:hover {
   transform: translateY(-6px) scale(1.02);
-  border-color: var(--accent, #3fb668);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--accent, #3fb668);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
 }
 
 .reel-grid-card-media {
@@ -11093,7 +11088,7 @@
   color: #ffffff;
   padding: 4px 10px;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: none;
 }
 
 .grid-format-pill {
@@ -11103,7 +11098,7 @@
   color: #3fb668;
   padding: 4px 8px;
   border-radius: 14px;
-  border: 1px solid rgba(63, 182, 104, 0.5);
+  border: none;
 }
 
 .grid-card-play-hover {
@@ -11168,7 +11163,7 @@
   height: 24px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1.5px solid var(--accent, #3fb668);
+  border: none;
 }
 
 .grid-creator-avatar.placeholder {
@@ -11239,7 +11234,7 @@
 
 .reels-shortcuts-modal {
   background: #111822;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: none;
   border-radius: 22px;
   padding: 24px;
   max-width: 440px;
@@ -11254,7 +11249,7 @@
   align-items: center;
   margin-bottom: 20px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: none;
 }
 
 .shortcuts-modal-header h3 {
@@ -11285,7 +11280,7 @@
 
 .shortcut-row .keys kbd {
   background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: none;
   padding: 3px 8px;
   border-radius: 6px;
   font-size: 12px;
@@ -11323,7 +11318,7 @@
   transform: translateX(-50%);
   background: rgba(17, 24, 39, 0.95);
   backdrop-filter: blur(12px);
-  border: 1px solid var(--accent, #3fb668);
+  border: none;
   color: #ffffff;
   padding: 10px 22px;
   border-radius: 30px;
@@ -11350,7 +11345,7 @@
 
 [data-theme="light"] .reels-brand-pill {
   background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.08);
+  border: none;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
 }
 
@@ -11360,7 +11355,7 @@
 
 [data-theme="light"] .reels-search-input {
   background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.12);
+  border: none;
   color: #111827;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
@@ -11375,7 +11370,7 @@
 
 [data-theme="light"] .reels-view-switcher {
   background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.1);
+  border: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
@@ -11390,20 +11385,20 @@
 
 [data-theme="light"] .reels-sound-toggle-btn {
   background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.1);
+  border: none;
   color: #111827;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 [data-theme="light"] .reels-shortcuts-btn {
   background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.1);
+  border: none;
   color: #4b5563;
 }
 
 [data-theme="light"] .reels-cat-pill-btn {
   background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.08);
+  border: none;
   color: #4b5563;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
 }
@@ -11415,6 +11410,7 @@
 
 [data-theme="light"] .reels-cat-pill-btn.active {
   background: var(--accent, #3fb668);
+  border: none;
   color: #ffffff;
 }
 
@@ -11422,7 +11418,7 @@
 [data-theme="light"] .sidepanel-reel-details,
 [data-theme="light"] .sidepanel-queue-preview {
   background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.08);
+  border: none;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.05);
 }
 
@@ -11442,18 +11438,18 @@
 [data-theme="light"] .sidepanel-chat-btn,
 [data-theme="light"] .sidepanel-profile-btn {
   background: #f8fafc;
-  border-color: rgba(0, 0, 0, 0.08);
+  border: none;
   color: #1f2937;
 }
 
 [data-theme="light"] .sidepanel-action-btn:hover {
   background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.15);
+  border: none;
 }
 
 [data-theme="light"] .queue-item-card {
   background: #f9fafb;
-  border-color: rgba(0, 0, 0, 0.05);
+  border: none;
 }
 
 [data-theme="light"] .queue-item-info .q-title {
@@ -11466,30 +11462,30 @@
 
 [data-theme="light"] .reel-nav-btn {
   background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.1);
+  border: none;
   color: #111827;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
 [data-theme="light"] .reel-index-pill {
   background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.1);
+  border: none;
   color: #4b5563;
 }
 
 [data-theme="light"] .reels-grid-header {
-  border-bottom-color: rgba(0, 0, 0, 0.08);
+  border-bottom: none;
 }
 
 [data-theme="light"] .reels-shortcuts-modal {
   background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.12);
+  border: none;
   color: #111827;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
 }
 
 [data-theme="light"] .shortcuts-modal-header {
-  border-bottom-color: rgba(0, 0, 0, 0.08);
+  border-bottom: none;
 }
 
 [data-theme="light"] .shortcuts-close-btn {
@@ -11498,13 +11494,13 @@
 
 [data-theme="light"] .shortcut-row .keys kbd {
   background: #f3f4f6;
-  border-color: #d1d5db;
+  border: none;
   color: #111827;
 }
 
 [data-theme="light"] .reels-toast-banner {
   background: #ffffff;
-  border-color: var(--accent, #3fb668);
+  border: none;
   color: #111827;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
 }
