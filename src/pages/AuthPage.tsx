@@ -7,6 +7,8 @@ import { LocationSelector } from '../components/LocationSelector';
 import { GoogleIcon, AppleIcon } from '../components/SocialAuthButtons';
 import { CustomSelect } from '../components/CustomSelect';
 import { getArchetype, PROFESSIONAL_CATEGORIES } from '../constants/categories';
+import { PasswordStrengthIndicator } from '../components/PasswordStrengthIndicator';
+import { evaluatePasswordStrength } from '../utils/passwordStrength';
 import { SEOHead } from '../components/SEOHead';
 import './AuthFlow.css';
 
@@ -224,6 +226,14 @@ export const AuthPage: React.FC = () => {
         return;
       }
 
+      if (authMode === 'signup') {
+        const { isValid } = evaluatePasswordStrength(password);
+        if (!isValid) {
+          setError('Please create a stronger password meeting the security criteria below.');
+          return;
+        }
+      }
+
       if (authMode === 'login') {
         setLoading(true);
         try {
@@ -347,8 +357,13 @@ export const AuthPage: React.FC = () => {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPassword || newPassword.length < 6) {
-      setError('Password must be at least 6 characters long.');
+    if (!newPassword || newPassword.length < 8) {
+      setError('Password must be at least 8 characters long.');
+      return;
+    }
+    const { isValid } = evaluatePasswordStrength(newPassword);
+    if (!isValid) {
+      setError('Please choose a stronger password meeting the security criteria below.');
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -662,6 +677,9 @@ export const AuthPage: React.FC = () => {
                           {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
                       </div>
+                      {authMode === 'signup' && (
+                        <PasswordStrengthIndicator password={password} />
+                      )}
                     </div>
                   </>
                 ) : (
@@ -960,6 +978,7 @@ export const AuthPage: React.FC = () => {
                       {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+                  <PasswordStrengthIndicator password={newPassword} />
                 </div>
 
                 <div className="auth-field-block">
