@@ -58,8 +58,12 @@ export const AuthPage: React.FC = () => {
   // Safety timeout in case OAuth / session verification takes too long
   const [authTimedOut, setAuthTimedOut] = useState(false);
 
-  // Main flow screen: 'screen1_auth' | 'screen2_role' | 'forgot_password'
-  const [currentScreen, setCurrentScreen] = useState<'screen1_auth' | 'screen2_role' | 'forgot_password'>('screen1_auth');
+  // Main flow screen: 'screen1_auth' | 'screen2_role' | 'forgot_password' | 'reset_password'
+  const [currentScreen, setCurrentScreen] = useState<'screen1_auth' | 'screen2_role' | 'forgot_password' | 'reset_password'>('screen1_auth');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Screen 1: Auth Hub state
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(isRegisterParam ? 'signup' : 'login');
@@ -152,6 +156,29 @@ export const AuthPage: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [isOAuthCallback, isLoading, user, oauthErrorMsg]);
+
+  // Handle password recovery link callback
+  useEffect(() => {
+    const isRecoveryParam = searchParams.get('type') === 'recovery';
+    const isRecoveryHash = window.location.hash.includes('type=recovery');
+    if (isRecoveryParam || isRecoveryHash) {
+      setCurrentScreen('reset_password');
+      setError('');
+      setSuccessNotice('');
+    }
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setCurrentScreen('reset_password');
+        setError('');
+        setSuccessNotice('');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [searchParams]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Screen 1: Handlers
@@ -312,6 +339,36 @@ export const AuthPage: React.FC = () => {
       setSuccessNotice(res.message || 'Password reset link sent to your email.');
     } catch (err: any) {
       setError(err.message || 'Failed to send reset link.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPassword || newPassword.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match. Please re-enter.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    setSuccessNotice('');
+    try {
+      const res = await authApi.updatePassword(newPassword);
+      setSuccessNotice(res.message || 'Password updated successfully! Redirecting to sign in...');
+      setTimeout(() => {
+        setCurrentScreen('screen1_auth');
+        setAuthMode('login');
+        setNewPassword('');
+        setConfirmPassword('');
+        navigate('/login', { replace: true });
+      }, 2200);
+    } catch (err: any) {
+      setError(err.message || 'Failed to update password. Please request a new recovery link.');
     } finally {
       setLoading(false);
     }
@@ -836,6 +893,106 @@ export const AuthPage: React.FC = () => {
                   disabled={loading}
                 >
                   {loading ? <Loader2 size={18} className="animate-spin" /> : <span>Send Reset Link</span>}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────────
+              RESET PASSWORD SCREEN (AFTER EMAIL RECOVERY LINK CLICKED)
+             ───────────────────────────────────────────────────────────── */}
+          {currentScreen === 'reset_password' && (
+            <div className="auth-form-card">
+              <button
+                type="button"
+                className="btn btn-ghost"
+                style={{ padding: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--auth-text-muted)', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                onClick={() => { setCurrentScreen('screen1_auth'); setError(''); setSuccessNotice(''); navigate('/login', { replace: true }); }}
+              >
+                <ArrowLeft size={16} />
+                <span>Back to Sign In</span>
+              </button>
+
+              <div className="auth-header" style={{ textAlign: 'left', marginBottom: 20 }}>
+                <h2 className="auth-title">Create New Password</h2>
+                <p className="auth-subtitle">
+                  Choose a new, secure password to protect your Camqrew account.
+                </p>
+              </div>
+
+              {error && (
+                <div className="auth-alert-notice auth-alert-danger">
+                  <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                  <span>{error}</span>
+                </div>
+              )}
+              {successNotice && (
+                <div className="auth-alert-notice auth-alert-success">
+                  <CheckCircle2 size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                  <span>{successNotice}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleResetPassword}>
+                <div className="auth-field-block">
+                  <label className="auth-label">New Password (min. 6 characters)</label>
+                  <div className="auth-input-container">
+                    <span className="auth-input-icon-adornment">
+                      <Lock size={16} />
+                    </span>
+                    <input
+                      type={showNewPassword ? 'text' : 'password'}
+                      className="auth-input"
+                      placeholder="Enter new password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      className="auth-password-toggle-btn"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      tabIndex={-1}
+                    >
+                      {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="auth-field-block">
+                  <label className="auth-label">Confirm New Password</label>
+                  <div className="auth-input-container">
+                    <span className="auth-input-icon-adornment">
+                      <Lock size={16} />
+                    </span>
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      className="auth-input"
+                      placeholder="Re-enter new password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                    <button
+                      type="button"
+                      className="auth-password-toggle-btn"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      tabIndex={-1}
+                    >
+                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="auth-primary-submit-btn"
+                  disabled={loading}
+                >
+                  {loading ? <Loader2 size={18} className="animate-spin" /> : <span>Update Password</span>}
                 </button>
               </form>
             </div>

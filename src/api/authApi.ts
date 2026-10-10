@@ -288,11 +288,22 @@ export const authApi = {
   },
 
   forgotPassword: async (email: string): Promise<{ success: boolean; message: string }> => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase());
+    const redirectTo = `${window.location.origin}/login?type=recovery`;
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo,
+    });
     if (error) {
       throw new Error(error.message);
     }
-    return { success: true, message: 'Password reset link sent to ' + email };
+    return { success: true, message: 'Password recovery link has been sent to ' + email + '. Please check your inbox or spam folder.' };
+  },
+
+  updatePassword: async (password: string): Promise<{ success: boolean; message: string }> => {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) {
+      throw new Error(error.message);
+    }
+    return { success: true, message: 'Your password has been reset successfully. You can now log in.' };
   },
 
   signInWithOAuth: async (provider: 'google' | 'apple', role: 'customer' | 'professional' = 'customer'): Promise<void> => {
