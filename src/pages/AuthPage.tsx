@@ -217,8 +217,15 @@ export const AuthPage: React.FC = () => {
 
     // If in Email mode
     if (method === 'email') {
-      if (!email.trim()) {
+      const cleanEmail = email.trim().toLowerCase();
+      const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+      if (!cleanEmail) {
         setError('Please enter your email address.');
+        return;
+      }
+      if (!EMAIL_REGEX.test(cleanEmail)) {
+        setError('Please enter a valid email address (e.g. name@domain.com).');
         return;
       }
       if (!password || password.length < 6) {
@@ -237,7 +244,7 @@ export const AuthPage: React.FC = () => {
       if (authMode === 'login') {
         setLoading(true);
         try {
-          const res = await authApi.login(email.trim().toLowerCase(), password);
+          const res = await authApi.login(cleanEmail, password);
           await login(res.user, res.token);
           navigate(redirectUrl);
         } catch (err: any) {
@@ -247,7 +254,6 @@ export const AuthPage: React.FC = () => {
         }
       } else {
         // Sign up flow: Verify email does not already exist
-        const cleanEmail = email.trim().toLowerCase();
         setLoading(true);
         try {
           const { data: existingUser } = await supabase
@@ -338,15 +344,22 @@ export const AuthPage: React.FC = () => {
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) {
+    const cleanEmail = email.trim().toLowerCase();
+    const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (!cleanEmail) {
       setError('Please enter your registered email address.');
+      return;
+    }
+    if (!EMAIL_REGEX.test(cleanEmail)) {
+      setError('Please enter a valid email address (e.g. name@domain.com).');
       return;
     }
     setLoading(true);
     setError('');
     setSuccessNotice('');
     try {
-      const res = await authApi.forgotPassword(email.trim());
+      const res = await authApi.forgotPassword(cleanEmail);
       setSuccessNotice(res.message || 'Password reset link sent to your email.');
     } catch (err: any) {
       setError(err.message || 'Failed to send reset link.');
@@ -609,6 +622,29 @@ export const AuthPage: React.FC = () => {
                         }}
                       >
                         Switch to Sign In →
+                      </button>
+                    )}
+                    {error.toLowerCase().includes('not registered') && authMode === 'login' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthMode('signup');
+                          setError('');
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          textAlign: 'left',
+                          color: 'var(--auth-accent, #3fb668)',
+                          fontWeight: 700,
+                          fontSize: 12,
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          alignSelf: 'flex-start'
+                        }}
+                      >
+                        Create an Account (Sign Up) →
                       </button>
                     )}
                   </div>
@@ -877,7 +913,33 @@ export const AuthPage: React.FC = () => {
               {error && (
                 <div className="auth-alert-notice auth-alert-danger">
                   <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
-                  <span>{error}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
+                    <span>{error}</span>
+                    {(error.toLowerCase().includes('not registered') || error.toLowerCase().includes('no account found')) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCurrentScreen('screen1_auth');
+                          setAuthMode('signup');
+                          setError('');
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          textAlign: 'left',
+                          color: 'var(--auth-accent, #3fb668)',
+                          fontWeight: 700,
+                          fontSize: 12,
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          alignSelf: 'flex-start'
+                        }}
+                      >
+                        Create an Account (Sign Up) →
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
               {successNotice && (

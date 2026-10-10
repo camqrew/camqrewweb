@@ -106,12 +106,28 @@ export const authApi = {
   },
 
   login: async (email: string, pass: string): Promise<{ token: string; user: User }> => {
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Check if email exists in users table first
+    const { data: userRecord } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', cleanEmail)
+      .maybeSingle();
+
+    if (!userRecord) {
+      throw new Error('This email ID is not registered with Camqrew. Please create an account.');
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
+      email: cleanEmail,
       password: pass,
     });
 
     if (error || !data.session) {
+      if (error?.message?.toLowerCase().includes('invalid login credentials')) {
+        throw new Error('Incorrect password. Please try again or reset your password.');
+      }
       throw new Error(error?.message || 'Invalid credentials');
     }
 
@@ -126,7 +142,7 @@ export const authApi = {
       user: {
         id: data.user.id,
         name: userProfile?.name || email.split('@')[0],
-        email: email,
+        email: cleanEmail,
         phone: userProfile?.phone || '',
         role: (userProfile?.role as UserRole) || 'customer',
         avatar: userProfile?.avatar || '',
@@ -288,14 +304,27 @@ export const authApi = {
   },
 
   forgotPassword: async (email: string): Promise<{ success: boolean; message: string }> => {
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Check if email exists in users table first
+    const { data: userRecord } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', cleanEmail)
+      .maybeSingle();
+
+    if (!userRecord) {
+      throw new Error('This email ID is not registered with Camqrew. Please check your email or Sign Up.');
+    }
+
     const redirectTo = `${window.location.origin}/login?type=recovery`;
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
       redirectTo,
     });
     if (error) {
       throw new Error(error.message);
     }
-    return { success: true, message: 'Password recovery link has been sent to ' + email + '. Please check your inbox or spam folder.' };
+    return { success: true, message: 'Password recovery link has been sent to ' + cleanEmail + '. Please check your inbox or spam folder.' };
   },
 
   updatePassword: async (password: string): Promise<{ success: boolean; message: string }> => {
